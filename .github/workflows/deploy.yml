@@ -1,0 +1,136 @@
+name: Build and Deploy Monorepo
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      server: ${{ steps.filter.outputs.server }}
+      services: ${{ steps.set-services.outputs.services }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed projects
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            auth-service:
+              - 'apps/auth-service**'
+            business-service:
+              - 'apps/business-service**'
+
+      - name: Set services matrix
+        id: set-services
+        run: |
+          services='[]'
+
+          # For tags and manual runs, deploy everything.
+          # For normal pushes, deploy only the projects that changed.
+          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
+            services=$(echo "$services" | jq -c '. + [{"name":"frontend","image":"ghcr.io/jul-cesar/dara-frontend","context":"./dara","dockerfile":"./dara/Dockerfile","dokploy_app_id_secret":"DOKPLOY_FRONTEND_APPLICATION_ID"}]')
+          fi
+
+          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.filter.outputs.server }}" = "true" ]; then
+            services=$(echo "$services" | jq -c '. + [{"name":"server","image":"ghcr.io/jul-cesar/dara-server","context":"./server","dockerfile":"./server/Dockerfile","dokploy_app_id_secret":"DOKPLOY_SERVER_APPLICATION_ID"}]')
+          fi
+
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: needs.detect-changes.outputs.services != '[]'
+
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.service.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build image for scan
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
+          load: true
+          tags: ${{ matrix.service.image }}:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Puedes activarlo después si quieres bloquear por vulnerabilidades
+      # - name: Scan image with Trivy
+      #   uses: aquasecurity/trivy-action@v0.33.1
+      #   with:
+      #     image-ref: ${{ matrix.service.image }}:scan
+      #     format: table
+      #     severity: CRITICAL,HIGH
+      #     ignore-unfixed: true
+      #     exit-code: 1
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Resolve Dokploy application id
+        id: dokploy
+        run: |
+          if [ "${{ matrix.service.name }}" = "frontend" ]; then
+            echo "application_id=${{ secrets.DOKPLOY_FRONTEND_APPLICATION_ID }}" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ "${{ matrix.service.name }}" = "server" ]; then
+            echo "application_id=${{ secrets.DOKPLOY_SERVER_APPLICATION_ID }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Dokploy deployment
+        run: |
+          curl -L -i -X POST "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
+            -H "accept: application/json" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"applicationId\":\"${{ steps.dokploy.outputs.application_id }}\"}"

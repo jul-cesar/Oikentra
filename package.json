@@ -1,0 +1,15 @@
+{
+  "name": "oikon",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev:mobile": "pnpm --filter @oikon/mobile start",
+    "dev:auth": "pnpm --filter @oikon/auth-service dev",
+    "dev:business": "pnpm --filter @oikon/business-service dev",
+    "dev:sync": "pnpm --filter @oikon/sync-service dev",
+    "dev:reports": "pnpm --filter @oikon/reports-service dev",
+    "lint": "pnpm -r --if-present run lint",
+    "test": "pnpm -r --if-present run test",
+    "typecheck": "pnpm -r --if-present run typecheck"
+  }
+}
