@@ -1,64 +1,153 @@
-name: Build and Deploy Monorepo
+name: Validate and Deploy Oikon
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches: ["main"]
+    branches: [main]
     tags: ["v*.*.*"]
   workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      server: ${{ steps.filter.outputs.server }}
-      services: ${{ steps.set-services.outputs.services }}
+      projects: ${{ steps.matrix.outputs.projects }}
+      services: ${{ steps.matrix.outputs.services }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed projects
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/'))
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mobile:
+              - 'apps/mobile/**'
+            auth:
+              - 'apps/auth-service/**'
+            business:
+              - 'apps/business-service/**'
+            sync:
+              - 'apps/sync-service/**'
+            reports:
+              - 'apps/reports-service/**'
+            shared:
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+            lockfile:
+              - 'pnpm-lock.yaml'
+
+      - name: Create job matrices
+        id: matrix
+        shell: bash
+        env:
+          MOBILE_CHANGED: ${{ steps.filter.outputs.mobile }}
+          AUTH_CHANGED: ${{ steps.filter.outputs.auth }}
+          BUSINESS_CHANGED: ${{ steps.filter.outputs.business }}
+          SYNC_CHANGED: ${{ steps.filter.outputs.sync }}
+          REPORTS_CHANGED: ${{ steps.filter.outputs.reports }}
+          SHARED_CHANGED: ${{ steps.filter.outputs.shared }}
+          LOCKFILE_CHANGED: ${{ steps.filter.outputs.lockfile }}
+        run: |
+          projects='[]'
+          services='[]'
+          deploy_all=false
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" || "${GITHUB_REF}" == refs/tags/* ]]; then
+            deploy_all=true
+          fi
+
+          if [[ "$LOCKFILE_CHANGED" == "true" && "$MOBILE_CHANGED" != "true" && "$AUTH_CHANGED" != "true" && "$BUSINESS_CHANGED" != "true" && "$SYNC_CHANGED" != "true" && "$REPORTS_CHANGED" != "true" && "$SHARED_CHANGED" != "true" ]]; then
+            deploy_all=true
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$MOBILE_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"mobile","package":"@oikon/mobile"}]' <<< "$projects")
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$AUTH_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"auth-service","package":"@oikon/auth-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikon-auth-service" '. + [{"name":"auth-service","image":$image,"dockerfile":"apps/auth-service/Dockerfile"}]' <<< "$services")
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$BUSINESS_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"business-service","package":"@oikon/business-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikon-business-service" '. + [{"name":"business-service","image":$image,"dockerfile":"apps/business-service/Dockerfile"}]' <<< "$services")
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$SYNC_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"sync-service","package":"@oikon/sync-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikon-sync-service" '. + [{"name":"sync-service","image":$image,"dockerfile":"apps/sync-service/Dockerfile"}]' <<< "$services")
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$REPORTS_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"reports-service","package":"@oikon/reports-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikon-reports-service" '. + [{"name":"reports-service","image":$image,"dockerfile":"apps/reports-service/Dockerfile"}]' <<< "$services")
+          fi
+
+          echo "projects=$projects" >> "$GITHUB_OUTPUT"
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+
+  validate:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.projects != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Detect changed projects
-        uses: dorny/paths-filter@v3
-        id: filter
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          filters: |
-            auth-service:
-              - 'apps/auth-service**'
-            business-service:
-              - 'apps/business-service**'
+          node-version: 22
+          cache: pnpm
 
-      - name: Set services matrix
-        id: set-services
-        run: |
-          services='[]'
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
-          # For tags and manual runs, deploy everything.
-          # For normal pushes, deploy only the projects that changed.
-          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
-            services=$(echo "$services" | jq -c '. + [{"name":"frontend","image":"ghcr.io/jul-cesar/dara-frontend","context":"./dara","dockerfile":"./dara/Dockerfile","dokploy_app_id_secret":"DOKPLOY_FRONTEND_APPLICATION_ID"}]')
-          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.filter.outputs.server }}" = "true" ]; then
-            services=$(echo "$services" | jq -c '. + [{"name":"server","image":"ghcr.io/jul-cesar/dara-server","context":"./server","dockerfile":"./server/Dockerfile","dokploy_app_id_secret":"DOKPLOY_SERVER_APPLICATION_ID"}]')
-          fi
+      - name: Typecheck
+        run: pnpm --filter "${{ matrix.project.package }}" run typecheck
 
-          echo "services=$services" >> "$GITHUB_OUTPUT"
+      - name: Lint
+        run: pnpm --filter "${{ matrix.project.package }}" --if-present run lint
 
-  build:
-    needs: detect-changes
+      - name: Test
+        run: pnpm --filter "${{ matrix.project.package }}" --if-present run test
+
+  deploy:
+    needs: [detect-changes, validate]
+    if: github.event_name != 'pull_request' && needs.detect-changes.outputs.services != '[]' && needs.validate.result == 'success'
     runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.services != '[]'
-
     permissions:
       contents: read
       packages: write
-      security-events: write
-
     strategy:
       fail-fast: false
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -85,52 +174,50 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Build image for scan
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.service.context }}
-          file: ${{ matrix.service.dockerfile }}
-          load: true
-          tags: ${{ matrix.service.image }}:scan
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Puedes activarlo después si quieres bloquear por vulnerabilidades
-      # - name: Scan image with Trivy
-      #   uses: aquasecurity/trivy-action@v0.33.1
-      #   with:
-      #     image-ref: ${{ matrix.service.image }}:scan
-      #     format: table
-      #     severity: CRITICAL,HIGH
-      #     ignore-unfixed: true
-      #     exit-code: 1
-
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.service.context }}
+          context: .
           file: ${{ matrix.service.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.service.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
 
       - name: Resolve Dokploy application id
         id: dokploy
+        shell: bash
+        env:
+          AUTH_APPLICATION_ID: ${{ secrets.DOKPLOY_AUTH_APPLICATION_ID }}
+          BUSINESS_APPLICATION_ID: ${{ secrets.DOKPLOY_BUSINESS_APPLICATION_ID }}
+          SYNC_APPLICATION_ID: ${{ secrets.DOKPLOY_SYNC_APPLICATION_ID }}
+          REPORTS_APPLICATION_ID: ${{ secrets.DOKPLOY_REPORTS_APPLICATION_ID }}
         run: |
-          if [ "${{ matrix.service.name }}" = "frontend" ]; then
-            echo "application_id=${{ secrets.DOKPLOY_FRONTEND_APPLICATION_ID }}" >> "$GITHUB_OUTPUT"
+          case "${{ matrix.service.name }}" in
+            auth-service) application_id="$AUTH_APPLICATION_ID" ;;
+            business-service) application_id="$BUSINESS_APPLICATION_ID" ;;
+            sync-service) application_id="$SYNC_APPLICATION_ID" ;;
+            reports-service) application_id="$REPORTS_APPLICATION_ID" ;;
+            *) echo "Unknown service" >&2; exit 1 ;;
+          esac
+
+          if [[ -z "$application_id" ]]; then
+            echo "Dokploy application id is not configured for ${{ matrix.service.name }}" >&2
+            exit 1
           fi
 
-          if [ "${{ matrix.service.name }}" = "server" ]; then
-            echo "application_id=${{ secrets.DOKPLOY_SERVER_APPLICATION_ID }}" >> "$GITHUB_OUTPUT"
-          fi
+          echo "application_id=$application_id" >> "$GITHUB_OUTPUT"
 
       - name: Trigger Dokploy deployment
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          APPLICATION_ID: ${{ steps.dokploy.outputs.application_id }}
         run: |
-          curl -L -i -X POST "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
-            -H "accept: application/json" \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"applicationId\":\"${{ steps.dokploy.outputs.application_id }}\"}"
+          curl --fail-with-body --silent --show-error \
+            --request POST "$DOKPLOY_URL/api/application.deploy" \
+            --header "accept: application/json" \
+            --header "x-api-key: $DOKPLOY_API_KEY" \
+            --header "Content-Type: application/json" \
+            --data "{\"applicationId\":\"$APPLICATION_ID\"}"

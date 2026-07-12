@@ -325,6 +325,45 @@ Cada despliegue apunta al Dockerfile y configuracion de su servicio. Si un servi
 
 Un cambio en el repositorio no obliga a publicar todos los servicios. CI/CD debe detectar los directorios afectados o construir explicitamente el servicio seleccionado.
 
+### Pipeline de GitHub Actions
+
+El workflow `.github/workflows/deploy.yml` genera matrices dinamicas a partir de las rutas modificadas:
+
+| Cambio | Validacion | Despliegue |
+|---|---|---|
+| `apps/mobile/**` | Mobile | Ninguno; EAS se definira por separado |
+| `apps/auth-service/**` | Auth | Auth |
+| `apps/business-service/**` | Business | Business |
+| `apps/sync-service/**` | Sync | Sync |
+| `apps/reports-service/**` | Reports | Reports |
+| `packages/**`, `package.json` o `pnpm-workspace.yaml` | Todas | Todos los backends |
+| Solo `pnpm-lock.yaml`, sin un manifiesto asociado | Todas | Todos los backends por seguridad |
+| Solo documentacion | Ninguna | Ninguno |
+
+Los pull requests hacia `main` solo validan los paquetes afectados. Los pushes a `main` validan, construyen la imagen correspondiente, la publican en GHCR y activan su aplicacion en Dokploy. Los tags `v*.*.*` y las ejecuciones manuales validan y despliegan todos los servicios.
+
+El repositorio necesita estos secrets de GitHub Actions:
+
+```txt
+DOKPLOY_URL
+DOKPLOY_API_KEY
+DOKPLOY_AUTH_APPLICATION_ID
+DOKPLOY_BUSINESS_APPLICATION_ID
+DOKPLOY_SYNC_APPLICATION_ID
+DOKPLOY_REPORTS_APPLICATION_ID
+```
+
+Las aplicaciones de Dokploy deben estar configuradas para usar las imagenes correspondientes de GHCR:
+
+```txt
+ghcr.io/<owner>/oikon-auth-service
+ghcr.io/<owner>/oikon-business-service
+ghcr.io/<owner>/oikon-sync-service
+ghcr.io/<owner>/oikon-reports-service
+```
+
+Cada Dockerfile usa la raiz como contexto para acceder al lockfile y al workspace, pero copia al runtime solamente las dependencias y el codigo de su servicio.
+
 ---
 
 ## 14. Limpieza y recuperacion
