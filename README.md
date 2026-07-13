@@ -1,6 +1,6 @@
-# Oikon
+# Oikentra
 
-Oikon es una aplicacion movil offline-first para gestionar caja, clientes y fiados en pequenos negocios. El proyecto usa una aplicacion Expo y cuatro microservicios desplegables de forma independiente.
+Oikentra es una aplicacion movil offline-first para gestionar caja, clientes y fiados en pequenos negocios. El proyecto usa una aplicacion Expo y cuatro microservicios desplegables de forma independiente.
 
 ## Estructura
 

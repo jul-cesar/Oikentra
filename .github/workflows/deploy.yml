@@ -1,4 +1,4 @@
-name: Validate and Deploy Oikon
+name: Validate and Deploy Oikentra
 
 on:
   pull_request:
@@ -73,27 +73,27 @@ jobs:
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$MOBILE_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"mobile","package":"@oikon/mobile"}]' <<< "$projects")
+            projects=$(jq -c '. + [{"name":"mobile","package":"@oikentra/mobile"}]' <<< "$projects")
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$AUTH_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"auth-service","package":"@oikon/auth-service"}]' <<< "$projects")
-            services=$(jq -c --arg image "ghcr.io/$owner/oikon-auth-service" '. + [{"name":"auth-service","image":$image,"dockerfile":"apps/auth-service/Dockerfile"}]' <<< "$services")
+            projects=$(jq -c '. + [{"name":"auth-service","package":"@oikentra/auth-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikentra-auth-service" '. + [{"name":"auth-service","image":$image,"dockerfile":"apps/auth-service/Dockerfile"}]' <<< "$services")
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$BUSINESS_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"business-service","package":"@oikon/business-service"}]' <<< "$projects")
-            services=$(jq -c --arg image "ghcr.io/$owner/oikon-business-service" '. + [{"name":"business-service","image":$image,"dockerfile":"apps/business-service/Dockerfile"}]' <<< "$services")
+            projects=$(jq -c '. + [{"name":"business-service","package":"@oikentra/business-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikentra-business-service" '. + [{"name":"business-service","image":$image,"dockerfile":"apps/business-service/Dockerfile"}]' <<< "$services")
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$SYNC_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"sync-service","package":"@oikon/sync-service"}]' <<< "$projects")
-            services=$(jq -c --arg image "ghcr.io/$owner/oikon-sync-service" '. + [{"name":"sync-service","image":$image,"dockerfile":"apps/sync-service/Dockerfile"}]' <<< "$services")
+            projects=$(jq -c '. + [{"name":"sync-service","package":"@oikentra/sync-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikentra-sync-service" '. + [{"name":"sync-service","image":$image,"dockerfile":"apps/sync-service/Dockerfile"}]' <<< "$services")
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$REPORTS_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"reports-service","package":"@oikon/reports-service"}]' <<< "$projects")
-            services=$(jq -c --arg image "ghcr.io/$owner/oikon-reports-service" '. + [{"name":"reports-service","image":$image,"dockerfile":"apps/reports-service/Dockerfile"}]' <<< "$services")
+            projects=$(jq -c '. + [{"name":"reports-service","package":"@oikentra/reports-service"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikentra-reports-service" '. + [{"name":"reports-service","image":$image,"dockerfile":"apps/reports-service/Dockerfile"}]' <<< "$services")
           fi
 
           echo "projects=$projects" >> "$GITHUB_OUTPUT"

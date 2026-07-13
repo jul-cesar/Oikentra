@@ -1,5 +1,5 @@
 {
-  "name": "@oikon/sync-service",
+  "name": "@oikentra/sync-service",
   "private": true,
   "scripts": {
     "dev": "bun run --hot src/index.ts",

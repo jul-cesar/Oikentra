@@ -25,7 +25,8 @@ El usuario podrá:
 - Iniciar sesión con Google.
 - Consultar su sesión actual.
 - Cerrar sesión.
-- Recuperar su contraseña en una fase posterior.
+- Verificar su correo electrónico.
+- Recuperar su contraseña.
 
 El servicio también permitirá que Traefik valide una sesión antes de enviar una petición a otro microservicio.
 
@@ -130,6 +131,8 @@ Resultado:
 - Cookie de sesión almacenada por la integración de Expo.
 - Usuario autenticado disponible en la app.
 
+Si el correo no está verificado, Better Auth rechaza el inicio de sesión y gestiona el envío de verificación según su flujo nativo.
+
 ---
 
 ### 5.3 Login con Google
@@ -149,7 +152,21 @@ El endpoint HTTP interno utilizado por Better Auth no se consumirá manualmente 
 
 ---
 
-### 5.4 Consultar sesión
+### 5.4 Verificación de correo y recuperación de contraseña
+
+Better Auth gestiona los endpoints nativos de verificación de correo y recuperación de contraseña bajo `/api/auth/*`.
+
+Reglas:
+
+- El registro con correo envía un correo de verificación mediante Resend.
+- El inicio de sesión con correo requiere que el correo esté verificado.
+- La recuperación de contraseña envía un correo mediante Resend.
+- Los tokens de verificación y recuperación expiran en 1 hora.
+- Las rutas exactas pertenecen a Better Auth y no se definen como contratos propios del proyecto.
+
+---
+
+### 5.5 Consultar sesión
 
 ```http
 GET /api/auth/get-session
@@ -182,7 +199,7 @@ Si no existe sesión válida, la respuesta no contiene una sesión activa.
 
 ---
 
-### 5.5 Cerrar sesión
+### 5.6 Cerrar sesión
 
 ```http
 POST /api/auth/sign-out
@@ -340,8 +357,10 @@ Los endpoints propios usarán:
 ## 11. Criterios de aceptación
 
 - El usuario puede registrarse con correo.
+- El usuario verifica su correo antes de iniciar sesión con correo y contraseña.
 - El usuario puede iniciar sesión con correo.
 - El usuario puede iniciar sesión con Google.
+- El usuario puede recuperar su contraseña mediante el flujo nativo de Better Auth.
 - La sesión persiste al reiniciar la app.
 - El usuario puede cerrar sesión.
 - Traefik recibe `204` para una sesión válida.

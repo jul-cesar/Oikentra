@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-Definir como se organiza, instala, ejecuta y despliega el codigo de Oikon.
+Definir como se organiza, instala, ejecuta y despliega el codigo de Oikentra.
 
 Este documento describe la configuracion vigente del repositorio. No cambia los limites funcionales definidos en la arquitectura ni convierte los microservicios en una sola aplicacion.
 
@@ -26,7 +26,7 @@ Este documento describe la configuracion vigente del repositorio. No cambia los 
 
 ### Repositorio Git
 
-Es la unidad de versionado. Oikon usa un solo repositorio para que un cambio coordinado en mobile, contratos y servicios pueda quedar en un mismo commit o pull request.
+Es la unidad de versionado. Oikentra usa un solo repositorio para que un cambio coordinado en mobile, contratos y servicios pueda quedar en un mismo commit o pull request.
 
 ### Monorepo
 
@@ -38,7 +38,7 @@ Es el conjunto de paquetes que pnpm reconoce y administra en una misma instalaci
 
 ### Paquete
 
-Es cualquier directorio incluido en el workspace que tenga un `package.json`. Cada aplicacion de Oikon es un paquete privado.
+Es cualquier directorio incluido en el workspace que tenga un `package.json`. Cada aplicacion de Oikentra es un paquete privado.
 
 ### Microservicio
 
@@ -49,7 +49,7 @@ Es un limite de ejecucion, datos y despliegue. Compartir repositorio y workspace
 ## 4. Estructura del repositorio
 
 ```txt
-Oikon/
+Oikentra/
   apps/
     mobile/
       package.json
@@ -72,11 +72,11 @@ Paquetes actuales:
 
 | Directorio | Nombre del workspace | Ejecucion |
 |---|---|---|
-| `apps/mobile` | `@oikon/mobile` | Expo + React Native |
-| `apps/auth-service` | `@oikon/auth-service` | Bun |
-| `apps/business-service` | `@oikon/business-service` | Bun |
-| `apps/sync-service` | `@oikon/sync-service` | Bun |
-| `apps/reports-service` | `@oikon/reports-service` | Bun |
+| `apps/mobile` | `@oikentra/mobile` | Expo + React Native |
+| `apps/auth-service` | `@oikentra/auth-service` | Bun |
+| `apps/business-service` | `@oikentra/business-service` | Bun |
+| `apps/sync-service` | `@oikentra/sync-service` | Bun |
+| `apps/reports-service` | `@oikentra/reports-service` | Bun |
 
 `packages/` esta reservado para contratos y tooling compartido que tenga consumidores reales.
 
@@ -108,7 +108,7 @@ Ejemplo del flujo de un comando:
 
 ```txt
 pnpm dev:auth
-  -> pnpm selecciona @oikon/auth-service
+  -> pnpm selecciona @oikentra/auth-service
   -> ejecuta el script dev de ese paquete
   -> Bun inicia src/index.ts
 ```
@@ -117,7 +117,7 @@ Para mobile:
 
 ```txt
 pnpm dev:mobile
-  -> pnpm selecciona @oikon/mobile
+  -> pnpm selecciona @oikentra/mobile
   -> ejecuta el script start
   -> Expo inicia Metro y el entorno de desarrollo
 ```
@@ -202,8 +202,8 @@ pnpm dev:reports
 Tambien se puede seleccionar directamente un paquete:
 
 ```bash
-pnpm --filter @oikon/auth-service dev
-pnpm --filter @oikon/mobile android
+pnpm --filter @oikentra/auth-service dev
+pnpm --filter @oikentra/mobile android
 ```
 
 Desde el directorio de una aplicacion se puede ejecutar su script sin reinstalar:
@@ -235,16 +235,16 @@ Los comandos recursivos usan `--if-present`: solo ejecutan el script en paquetes
 Las dependencias se agregan al paquete que realmente las usa:
 
 ```bash
-pnpm --filter @oikon/auth-service add better-auth
-pnpm --filter @oikon/business-service add drizzle-orm
-pnpm --filter @oikon/auth-service add -D typescript
-pnpm --filter @oikon/auth-service remove better-auth
+pnpm --filter @oikentra/auth-service add better-auth
+pnpm --filter @oikentra/business-service add drizzle-orm
+pnpm --filter @oikentra/auth-service add -D typescript
+pnpm --filter @oikentra/auth-service remove better-auth
 ```
 
 Para dependencias de React Native se debe permitir que Expo elija una version compatible:
 
 ```bash
-pnpm --filter @oikon/mobile exec expo install expo-sqlite
+pnpm --filter @oikentra/mobile exec expo install expo-sqlite
 ```
 
 No se agrega una dependencia en la raiz para hacerla visible accidentalmente a todos los paquetes.
@@ -267,7 +267,7 @@ Un consumidor lo declararia de forma explicita:
 ```json
 {
   "dependencies": {
-    "@oikon/api-contracts": "workspace:*"
+    "@oikentra/api-contracts": "workspace:*"
   }
 }
 ```
@@ -314,7 +314,7 @@ Los servicios no deben consultar directamente la base de datos de otro servicio.
 Dokploy puede crear varias aplicaciones usando el mismo repositorio Git:
 
 ```txt
-Repositorio Oikon
+Repositorio Oikentra
   -> despliegue auth-service
   -> despliegue business-service
   -> despliegue sync-service
@@ -356,10 +356,10 @@ DOKPLOY_REPORTS_APPLICATION_ID
 Las aplicaciones de Dokploy deben estar configuradas para usar las imagenes correspondientes de GHCR:
 
 ```txt
-ghcr.io/<owner>/oikon-auth-service
-ghcr.io/<owner>/oikon-business-service
-ghcr.io/<owner>/oikon-sync-service
-ghcr.io/<owner>/oikon-reports-service
+ghcr.io/<owner>/oikentra-auth-service
+ghcr.io/<owner>/oikentra-business-service
+ghcr.io/<owner>/oikentra-sync-service
+ghcr.io/<owner>/oikentra-reports-service
 ```
 
 Cada Dockerfile usa la raiz como contexto para acceder al lockfile y al workspace, pero copia al runtime solamente las dependencias y el codigo de su servicio.

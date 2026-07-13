@@ -52,7 +52,7 @@ reports-service   → Bun
 
 ### Organización del repositorio
 
-Oikon se mantendrá en un único repositorio Git organizado como monorepo con pnpm workspaces:
+Oikentra se mantendrá en un único repositorio Git organizado como monorepo con pnpm workspaces:
 
 ```txt
 apps/

@@ -4,7 +4,7 @@ Servicio responsable de push, pull, idempotencia, cursores, reintentos y conflic
 
 ## Workspace
 
-- Paquete: `@oikon/sync-service`
+- Paquete: `@oikentra/sync-service`
 - Runtime: Bun
 - Framework HTTP: Hono
 - Estado: esqueleto inicial

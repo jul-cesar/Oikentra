@@ -7,7 +7,7 @@ WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/reports-service/package.json apps/reports-service/package.json
 
-RUN pnpm install --filter @oikon/reports-service --prod --frozen-lockfile
+RUN pnpm install --filter @oikentra/reports-service --prod --frozen-lockfile
 
 FROM oven/bun:1.3.14-alpine AS runtime
 

@@ -4,7 +4,7 @@ Servicio de consulta y generacion de reportes. No puede crear ni modificar opera
 
 ## Workspace
 
-- Paquete: `@oikon/reports-service`
+- Paquete: `@oikentra/reports-service`
 - Runtime: Bun
 - Framework HTTP: Hono
 - Estado: esqueleto inicial

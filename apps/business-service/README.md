@@ -4,7 +4,7 @@ Servicio propietario de negocios, clientes y operaciones financieras. Es la auto
 
 ## Workspace
 
-- Paquete: `@oikon/business-service`
+- Paquete: `@oikentra/business-service`
 - Runtime: Bun
 - Framework HTTP: Hono
 - Estado: esqueleto inicial
