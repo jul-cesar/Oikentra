@@ -16,6 +16,8 @@ WORKDIR /workspace
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/business-service/node_modules ./apps/business-service/node_modules
 COPY apps/business-service/package.json apps/business-service/package.json
+COPY apps/business-service/drizzle.config.ts apps/business-service/drizzle.config.ts
+COPY apps/business-service/drizzle apps/business-service/drizzle
 COPY apps/business-service/src apps/business-service/src
 
 WORKDIR /workspace/apps/business-service

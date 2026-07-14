@@ -309,7 +309,64 @@ Los servicios no deben consultar directamente la base de datos de otro servicio.
 
 ---
 
-## 13. Construccion y despliegue
+## 13. Arquitectura interna de microservicios
+
+Cada microservicio backend debe mantener una estructura entendible y repetible, sin convertirla en una abstraccion compartida prematura.
+
+Estructura base recomendada:
+
+```txt
+src/
+  app.ts
+  index.ts
+  config/
+  db/
+  http/
+    errors.ts
+    request-context.ts
+    response.ts
+    middleware/
+  modules/
+    <domain>/
+      <domain>.routes.ts
+      <domain>.schemas.ts
+      <domain>.service.ts
+      <domain>.repository.ts
+```
+
+Responsabilidades:
+
+- `app.ts` arma la aplicacion HTTP, registra rutas, health checks y manejo global de errores.
+- `index.ts` es el entrypoint del runtime.
+- `config/` lee y valida variables de entorno.
+- `db/` contiene cliente, schema, health checks y migraciones propias del servicio.
+- `http/` contiene comportamiento transversal como envelopes, errores, request id y middleware.
+- `modules/<domain>/routes` valida HTTP y delega casos de uso.
+- `modules/<domain>/schemas` define validacion de body, params, query y headers.
+- `modules/<domain>/service` coordina reglas de negocio y transacciones.
+- `modules/<domain>/repository` encapsula persistencia; las rutas no consultan Drizzle directamente.
+
+Rutas publicas por servicio:
+
+| Servicio | Base publica |
+|---|---|
+| `auth-service` | `/api/auth` |
+| `business-service` | `/api/business` |
+| `sync-service` | `/api/sync` |
+| `reports-service` | `/api/reports` |
+
+Reglas:
+
+- No se agregan endpoints publicos por fuera de la base del servicio.
+- Los health checks publicos tambien viven bajo la base del servicio, por ejemplo `/api/business/health/live`.
+- Los servicios protegidos que consumen identidad desde ForwardAuth deben exigir un secreto compartido de gateway. Dokploy/Traefik valida la sesion con `auth-service`, elimina o sobreescribe headers enviados por el cliente, y luego inyecta `X-User-Id`, `X-Session-Id` y `X-Gateway-Secret`. El servicio valida `X-Gateway-Secret` contra `GATEWAY_SHARED_SECRET` antes de confiar en los headers de identidad.
+- Endpoints solo internos pueden usar `/internal/*`, pero deben estar disponibles unicamente en la red privada y protegidos por autenticacion de servicio cuando corresponda.
+- Un servicio no debe exponer tablas, repositorios o clientes de base de datos para que otro servicio los reutilice.
+- Cada servicio declara sus dependencias en su propio `package.json`.
+
+---
+
+## 14. Construccion y despliegue
 
 Dokploy puede crear varias aplicaciones usando el mismo repositorio Git:
 
@@ -322,6 +379,8 @@ Repositorio Oikentra
 ```
 
 Cada despliegue apunta al Dockerfile y configuracion de su servicio. Si un servicio consume un paquete bajo `packages/`, el contexto de construccion debe incluir la raiz, `pnpm-workspace.yaml` y `pnpm-lock.yaml`.
+
+Para servicios protegidos detras de ForwardAuth, cada despliegue define `GATEWAY_SHARED_SECRET` como secreto real del entorno. El proxy debe inyectar o sobreescribir `X-Gateway-Secret` despues de ForwardAuth y debe eliminar o sobreescribir cualquier `X-User-Id`/`X-Session-Id` recibido desde el cliente. Este patron evita que un acceso directo al servicio pueda autenticarse solo enviando headers no vacios.
 
 Un cambio en el repositorio no obliga a publicar todos los servicios. CI/CD debe detectar los directorios afectados o construir explicitamente el servicio seleccionado.
 
@@ -366,7 +425,7 @@ Cada Dockerfile usa la raiz como contexto para acceder al lockfile y al workspac
 
 ---
 
-## 14. Limpieza y recuperacion
+## 15. Limpieza y recuperacion
 
 Para reconstruir una instalacion local se pueden eliminar los `node_modules` generados y ejecutar:
 
@@ -394,6 +453,6 @@ Si un comando no encuentra un paquete, se debe verificar:
 
 ---
 
-## 15. Estado actual
+## 16. Estado actual
 
 El workspace, la instalacion central y las validaciones estan configurados. Los cuatro servicios backend aun son esqueletos iniciales; pertenecer al workspace no significa que sus bases de datos, contratos o logica de negocio ya esten implementados.
