@@ -12,3 +12,7 @@ if (!databaseUrl) {
 const client = postgres(databaseUrl)
 
 export const db = drizzle(client, { schema })
+
+export async function checkDatabaseConnection() {
+  await client.unsafe('select 1')
+}

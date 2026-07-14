@@ -40,6 +40,8 @@ Do not commit real credentials. Use a Resend verified domain for `AUTH_EMAIL_FRO
 ## Routes
 
 - `GET /` returns a basic service response.
+- `GET /api/auth/health/live` returns liveness status.
+- `GET /api/auth/health/ready` checks database connectivity.
 - `GET /api/auth/*` and `POST /api/auth/*` are handled by Better Auth.
 - `GET /internal/session/validate` validates the current session for Traefik ForwardAuth.
 
