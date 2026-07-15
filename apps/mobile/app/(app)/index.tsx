@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { signOutGoogle } from '@/lib/google-auth';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { View } from 'react-native';
@@ -14,6 +15,11 @@ export default function HomeScreen() {
     setIsSigningOut(true);
     try {
       await authClient.signOut();
+      try {
+        await signOutGoogle();
+      } catch {
+        // Native provider cleanup is best effort after the app session is gone.
+      }
       router.replace('/(auth)/sign-in');
     } finally {
       setIsSigningOut(false);

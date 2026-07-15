@@ -3,7 +3,8 @@
   "private": true,
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "dev:mobile": "pnpm --filter @oikentra/mobile start",
+    "dev:mobile": "pnpm --filter @oikentra/mobile dev-client",
+    
     "dev:auth": "pnpm --filter @oikentra/auth-service dev",
     "dev:business": "pnpm --filter @oikentra/business-service dev",
     "dev:sync": "pnpm --filter @oikentra/sync-service dev",

@@ -1,19 +1,16 @@
 import { SocialConnections } from '@/components/social-connections';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { signUpSchema, type SignUpFormValues } from '@/lib/validation/auth-schemas';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Pressable, type TextInput, View } from 'react-native';
 
 export function SignUpForm() {
@@ -21,12 +18,20 @@ export function SignUpForm() {
   const emailInputRef = React.useRef<TextInput>(null);
   const passwordInputRef = React.useRef<TextInput>(null);
 
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
 
   function onNameSubmitEditing() {
     emailInputRef.current?.focus();
@@ -36,24 +41,15 @@ export function SignUpForm() {
     passwordInputRef.current?.focus();
   }
 
-  async function onSubmit() {
+  async function onSubmit(values: SignUpFormValues) {
     setError(null);
     setSuccessMessage(null);
-    setIsSubmitting(true);
-
-    const trimmedName = name.trim();
-
-    if (!trimmedName) {
-      setError('Name is required.');
-      setIsSubmitting(false);
-      return;
-    }
 
     try {
       const { error: signUpError } = await authClient.signUp.email({
-        name: trimmedName,
-        email: email.trim(),
-        password,
+        name: values.name,
+        email: values.email,
+        password: values.password,
         callbackURL: 'oikentra://auth/verify',
       });
 
@@ -65,8 +61,6 @@ export function SignUpForm() {
       setSuccessMessage('Account created. Check your email to verify your account.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -83,53 +77,83 @@ export function SignUpForm() {
           <View className="gap-6">
             <View className="gap-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Your name"
-                autoComplete="name"
-                autoCapitalize="words"
-                value={name}
-                onChangeText={setName}
-                onSubmitEditing={onNameSubmitEditing}
-                returnKeyType="next"
-                submitBehavior="submit"
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onBlur, onChange, value } }) => (
+                  <Input
+                    id="name"
+                    placeholder="Your name"
+                    autoComplete="name"
+                    autoCapitalize="words"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    onSubmitEditing={onNameSubmitEditing}
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                  />
+                )}
               />
+              {errors.name ? (
+                <Text className="text-destructive text-sm">{errors.name.message}</Text>
+              ) : null}
             </View>
             <View className="gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                ref={emailInputRef}
-                id="email"
-                placeholder="m@example.com"
-                keyboardType="email-address"
-                autoComplete="email"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-                onSubmitEditing={onEmailSubmitEditing}
-                returnKeyType="next"
-                submitBehavior="submit"
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onBlur, onChange, value } }) => (
+                  <Input
+                    ref={emailInputRef}
+                    id="email"
+                    placeholder="m@example.com"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    onSubmitEditing={onEmailSubmitEditing}
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                  />
+                )}
               />
+              {errors.email ? (
+                <Text className="text-destructive text-sm">{errors.email.message}</Text>
+              ) : null}
             </View>
             <View className="gap-1.5">
               <View className="flex-row items-center">
                 <Label htmlFor="password">Password</Label>
               </View>
-              <Input
-                ref={passwordInputRef}
-                id="password"
-                secureTextEntry
-                returnKeyType="send"
-                value={password}
-                onChangeText={setPassword}
-                onSubmitEditing={onSubmit}
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onBlur, onChange, value } }) => (
+                  <Input
+                    ref={passwordInputRef}
+                    id="password"
+                    secureTextEntry
+                    returnKeyType="send"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    onSubmitEditing={handleSubmit(onSubmit)}
+                  />
+                )}
               />
+              {errors.password ? (
+                <Text className="text-destructive text-sm">{errors.password.message}</Text>
+              ) : null}
             </View>
             {error ? <Text className="text-destructive text-sm">{error}</Text> : null}
             {successMessage ? (
               <Text className="text-sm text-green-600">{successMessage}</Text>
             ) : null}
-            <Button className="w-full" onPress={onSubmit} disabled={isSubmitting}>
+            <Button className="w-full" onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
               <Text>{isSubmitting ? 'Creating account...' : 'Continue'}</Text>
             </Button>
           </View>

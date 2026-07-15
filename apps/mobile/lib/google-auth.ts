@@ -39,6 +39,14 @@ export function configureGoogleSignIn() {
   });
 }
 
+export async function signOutGoogle(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
+  await GoogleSignin.signOut();
+}
+
 export interface GoogleAuthResult {
   idToken: string;
 }
@@ -59,6 +67,7 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
   }
 
   try {
+    configureGoogleSignIn();
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     const response = await GoogleSignin.signIn();
 

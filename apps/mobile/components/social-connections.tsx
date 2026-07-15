@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 import { GoogleAuthError, signInWithGoogle } from '@/lib/google-auth';
-import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Image, Platform, useColorScheme, View } from 'react-native';
 
@@ -16,10 +15,17 @@ const SOCIAL_CONNECTION_STRATEGIES = [
 ] as const;
 
 function useGoogleSignIn() {
-  const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = React.useState(false);
+  const isSigningInRef = React.useRef(false);
 
   async function handleGoogle() {
+    if (isSigningInRef.current) {
+      return;
+    }
+
+    isSigningInRef.current = true;
+    setIsSigningIn(true);
     setError(null);
 
     try {
@@ -42,22 +48,24 @@ function useGoogleSignIn() {
         return;
       }
 
-      router.replace('/(app)');
     } catch (err) {
       if (err instanceof GoogleAuthError && err.recoverable) {
         setError(err.message);
         return;
       }
       setError(err instanceof Error ? err.message : 'Google sign in failed.');
+    } finally {
+      isSigningInRef.current = false;
+      setIsSigningIn(false);
     }
   }
 
-  return { handleGoogle, error };
+  return { handleGoogle, error, isSigningIn };
 }
 
 export function SocialConnections() {
   const colorScheme = useColorScheme();
-  const { handleGoogle, error } = useGoogleSignIn();
+  const { handleGoogle, error, isSigningIn } = useGoogleSignIn();
 
   return (
     <View className="gap-2 sm:flex-row sm:gap-3">
@@ -68,7 +76,8 @@ export function SocialConnections() {
             variant="outline"
             size="sm"
             className="sm:flex-1"
-            onPress={handleGoogle}>
+            onPress={handleGoogle}
+            disabled={isSigningIn}>
             <Image
               className={cn('size-4', strategy.useTint && Platform.select({ web: 'dark:invert' }))}
               tintColor={Platform.select({

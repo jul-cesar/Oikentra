@@ -1,42 +1,46 @@
 import { SocialConnections } from '@/components/social-connections';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { signInSchema, type SignInFormValues } from '@/lib/validation/auth-schemas';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Pressable, type TextInput, View } from 'react-native';
 
 export function SignInForm() {
   const router = useRouter();
   const passwordInputRef = React.useRef<TextInput>(null);
 
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
   function onEmailSubmitEditing() {
     passwordInputRef.current?.focus();
   }
 
-  async function onSubmit() {
+  async function onSubmit(values: SignInFormValues) {
     setError(null);
-    setIsSubmitting(true);
 
     try {
       const { error: signInError } = await authClient.signIn.email({
-        email: email.trim(),
-        password,
+        email: values.email,
+        password: values.password,
         rememberMe: true,
       });
 
@@ -44,12 +48,8 @@ export function SignInForm() {
         setError(signInError.message ?? 'Sign in failed. Please check your credentials.');
         return;
       }
-
-      router.replace('/(app)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -66,18 +66,28 @@ export function SignInForm() {
           <View className="gap-6">
             <View className="gap-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="m@example.com"
-                keyboardType="email-address"
-                autoComplete="email"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-                onSubmitEditing={onEmailSubmitEditing}
-                returnKeyType="next"
-                submitBehavior="submit"
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onBlur, onChange, value } }) => (
+                  <Input
+                    id="email"
+                    placeholder="m@example.com"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    onSubmitEditing={onEmailSubmitEditing}
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                  />
+                )}
               />
+              {errors.email ? (
+                <Text className="text-destructive text-sm">{errors.email.message}</Text>
+              ) : null}
             </View>
             <View className="gap-1.5">
               <View className="flex-row items-center">
@@ -89,23 +99,31 @@ export function SignInForm() {
                   onPress={() => {
                     // Password recovery is out of scope for this change.
                   }}>
-                  <Text className="font-normal leading-4">Forgot your password?</Text>
+                  <Text className="leading-4 font-normal">Forgot your password?</Text>
                 </Button>
               </View>
-              <Input
-                ref={passwordInputRef}
-                id="password"
-                secureTextEntry
-                returnKeyType="send"
-                value={password}
-                onChangeText={setPassword}
-                onSubmitEditing={onSubmit}
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onBlur, onChange, value } }) => (
+                  <Input
+                    ref={passwordInputRef}
+                    id="password"
+                    secureTextEntry
+                    returnKeyType="send"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    onSubmitEditing={handleSubmit(onSubmit)}
+                  />
+                )}
               />
+              {errors.password ? (
+                <Text className="text-destructive text-sm">{errors.password.message}</Text>
+              ) : null}
             </View>
-            {error ? (
-              <Text className="text-destructive text-sm">{error}</Text>
-            ) : null}
-            <Button className="w-full" onPress={onSubmit} disabled={isSubmitting}>
+            {error ? <Text className="text-destructive text-sm">{error}</Text> : null}
+            <Button className="w-full" onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
               <Text>{isSubmitting ? 'Signing in...' : 'Continue'}</Text>
             </Button>
           </View>
