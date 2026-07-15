@@ -30,8 +30,6 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            mobile:
-              - 'apps/mobile/**'
             auth:
               - 'apps/auth-service/**'
             business:
@@ -51,7 +49,6 @@ jobs:
         id: matrix
         shell: bash
         env:
-          MOBILE_CHANGED: ${{ steps.filter.outputs.mobile }}
           AUTH_CHANGED: ${{ steps.filter.outputs.auth }}
           BUSINESS_CHANGED: ${{ steps.filter.outputs.business }}
           SYNC_CHANGED: ${{ steps.filter.outputs.sync }}
@@ -68,12 +65,8 @@ jobs:
             deploy_all=true
           fi
 
-          if [[ "$LOCKFILE_CHANGED" == "true" && "$MOBILE_CHANGED" != "true" && "$AUTH_CHANGED" != "true" && "$BUSINESS_CHANGED" != "true" && "$SYNC_CHANGED" != "true" && "$REPORTS_CHANGED" != "true" && "$SHARED_CHANGED" != "true" ]]; then
+          if [[ "$LOCKFILE_CHANGED" == "true" && "$AUTH_CHANGED" != "true" && "$BUSINESS_CHANGED" != "true" && "$SYNC_CHANGED" != "true" && "$REPORTS_CHANGED" != "true" && "$SHARED_CHANGED" != "true" ]]; then
             deploy_all=true
-          fi
-
-          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$MOBILE_CHANGED" == "true" ]]; then
-            projects=$(jq -c '. + [{"name":"mobile","package":"@oikentra/mobile"}]' <<< "$projects")
           fi
 
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$AUTH_CHANGED" == "true" ]]; then
