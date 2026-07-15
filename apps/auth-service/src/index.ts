@@ -25,7 +25,6 @@ app.get('/', (c) => {
 })
 
 app.get('/api/auth/health/live', liveResponse)
-app.get('/api/auth/health/ready', readyResponse)
 
 app.get('/internal/session/validate', async (c) => {
   const session = await auth.api.getSession({
