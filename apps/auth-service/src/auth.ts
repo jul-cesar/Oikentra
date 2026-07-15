@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { expo } from '@better-auth/expo'
 
 import { config } from './config/config'
 import { db } from './db/client'
@@ -34,10 +35,24 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: config.googleClientId,
+      clientId: [
+        config.googleClientId,
+        config.googleIosClientId,
+        config.googleAndroidClientId,
+      ].filter((id): id is string => Boolean(id)),
       clientSecret: config.googleClientSecret,
     },
   },
+  trustedOrigins: [
+    config.betterAuthUrl,
+    'oikentra://',
+    'oikentra://auth/verify',
+    'oikentra://*',
+    ...(process.env.NODE_ENV === 'development'
+      ? ['exp://', 'exp://**', 'exp://192.168.*.*:*/**']
+      : []),
+  ],
   secret: config.betterAuthSecret,
   baseURL: config.betterAuthUrl,
+  plugins: [expo()],
 })

@@ -17,6 +17,10 @@ function readRequiredEnv(name: (typeof requiredEnvVars)[number]) {
   return value
 }
 
+function readOptionalEnv(name: string) {
+  return process.env[name]?.trim()
+}
+
 const betterAuthUrl = readRequiredEnv('BETTER_AUTH_URL')
 
 try {
@@ -31,5 +35,7 @@ export const config = {
   betterAuthUrl,
   googleClientId: readRequiredEnv('GOOGLE_CLIENT_ID'),
   googleClientSecret: readRequiredEnv('GOOGLE_CLIENT_SECRET'),
+  googleIosClientId: readOptionalEnv('GOOGLE_IOS_CLIENT_ID'),
+  googleAndroidClientId: readOptionalEnv('GOOGLE_ANDROID_CLIENT_ID'),
   resendApiKey: readRequiredEnv('RESEND_API_KEY'),
 }
