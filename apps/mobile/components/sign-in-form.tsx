@@ -1,6 +1,5 @@
 import { SocialConnections } from '@/components/social-connections';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -45,102 +44,125 @@ export function SignInForm() {
       });
 
       if (signInError) {
-        setError(signInError.message ?? 'Sign in failed. Please check your credentials.');
+        if (signInError.code === 'EMAIL_NOT_VERIFIED') {
+          router.replace({ pathname: '/(auth)/verify', params: { email: values.email } });
+          return;
+        }
+
+        setError('No pudimos iniciar sesión. Revisa tu correo y contraseña.');
         return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+
+      const { data: activeSession } = await authClient.getSession();
+      if (!activeSession?.session) {
+        setError('Iniciamos sesión, pero no pudimos abrir tu cuenta. Intenta nuevamente.');
+        return;
+      }
+
+      router.replace('/(app)');
+    } catch {
+      setError('Ocurrió un problema inesperado. Intenta nuevamente.');
     }
   }
 
   return (
-    <View className="gap-6">
-      <Card className="border-border/0 sm:border-border shadow-none sm:shadow-sm sm:shadow-black/5">
-        <CardHeader>
-          <CardTitle className="text-center text-xl sm:text-left">Sign in to your app</CardTitle>
-          <CardDescription className="text-center sm:text-left">
-            Welcome back! Please sign in to continue
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="gap-6">
-          <View className="gap-6">
-            <View className="gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onBlur, onChange, value } }) => (
-                  <Input
-                    id="email"
-                    placeholder="m@example.com"
-                    keyboardType="email-address"
-                    autoComplete="email"
-                    autoCapitalize="none"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    onSubmitEditing={onEmailSubmitEditing}
-                    returnKeyType="next"
-                    submitBehavior="submit"
-                  />
-                )}
+    <View className="gap-7 pb-4">
+      <View className="gap-3">
+        <Text className="text-foreground text-3xl font-extrabold tracking-tight">
+          Qué bueno verte
+        </Text>
+        <Text className="text-muted-foreground text-base leading-6">
+          Inicia sesión para seguir llevando el control de tu negocio.
+        </Text>
+      </View>
+
+      <View className="gap-5">
+        <View className="gap-2">
+          <Label htmlFor="email">Correo electrónico</Label>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onBlur, onChange, value } }) => (
+              <Input
+                id="email"
+                placeholder="tu@correo.com"
+                className="h-14 rounded-xl px-4"
+                keyboardType="email-address"
+                autoComplete="email"
+                autoCapitalize="none"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                onSubmitEditing={onEmailSubmitEditing}
+                returnKeyType="next"
+                submitBehavior="submit"
               />
-              {errors.email ? (
-                <Text className="text-destructive text-sm">{errors.email.message}</Text>
-              ) : null}
-            </View>
-            <View className="gap-1.5">
-              <View className="flex-row items-center">
-                <Label htmlFor="password">Password</Label>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="web:h-fit ml-auto h-4 px-1 py-0 sm:h-4"
-                  onPress={() => {
-                    // Password recovery is out of scope for this change.
-                  }}>
-                  <Text className="leading-4 font-normal">Forgot your password?</Text>
-                </Button>
-              </View>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onBlur, onChange, value } }) => (
-                  <Input
-                    ref={passwordInputRef}
-                    id="password"
-                    secureTextEntry
-                    returnKeyType="send"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    onSubmitEditing={handleSubmit(onSubmit)}
-                  />
-                )}
-              />
-              {errors.password ? (
-                <Text className="text-destructive text-sm">{errors.password.message}</Text>
-              ) : null}
-            </View>
-            {error ? <Text className="text-destructive text-sm">{error}</Text> : null}
-            <Button className="w-full" onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
-              <Text>{isSubmitting ? 'Signing in...' : 'Continue'}</Text>
-            </Button>
+            )}
+          />
+          {errors.email ? (
+            <Text className="text-destructive text-sm">{errors.email.message}</Text>
+          ) : null}
+        </View>
+        <View className="gap-2">
+          <View className="min-h-6 flex-row items-center">
+            <Label htmlFor="password">Contraseña</Label>
           </View>
-          <Text className="text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Pressable onPress={() => router.push('/(auth)/sign-up')}>
-              <Text className="text-sm underline underline-offset-4">Sign up</Text>
-            </Pressable>
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onBlur, onChange, value } }) => (
+              <Input
+                ref={passwordInputRef}
+                id="password"
+                className="h-14 rounded-xl px-4"
+                placeholder="Tu contraseña"
+                secureTextEntry
+                autoComplete="current-password"
+                returnKeyType="send"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                onSubmitEditing={handleSubmit(onSubmit)}
+              />
+            )}
+          />
+          {errors.password ? (
+            <Text className="text-destructive text-sm">{errors.password.message}</Text>
+          ) : null}
+        </View>
+        {error ? (
+          <Text className="text-destructive" accessibilityLiveRegion="polite">
+            {error}
           </Text>
-          <View className="flex-row items-center">
-            <Separator className="flex-1" />
-            <Text className="text-muted-foreground px-4 text-sm">or</Text>
-            <Separator className="flex-1" />
-          </View>
-          <SocialConnections />
-        </CardContent>
-      </Card>
+        ) : null}
+        <Button
+          size="lg"
+          className="h-14 w-full rounded-xl"
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          accessibilityLabel={isSubmitting ? 'Iniciando sesión' : 'Iniciar sesión'}>
+          <Text className="text-base font-semibold">
+            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          </Text>
+        </Button>
+      </View>
+
+      <View className="flex-row items-center">
+        <Separator className="flex-1" />
+        <Text className="text-muted-foreground px-4 text-sm">o continúa con</Text>
+        <Separator className="flex-1" />
+      </View>
+      <SocialConnections />
+
+      <View className="flex-row items-center justify-center gap-1">
+        <Text className="text-muted-foreground text-sm">¿No tienes una cuenta?</Text>
+        <Pressable
+          className="min-h-11 justify-center px-2"
+          onPress={() => router.push('/(auth)/sign-up')}
+          accessibilityRole="button">
+          <Text className="text-primary text-sm font-semibold">Regístrate</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

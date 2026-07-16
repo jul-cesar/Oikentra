@@ -1,10 +1,15 @@
+import { AuthScreenShell } from '@/components/auth/auth-screen-shell';
 import { SignInForm } from '@/components/sign-in-form';
-import { View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function SignInScreen() {
+  const router = useRouter();
+
   return (
-    <View className="flex-1 items-center justify-center p-4">
+    <AuthScreenShell
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))}
+      contentContainerClassName="gap-8">
       <SignInForm />
-    </View>
+    </AuthScreenShell>
   );
 }

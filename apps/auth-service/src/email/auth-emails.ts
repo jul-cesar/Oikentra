@@ -1,4 +1,5 @@
 import { sendAuthEmail } from './resend-email-service'
+import { config } from '../config/config'
 
 function escapeHtml(value: string) {
   return value
@@ -23,26 +24,29 @@ function actionEmailHtml({
   return `
     <p>${escapeHtml(description)}</p>
     <p><a href="${safeUrl}">${escapeHtml(actionLabel)}</a></p>
-    <p>If the button does not work, copy and paste this link into your browser:</p>
+    <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
     <p><a href="${safeUrl}">${safeUrl}</a></p>
-    <p>If you did not request this, you can ignore this email.</p>
+    <p>Si no solicitaste esto, puedes ignorar este correo.</p>
   `
 }
 
 export function sendVerificationEmail({
   to,
-  url,
+  token,
 }: {
   to: string
-  url: string
+  token: string
 }) {
+  const verificationUrl = new URL('/verificar-correo', config.webUrl)
+  verificationUrl.hash = new URLSearchParams({ token }).toString()
+
   return sendAuthEmail({
     to,
-    subject: 'Verify your Oikentra email address',
+    subject: 'Confirma tu correo de Oikentra',
     html: actionEmailHtml({
-      actionLabel: 'Verify email address',
-      description: 'Please verify your email address to finish setting up your Oikentra account.',
-      url,
+      actionLabel: 'Confirmar correo',
+      description: 'Confirma tu correo para terminar de crear tu cuenta de Oikentra.',
+      url: verificationUrl.toString(),
     }),
   })
 }
@@ -56,10 +60,10 @@ export function sendPasswordResetEmail({
 }) {
   return sendAuthEmail({
     to,
-    subject: 'Reset your Oikentra password',
+    subject: 'Restablece tu contraseña de Oikentra',
     html: actionEmailHtml({
-      actionLabel: 'Reset password',
-      description: 'Use this secure link to reset your Oikentra password.',
+      actionLabel: 'Restablecer contraseña',
+      description: 'Usa este enlace seguro para restablecer tu contraseña de Oikentra.',
       url,
     }),
   })

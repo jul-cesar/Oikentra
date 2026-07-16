@@ -6,7 +6,6 @@ import { config } from './config/config'
 import { db } from './db/client'
 import { sendPasswordResetEmail, sendVerificationEmail } from './email/auth-emails'
 
-
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -26,10 +25,11 @@ export const auth = betterAuth({
   emailVerification: {
     expiresIn: 3600,
     sendOnSignUp: true,
-    sendVerificationEmail: async ({ user, url }) => {
+    autoSignInAfterVerification: false,
+    sendVerificationEmail: async ({ user, token }) => {
       await sendVerificationEmail({
         to: user.email,
-        url,
+        token,
       })
     },
   },
@@ -45,6 +45,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     config.betterAuthUrl,
+    config.webUrl,
     'oikentra://',
     'oikentra://auth/verify',
     'oikentra://*',

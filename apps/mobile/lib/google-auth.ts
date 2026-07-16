@@ -53,17 +53,17 @@ export interface GoogleAuthResult {
 
 export async function signInWithGoogle(): Promise<GoogleAuthResult> {
   if (Platform.OS === 'web') {
-    throw new GoogleAuthError('Native Google Sign-In is not available on web.', {
+    throw new GoogleAuthError('El inicio de sesión con Google no está disponible en la web.', {
       recoverable: false,
       code: 'NOT_AVAILABLE_ON_WEB',
     });
   }
 
   if (!isConfigured()) {
-    throw new GoogleAuthError(
-      'Google Sign-In is not configured. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.',
-      { recoverable: false, code: 'NOT_CONFIGURED' }
-    );
+    throw new GoogleAuthError('El inicio de sesión con Google no está configurado.', {
+      recoverable: false,
+      code: 'NOT_CONFIGURED',
+    });
   }
 
   try {
@@ -72,7 +72,7 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     const response = await GoogleSignin.signIn();
 
     if (!isSuccessResponse(response)) {
-      throw new GoogleAuthError('Google Sign-In was not completed.', {
+      throw new GoogleAuthError('No se completó el inicio de sesión con Google.', {
         recoverable: true,
         code: 'INCOMPLETE',
       });
@@ -80,7 +80,7 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
 
     const idToken = response.data.idToken;
     if (!idToken) {
-      throw new GoogleAuthError('Google Sign-In did not return an ID token.', {
+      throw new GoogleAuthError('Google no devolvió una credencial válida.', {
         recoverable: false,
         code: 'MISSING_ID_TOKEN',
       });
@@ -94,29 +94,29 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
 
     if (isErrorWithCode(error)) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        throw new GoogleAuthError('Google Sign-In was cancelled.', {
+        throw new GoogleAuthError('Se canceló el inicio de sesión con Google.', {
           recoverable: true,
           code: error.code,
         });
       }
       if (error.code === statusCodes.IN_PROGRESS) {
-        throw new GoogleAuthError('Google Sign-In is already in progress.', {
+        throw new GoogleAuthError('Ya hay un inicio de sesión con Google en curso.', {
           recoverable: true,
           code: error.code,
         });
       }
       if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        throw new GoogleAuthError('Google Play Services are not available.', {
+        throw new GoogleAuthError('Google Play Services no está disponible.', {
           recoverable: true,
           code: error.code,
         });
       }
-      throw new GoogleAuthError(error.message ?? 'Google Sign-In failed.', {
+      throw new GoogleAuthError(error.message ?? 'No pudimos iniciar sesión con Google.', {
         recoverable: true,
         code: error.code,
       });
     }
 
-    throw new GoogleAuthError('Google Sign-In failed.', { recoverable: true });
+    throw new GoogleAuthError('No pudimos iniciar sesión con Google.', { recoverable: true });
   }
 }

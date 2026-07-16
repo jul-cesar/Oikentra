@@ -1,17 +1,11 @@
 import '@/global.css';
 
-import { authClient } from '@/lib/auth-client';
+import { authClient, persistAuthCookie } from '@/lib/auth-client';
 import { configureGoogleSignIn } from '@/lib/google-auth';
 import { NAV_THEME } from '@/lib/theme';
 import { PortalHost } from '@rn-primitives/portal';
 import { Text } from '@/components/ui/text';
-import {
-  Redirect,
-  Stack,
-  useRootNavigationState,
-  useRouter,
-  useSegments,
-} from 'expo-router';
+import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { ThemeProvider } from 'expo-router/react-navigation';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
@@ -31,10 +25,10 @@ function isValidAuthCallback(url: string): boolean {
 }
 
 function isSupportedAuthPath(path: string): boolean {
-  return path === 'verify';
+  return path === 'verify' || path === 'sign-in';
 }
 
-function handleAuthUrl(url: string, navigate: (href: string) => void): boolean {
+async function handleAuthUrl(url: string, navigate: (href: string) => void): Promise<boolean> {
   if (!isValidAuthCallback(url)) {
     return false;
   }
@@ -46,11 +40,34 @@ function handleAuthUrl(url: string, navigate: (href: string) => void): boolean {
     return false;
   }
 
+  if (path === 'sign-in') {
+    navigate('/(auth)/sign-in');
+    return true;
+  }
+
   const query = parsed.queryParams as Record<string, string | undefined>;
   const token = typeof query.token === 'string' ? query.token : undefined;
-  const params = token ? `?token=${encodeURIComponent(token)}` : '';
+  const callbackError = typeof query.error === 'string' ? query.error : undefined;
+  const email = typeof query.email === 'string' ? query.email : undefined;
+  const verified = typeof query.verified === 'string' ? query.verified : undefined;
+  const cookie = typeof query.cookie === 'string' ? query.cookie : undefined;
 
-  navigate(`/(auth)/verify${params}`);
+  if (cookie) {
+    try {
+      await persistAuthCookie(cookie);
+    } catch {
+      // The verification screen offers sign-in recovery if the session cannot be restored.
+    }
+  }
+
+  const params = new URLSearchParams();
+  if (token) params.set('token', token);
+  if (callbackError) params.set('error', callbackError);
+  if (email) params.set('email', email);
+  if (verified) params.set('verified', verified);
+  const queryString = params.toString();
+
+  navigate(`/(auth)/verify${queryString ? `?${queryString}` : ''}`);
   return true;
 }
 
@@ -94,29 +111,37 @@ export default function RootLayout() {
       return;
     }
 
-    handleAuthUrl(initialUrl, (href) =>
-      router.navigate(href as Parameters<typeof router.navigate>[0])
-    );
-    setInitialUrlState((current) => ({ ...current, url: null }));
+    async function navigateFromAuthUrl() {
+      await handleAuthUrl(initialUrl as string, (href) =>
+        router.navigate(href as Parameters<typeof router.navigate>[0])
+      );
+      setInitialUrlState((current) => ({ ...current, url: null }));
+    }
+
+    void navigateFromAuthUrl();
   }, [initialUrl, initialUrlResolved, rootNavigationState?.key, router]);
 
   const inAuthGroup = segments[0] === '(auth)';
   const isVerificationRoute = inAuthGroup && segments[1] === 'verify';
 
+  React.useEffect(() => {
+    if (isPending || !initialUrlResolved) return;
+
+    if (session && inAuthGroup && !isVerificationRoute) {
+      router.replace('/(app)');
+    }
+  }, [inAuthGroup, initialUrlResolved, isPending, isVerificationRoute, router, session]);
+
   return (
     <ThemeProvider value={NAV_THEME[theme ?? 'light']}>
       <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
-      <Stack />
+      <Stack screenOptions={{ headerShown: false }} />
       <PortalHost />
       {isPending || !initialUrlResolved ? (
         <View className="absolute inset-0 items-center justify-center">
           <ActivityIndicator />
-          <Text className="text-muted-foreground mt-4 text-sm">Loading session...</Text>
+          <Text className="text-muted-foreground mt-4 text-sm">Cargando sesión...</Text>
         </View>
-      ) : session && inAuthGroup && !isVerificationRoute ? (
-        <Redirect href="/(app)" />
-      ) : !session && !inAuthGroup && !initialUrl ? (
-        <Redirect href="/(auth)/sign-in" />
       ) : null}
     </ThemeProvider>
   );

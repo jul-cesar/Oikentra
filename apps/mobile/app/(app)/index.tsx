@@ -32,14 +32,14 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 items-center justify-center gap-6 p-4">
-      <Text variant="h2">Protected Screen</Text>
+      <Text variant="h2">Pantalla protegida</Text>
       <View className="gap-2">
-        <Text variant="muted">Name: {session.user.name ?? 'N/A'}</Text>
-        <Text variant="muted">Email: {session.user.email}</Text>
-        <Text variant="muted">Session ID: {session.session.id}</Text>
+        <Text variant="muted">Nombre: {session.user.name ?? 'No disponible'}</Text>
+        <Text variant="muted">Correo: {session.user.email}</Text>
+        <Text variant="muted">ID de sesión: {session.session.id}</Text>
       </View>
       <Button onPress={handleSignOut} disabled={isSigningOut} className="w-full">
-        <Text>{isSigningOut ? 'Signing out...' : 'Sign out'}</Text>
+        <Text>{isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}</Text>
       </Button>
     </View>
   );

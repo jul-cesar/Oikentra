@@ -5,6 +5,7 @@ const requiredEnvVars = [
   'GOOGLE_CLIENT_SECRET',
   'RESEND_API_KEY',
   'AUTH_EMAIL_FROM',
+  'WEB_URL',
 ] as const
 
 function readRequiredEnv(name: (typeof requiredEnvVars)[number]) {
@@ -22,11 +23,18 @@ function readOptionalEnv(name: string) {
 }
 
 const betterAuthUrl = readRequiredEnv('BETTER_AUTH_URL')
+const webUrl = readRequiredEnv('WEB_URL')
 
 try {
   new URL(betterAuthUrl)
 } catch {
   throw new Error('BETTER_AUTH_URL must be a valid URL')
+}
+
+try {
+  new URL(webUrl)
+} catch {
+  throw new Error('WEB_URL must be a valid URL')
 }
 
 export const config = {
@@ -38,4 +46,5 @@ export const config = {
   googleIosClientId: readOptionalEnv('GOOGLE_IOS_CLIENT_ID'),
   googleAndroidClientId: readOptionalEnv('GOOGLE_ANDROID_CLIENT_ID'),
   resendApiKey: readRequiredEnv('RESEND_API_KEY'),
+  webUrl,
 }

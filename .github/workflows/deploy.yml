@@ -38,6 +38,8 @@ jobs:
               - 'apps/sync-service/**'
             reports:
               - 'apps/reports-service/**'
+            web:
+              - 'apps/web/**'
             shared:
               - 'packages/**'
               - 'package.json'
@@ -53,6 +55,7 @@ jobs:
           BUSINESS_CHANGED: ${{ steps.filter.outputs.business }}
           SYNC_CHANGED: ${{ steps.filter.outputs.sync }}
           REPORTS_CHANGED: ${{ steps.filter.outputs.reports }}
+          WEB_CHANGED: ${{ steps.filter.outputs.web }}
           SHARED_CHANGED: ${{ steps.filter.outputs.shared }}
           LOCKFILE_CHANGED: ${{ steps.filter.outputs.lockfile }}
         run: |
@@ -65,7 +68,7 @@ jobs:
             deploy_all=true
           fi
 
-          if [[ "$LOCKFILE_CHANGED" == "true" && "$AUTH_CHANGED" != "true" && "$BUSINESS_CHANGED" != "true" && "$SYNC_CHANGED" != "true" && "$REPORTS_CHANGED" != "true" && "$SHARED_CHANGED" != "true" ]]; then
+          if [[ "$LOCKFILE_CHANGED" == "true" && "$AUTH_CHANGED" != "true" && "$BUSINESS_CHANGED" != "true" && "$SYNC_CHANGED" != "true" && "$REPORTS_CHANGED" != "true" && "$WEB_CHANGED" != "true" && "$SHARED_CHANGED" != "true" ]]; then
             deploy_all=true
           fi
 
@@ -87,6 +90,11 @@ jobs:
           if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$REPORTS_CHANGED" == "true" ]]; then
             projects=$(jq -c '. + [{"name":"reports-service","package":"@oikentra/reports-service"}]' <<< "$projects")
             services=$(jq -c --arg image "ghcr.io/$owner/oikentra-reports-service" '. + [{"name":"reports-service","image":$image,"dockerfile":"apps/reports-service/Dockerfile"}]' <<< "$services")
+          fi
+
+          if [[ "$deploy_all" == "true" || "$SHARED_CHANGED" == "true" || "$WEB_CHANGED" == "true" ]]; then
+            projects=$(jq -c '. + [{"name":"web","package":"@oikentra/web"}]' <<< "$projects")
+            services=$(jq -c --arg image "ghcr.io/$owner/oikentra-web" '. + [{"name":"web","image":$image,"dockerfile":"apps/web/Dockerfile"}]' <<< "$services")
           fi
 
           echo "projects=$projects" >> "$GITHUB_OUTPUT"
@@ -186,12 +194,14 @@ jobs:
           BUSINESS_APPLICATION_ID: ${{ secrets.DOKPLOY_BUSINESS_APPLICATION_ID }}
           SYNC_APPLICATION_ID: ${{ secrets.DOKPLOY_SYNC_APPLICATION_ID }}
           REPORTS_APPLICATION_ID: ${{ secrets.DOKPLOY_REPORTS_APPLICATION_ID }}
+          WEB_APPLICATION_ID: ${{ secrets.DOKPLOY_WEB_APPLICATION_ID }}
         run: |
           case "${{ matrix.service.name }}" in
             auth-service) application_id="$AUTH_APPLICATION_ID" ;;
             business-service) application_id="$BUSINESS_APPLICATION_ID" ;;
             sync-service) application_id="$SYNC_APPLICATION_ID" ;;
             reports-service) application_id="$REPORTS_APPLICATION_ID" ;;
+            web) application_id="$WEB_APPLICATION_ID" ;;
             *) echo "Unknown service" >&2; exit 1 ;;
           esac
 

@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const signInSchema = z.object({
-  email: z.string().trim().email('Please enter a valid email address.'),
-  password: z.string().min(1, 'Password is required.'),
+  email: z.string().trim().email('Ingresa un correo electrónico válido.'),
+  password: z.string().min(1, 'La contraseña es obligatoria.'),
 });
 
 export const signUpSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required.'),
-  email: z.string().trim().email('Please enter a valid email address.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
+  name: z.string().trim().min(1, 'El nombre es obligatorio.'),
+  email: z.string().trim().email('Ingresa un correo electrónico válido.'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres.'),
 });
 
 export type SignInFormValues = z.infer<typeof signInSchema>;

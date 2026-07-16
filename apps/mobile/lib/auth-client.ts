@@ -1,5 +1,5 @@
 import { createAuthClient } from 'better-auth/react';
-import { expoClient } from '@better-auth/expo/client';
+import { expoClient, getSetCookie } from '@better-auth/expo/client';
 import * as SecureStore from 'expo-secure-store';
 
 const REQUIRED_ENV_VARS = [
@@ -11,6 +11,9 @@ const OPTIONAL_ENV_VARS = [
   'EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID',
   'EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
 ] as const;
+
+const AUTH_STORAGE_PREFIX = 'oikentra';
+const AUTH_COOKIE_STORAGE_KEY = `${AUTH_STORAGE_PREFIX}_cookie`;
 
 function readEnv(name: string): string | undefined {
   return (process.env as Record<string, string | undefined>)[name]?.trim();
@@ -42,11 +45,17 @@ export const authClient = createAuthClient({
   plugins: [
     expoClient({
       scheme: 'oikentra',
-      storagePrefix: 'oikentra',
+      storagePrefix: AUTH_STORAGE_PREFIX,
       storage: SecureStore,
     }),
   ],
 });
+
+export async function persistAuthCookie(setCookieHeader: string): Promise<void> {
+  const currentCookie = SecureStore.getItem(AUTH_COOKIE_STORAGE_KEY) ?? undefined;
+  const nextCookie = getSetCookie(setCookieHeader, currentCookie);
+  await SecureStore.setItemAsync(AUTH_COOKIE_STORAGE_KEY, nextCookie);
+}
 
 export const {
   useSession,
