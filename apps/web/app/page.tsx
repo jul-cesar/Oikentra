@@ -1,7 +1,19 @@
+import { SiteHeader } from "@/components/landing/site-header"
+import { Hero } from "@/components/landing/hero"
+import { Features } from "@/components/landing/footer"
+import { HowItWorks } from "@/components/landing/how-it-works"
+import { CtaFooter } from "@/components/landing/cta-footer"
+
 export default function Home() {
   return (
-    <main className="grid min-h-svh place-items-center bg-background px-6">
-      <p className="text-2xl font-semibold tracking-tight text-foreground">Oikentra</p>
-    </main>
-  );
+    <div className="min-h-svh bg-background text-foreground">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <Features />
+        <HowItWorks />
+        <CtaFooter />
+      </main>
+    </div>
+  )
 }
