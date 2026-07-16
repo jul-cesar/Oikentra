@@ -18,6 +18,15 @@ function formatCooldown(seconds: number) {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+async function hasActiveSession() {
+  try {
+    const { data } = await authClient.getSession();
+    return Boolean(data?.session);
+  } catch {
+    return false;
+  }
+}
+
 export default function VerifyScreen() {
   const {
     token,
@@ -37,7 +46,7 @@ export default function VerifyScreen() {
   const isVerifiedCallback = verified === '1' && !normalizedCallbackError;
   const [status, setStatus] = React.useState<VerificationStatus>(() => {
     if (normalizedCallbackError) return 'error';
-    if (isVerifiedCallback) return 'verifying';
+    if (isVerifiedCallback) return 'success';
     if (token) return 'verifying';
     return 'pending';
   });
@@ -45,13 +54,12 @@ export default function VerifyScreen() {
     if (normalizedCallbackError) {
       return 'El enlace no es válido o ya venció. Solicita uno nuevo para continuar.';
     }
-    if (isVerifiedCallback) return 'Estamos preparando tu cuenta.';
+    if (isVerifiedCallback) return 'Tu correo quedó confirmado. Inicia sesión para continuar.';
     if (token) return 'Estamos comprobando tu enlace.';
     return 'Abre el enlace que te enviamos. Puede tardar un par de minutos en llegar.';
   });
   const [isResending, setIsResending] = React.useState(false);
   const [hasVerifiedSession, setHasVerifiedSession] = React.useState(false);
-  const [needsSignIn, setNeedsSignIn] = React.useState(false);
   const [cooldown, setCooldown] = React.useState(sent === '1' ? RESEND_COOLDOWN_SECONDS : 0);
   const resendInFlightRef = React.useRef(false);
 
@@ -66,25 +74,13 @@ export default function VerifyScreen() {
 
     let cancelled = false;
 
-    async function prepareVerifiedSession() {
-      const { data } = await authClient.getSession();
-      if (cancelled) return;
-
-      if (data?.session && (!email || data.user.email === email)) {
+    async function checkVerifiedSession() {
+      if (await hasActiveSession() && !cancelled) {
         setHasVerifiedSession(true);
-        setStatus('success');
-        setMessage('Tu correo quedó confirmado y tu cuenta está preparada.');
-        return;
       }
-
-      setNeedsSignIn(true);
-      setStatus('error');
-      setMessage(
-        'Tu correo fue confirmado, pero no pudimos abrir tu sesión. Inicia sesión para continuar.'
-      );
     }
 
-    void prepareVerifiedSession();
+    void checkVerifiedSession();
 
     return () => {
       cancelled = true;
@@ -110,21 +106,13 @@ export default function VerifyScreen() {
           return;
         }
 
-        const { data } = await authClient.getSession();
-        if (cancelled) return;
+        setStatus('success');
+        setMessage('Tu correo quedó confirmado. Inicia sesión para continuar.');
 
-        if (data?.session && (!email || data.user.email === email)) {
+        if (await hasActiveSession()) {
+          if (cancelled) return;
           setHasVerifiedSession(true);
-          setStatus('success');
-          setMessage('Tu correo quedó confirmado y tu cuenta está preparada.');
-          return;
         }
-
-        setNeedsSignIn(true);
-        setStatus('error');
-        setMessage(
-          'Tu correo fue confirmado, pero no pudimos abrir tu sesión. Inicia sesión para continuar.'
-        );
       } catch {
         if (!cancelled) {
           setStatus('error');
@@ -186,16 +174,13 @@ export default function VerifyScreen() {
     normalizedCallbackError === 'invalid_token' ||
     normalizedCallbackError === 'token_expired' ||
     normalizedCallbackError === 'expired_token';
-  const requiresSignIn = needsSignIn && status === 'error';
   const title =
     status === 'success'
-      ? 'Ya estás listo'
+      ? 'Correo confirmado'
       : status === 'error'
-        ? requiresSignIn
-          ? 'Inicia sesión para continuar'
-          : isInvalidLink
-            ? 'El enlace venció'
-            : 'No pudimos verificarte'
+        ? isInvalidLink
+          ? 'El enlace venció'
+          : 'No pudimos verificarte'
         : 'Confirma tu correo';
   const StatusIcon = status === 'success' ? Check : status === 'error' ? AlertCircle : Mail;
 
@@ -245,7 +230,7 @@ export default function VerifyScreen() {
             accessibilityLabel="Continuar a Oikentra">
             <Text className="text-base font-semibold">Continuar</Text>
           </Button>
-        ) : requiresSignIn ? (
+        ) : status === 'success' ? (
           <Button
             size="lg"
             className="h-14 w-full rounded-xl"

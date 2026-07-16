@@ -144,7 +144,7 @@ export function EmailVerification() {
           <CardContent className="px-7 pb-8">
             {isSuccess ? (
               <a
-                href="oikentra://auth/sign-in"
+                href="oikentra://auth/verify?verified=1"
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 Abrir Oikentra
