@@ -1,6 +1,6 @@
 "use client"
 
-import { startTransition, useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   Alert02Icon,
   CheckmarkCircle02Icon,
@@ -10,6 +10,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,67 +20,143 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-type VerificationState = "loading" | "ready" | "submitting" | "success" | "error"
+const RESEND_COOLDOWN_SECONDS = 300
 
-export function EmailVerification() {
-  const [token, setToken] = useState<string | null>(null)
-  const [state, setState] = useState<VerificationState>("loading")
-  const [message, setMessage] = useState("")
+type VerificationStatus = "loading" | "pending" | "verifying" | "success" | "error"
+
+type EmailVerificationProps = {
+  token?: string | null
+  email?: string | null
+  sent?: boolean
+  callbackError?: string | null
+  verified?: boolean
+}
+
+function formatCooldown(seconds: number) {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+}
+
+function normalizeCallbackError(error: string | null | undefined): string | null {
+  if (!error) return null
+  return error.toLowerCase()
+}
+
+export function EmailVerification({
+  token,
+  email,
+  sent = false,
+  callbackError,
+  verified = false,
+}: EmailVerificationProps) {
+  const normalizedError = normalizeCallbackError(callbackError)
+  const isInvalidLink =
+    normalizedError === "invalid_token" ||
+    normalizedError === "token_expired" ||
+    normalizedError === "expired_token"
+
+  const [status, setStatus] = useState<VerificationStatus>(() => {
+    if (normalizedError) return "error"
+    if (verified) return "success"
+    if (token) return "verifying"
+    return "pending"
+  })
+  const [message, setMessage] = useState(() => {
+    if (normalizedError) {
+      return "El enlace no es válido o ya venció. Solicita uno nuevo para continuar."
+    }
+    if (verified) return "Tu correo quedó confirmado. Inicia sesión para continuar."
+    if (token) return "Estamos comprobando tu enlace."
+    return "Abre el enlace que te enviamos. Puede tardar un par de minutos en llegar."
+  })
+  const [isResending, setIsResending] = useState(false)
+  const [cooldown, setCooldown] = useState(sent ? RESEND_COOLDOWN_SECONDS : 0)
+  const resendInFlightRef = useRef(false)
+  const hasVerifiedRef = useRef(false)
 
   useEffect(() => {
-    const fragment = new URLSearchParams(window.location.hash.slice(1))
-    const verificationToken = fragment.get("token")
+    if (!token || normalizedError || hasVerifiedRef.current) return
 
-    window.history.replaceState(null, "", window.location.pathname)
+    hasVerifiedRef.current = true
+    let cancelled = false
 
-    if (!verificationToken) {
-      startTransition(() => {
-        setMessage("Este enlace no contiene la información necesaria para confirmar tu correo.")
-        setState("error")
-      })
-      return
+    async function verifyToken() {
+      try {
+        const { error } = await authClient.verifyEmail({
+          query: { token: token as string },
+        })
+
+        if (cancelled) return
+
+        if (error) {
+          setStatus("error")
+          setMessage("El enlace no es válido o ya venció. Solicita uno nuevo para continuar.")
+          return
+        }
+
+        setStatus("success")
+        setMessage("Tu correo quedó confirmado. Inicia sesión para continuar.")
+      } catch {
+        if (!cancelled) {
+          setStatus("error")
+          setMessage("No pudimos comprobar el enlace. Solicita uno nuevo para continuar.")
+        }
+      }
     }
 
-    startTransition(() => {
-      setToken(verificationToken)
-      setState("ready")
-    })
-  }, [])
+    void verifyToken()
 
-  async function confirmEmail() {
-    if (!token || state === "submitting") return
+    return () => {
+      cancelled = true
+      hasVerifiedRef.current = false
+    }
+  }, [token, normalizedError])
 
-    setState("submitting")
-    setMessage("")
+  useEffect(() => {
+    if (cooldown === 0) return
+
+    const interval = setInterval(() => {
+      setCooldown((current) => Math.max(0, current - 1))
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [cooldown])
+
+  async function handleResend() {
+    if (!email || cooldown > 0 || resendInFlightRef.current) return
+
+    resendInFlightRef.current = true
+    setIsResending(true)
+    setStatus("pending")
+    setMessage("Estamos enviando un nuevo enlace a tu correo.")
 
     try {
-      const response = await fetch("/api/verificar-correo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+      const { error: resendError } = await authClient.sendVerificationEmail({
+        email: email as string,
+        callbackURL: `${window.location.origin}/verificar-correo?verified=1`,
       })
 
-      if (!response.ok) {
-        setMessage(
-          response.status === 429
-            ? "Se hicieron demasiados intentos. Espera unos minutos y vuelve a intentarlo."
-            : "El enlace no es válido o ya venció. Solicita uno nuevo desde Oikentra.",
-        )
-        setState("error")
+      if (resendError) {
+        setStatus("error")
+        setMessage("No pudimos reenviar el correo. Intenta nuevamente.")
         return
       }
 
-      setToken(null)
-      setState("success")
+      setCooldown(RESEND_COOLDOWN_SECONDS)
+      setMessage("Te enviamos un nuevo enlace. Revisa también la carpeta de spam.")
     } catch {
-      setMessage("No pudimos conectar con Oikentra. Revisa tu conexión e intenta nuevamente.")
-      setState("error")
+      setStatus("error")
+      setMessage("No pudimos reenviar el correo. Intenta nuevamente.")
+    } finally {
+      resendInFlightRef.current = false
+      setIsResending(false)
     }
   }
 
-  const isSuccess = state === "success"
-  const isError = state === "error"
-  const isBusy = state === "loading" || state === "submitting"
+  const isBusy = status === "verifying" || isResending
+  const isSuccess = status === "success"
+  const isError = status === "error"
 
   const statusIcon = isSuccess
     ? CheckmarkCircle02Icon
@@ -88,6 +165,14 @@ export function EmailVerification() {
       : isBusy
         ? Loading03Icon
         : Mail01Icon
+
+  const title = isSuccess
+    ? "Correo confirmado"
+    : isError
+      ? isInvalidLink
+        ? "El enlace venció"
+        : "No pudimos confirmar tu correo"
+      : "Confirma tu correo"
 
   return (
     <main className="relative grid min-h-svh place-items-center overflow-hidden bg-background px-5 py-10">
@@ -125,15 +210,14 @@ export function EmailVerification() {
             </span>
             <div className="space-y-2">
               <CardTitle className="text-2xl font-semibold tracking-tight text-balance">
-                {isSuccess
-                  ? "Correo confirmado"
-                  : isError
-                    ? "No pudimos confirmar tu correo"
-                    : "Confirma tu correo"}
+                {title}
               </CardTitle>
+              {email && status !== "success" ? (
+                <p className="text-center text-base font-semibold text-foreground">{email}</p>
+              ) : null}
               <CardDescription className="text-pretty text-base leading-6">
                 {isSuccess
-                  ? "Tu cuenta está lista. Vuelve a Oikentra e inicia sesión para continuar."
+                  ? message
                   : isError
                     ? message
                     : "Confirma que esta dirección de correo te pertenece para terminar de crear tu cuenta."}
@@ -143,21 +227,40 @@ export function EmailVerification() {
 
           <CardContent className="px-7 pb-8">
             {isSuccess ? (
-              <a
-                href="oikentra://auth/verify?verified=1"
-                className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                Abrir Oikentra
-              </a>
-            ) : (
+              <div className="flex flex-col gap-3">
+                <a
+                  href="oikentra://auth/verify?verified=1"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  Abrir Oikentra
+                </a>
+                <a
+                  href="/login"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-border bg-background px-5 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  Iniciar sesión
+                </a>
+              </div>
+            ) : email ? (
               <Button
                 size="lg"
                 className="h-12 w-full rounded-xl text-sm font-semibold"
-                onClick={confirmEmail}
-                disabled={!token || state === "loading" || state === "submitting"}
+                onClick={handleResend}
+                disabled={isBusy || cooldown > 0}
               >
-                {state === "submitting" ? "Confirmando..." : "Confirmar correo"}
+                {isResending
+                  ? "Enviando..."
+                  : cooldown > 0
+                    ? `Reenviar en ${formatCooldown(cooldown)}`
+                    : "Reenviar correo"}
               </Button>
+            ) : (
+              <a
+                href="/registro"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                Volver al registro
+              </a>
             )}
 
             <p
