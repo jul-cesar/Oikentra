@@ -5,14 +5,14 @@ function readEnv(name: string): string | undefined {
 }
 
 function resolveAuthBaseUrl(): string {
-  const envUrl = readEnv("NEXT_PUBLIC_BETTER_AUTH_URL");
+  const envUrl = readEnv("AUTH_BASE_URL");
   if (envUrl) {
     return envUrl.replace(/\/$/, "");
   }
 
   if (readEnv("NODE_ENV") === "production") {
     throw new Error(
-      "[web-auth] Missing NEXT_PUBLIC_BETTER_AUTH_URL. Set it before a production build."
+      "[web-auth] Missing AUTH_BASE_URL. Set it before a production build."
     );
   }
 

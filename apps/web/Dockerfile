@@ -19,6 +19,13 @@ FROM base AS builder
 
 WORKDIR /app
 
+ARG AUTH_BASE_URL
+ENV AUTH_BASE_URL=$AUTH_BASE_URL
+ARG BUSINESS_BASE_URL
+ENV BUSINESS_BASE_URL=$BUSINESS_BASE_URL
+ARG REPORTS_BASE_URL
+ENV REPORTS_BASE_URL=$REPORTS_BASE_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
