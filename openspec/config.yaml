@@ -1,0 +1,41 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: Monorepo (pnpm) with 6 apps — mobile (React Native/Expo), web (Next.js), auth-service, business-service, sync-service, reports-service (all Bun/Hono/TypeScript). Backend uses Drizzle ORM + PostgreSQL, Better Auth centralized in auth-service, Redis for cache/sessions. Deployed via Dokploy with Traefik gateway.
+  Architecture: Microservices with independent deployments. Mobile offline-first with SQLite. Service communication via HTTP internal endpoints. Business-service is domain authority. Reports-service read-only projections.
+  Testing: No test runner configured in any package. CI runs typecheck, lint (if present), test (skips if no script). Strict TDD: disabled (no runner detected).
+  Style: TypeScript strict, ESLint (Next.js config for web), Prettier (mobile), Zod for validation, structured logging with requestId propagation.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Reference affected microservices and data ownership boundaries
+    - Note offline-first implications for mobile changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Distinguish mobile offline vs online requirements
+    - Specify idempotency keys for mutating operations
+  design:
+    - Include sequence diagrams for cross-service flows
+    - Document architecture decisions with rationale
+    - Show data ownership and migration paths
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Mark tasks requiring cross-service coordination
+  apply:
+    guidelines:
+      - Follow existing code patterns per service
+      - Respect service boundaries (no cross-service DB access)
+      - Use internal HTTP contracts with X-Request-Id propagation
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+    - Verify main specs updated before archiving
