@@ -185,7 +185,9 @@ jobs:
             AUTH_BASE_URL=${{ vars.AUTH_BASE_URL }}
             NEXT_PUBLIC_AUTH_BASE_URL=${{ vars.AUTH_BASE_URL }}
             BUSINESS_BASE_URL=${{ vars.BUSINESS_BASE_URL }}
+            NEXT_PUBLIC_BUSINESS_BASE_URL=${{ vars.BUSINESS_BASE_URL }}
             REPORTS_BASE_URL=${{ vars.REPORTS_BASE_URL }}
+            NEXT_PUBLIC_REPORTS_BASE_URL=${{ vars.REPORTS_BASE_URL }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service.name }}
