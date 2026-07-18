@@ -6,6 +6,7 @@ WORKDIR /workspace
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/reports-service/package.json apps/reports-service/package.json
+COPY packages/http-logging/package.json packages/http-logging/package.json
 
 RUN pnpm install --filter @oikentra/reports-service --prod --frozen-lockfile
 
@@ -16,6 +17,8 @@ WORKDIR /workspace
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/reports-service/node_modules ./apps/reports-service/node_modules
 COPY apps/reports-service/package.json apps/reports-service/package.json
+COPY packages/http-logging/package.json packages/http-logging/package.json
+COPY packages/http-logging/src packages/http-logging/src
 COPY apps/reports-service/src apps/reports-service/src
 
 WORKDIR /workspace/apps/reports-service

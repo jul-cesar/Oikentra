@@ -6,6 +6,7 @@ WORKDIR /workspace
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/auth-service/package.json apps/auth-service/package.json
+COPY packages/http-logging/package.json packages/http-logging/package.json
 
 RUN pnpm install --filter @oikentra/auth-service --prod --frozen-lockfile
 
@@ -16,6 +17,8 @@ WORKDIR /workspace
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/auth-service/node_modules ./apps/auth-service/node_modules
 COPY apps/auth-service/package.json apps/auth-service/package.json
+COPY packages/http-logging/package.json packages/http-logging/package.json
+COPY packages/http-logging/src packages/http-logging/src
 COPY apps/auth-service/src apps/auth-service/src
 
 WORKDIR /workspace/apps/auth-service

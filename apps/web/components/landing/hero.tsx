@@ -1,5 +1,6 @@
 import { ArrowRight01Icon, ChartLineData02Icon, Tick02Icon, Wallet03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 
@@ -33,10 +34,10 @@ export function Hero() {
               size="lg"
               className="h-12 rounded-xl px-6 text-sm font-semibold"
               render={
-                <a href="#">
+                <Link href="/register">
                   Conocer Oikentra
                   <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-                </a>
+                </Link>
               }
             />
             <Button

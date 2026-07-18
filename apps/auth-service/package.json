@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@oikentra/http-logging": "workspace:*",
     "@better-auth/expo": "1.6.23",
     "better-auth": "^1.6.23",
     "drizzle-orm": "^0.45.2",

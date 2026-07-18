@@ -41,9 +41,18 @@ export function ForgotPasswordForm({
   async function onSubmit(values: ForgotPasswordFormValues) {
     setFormError(null)
 
+    const requestId = crypto.randomUUID()
+    const idempotencyKey = crypto.randomUUID()
+
     const result = await authClient.requestPasswordReset({
       email: values.email,
-      redirectTo: `${window.location.origin}/restablecer-contrasena`,
+       redirectTo: `${window.location.origin}/reset-password`,
+      fetchOptions: {
+        headers: {
+          "X-Request-Id": requestId,
+          "X-Idempotency-Key": idempotencyKey,
+        },
+      },
     }).catch(() => {
       setFormError("Ocurrió un problema inesperado. Intenta nuevamente.")
       return null

@@ -1,23 +1,20 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { ArrowLeft01Icon, CreditCardIcon, UserGroupIcon, WifiDisconnected02Icon } from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { LoginForm } from "@/components/login-form"
 import { OikentraLogo } from "../brand/oikentra-logo"
+import RegisterForm from "@/components/sign-up-form"
+
 
 
 export const metadata: Metadata = {
-  title: "Iniciar sesión — Oikentra",
-  description: "Entra a Oikentra para gestionar la caja, los clientes y los fiados de tu negocio.",
+  title: "Crea tu negocio — Oikentra",
+  description: "Crea tu cuenta en Oikentra y empieza a gestionar la caja, los clientes y los fiados de tu negocio.",
 }
 
-const chips = [
-  { icon: CreditCardIcon, label: "Caja al día" },
-  { icon: UserGroupIcon, label: "Clientes y fiados" },
+const benefits = ["Gratis para empezar", "Sin tarjeta de crédito", "Listo en 2 minutos"]
 
-]
-
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-5 py-10">
       {/* Fondo ambiental */}
@@ -27,8 +24,7 @@ export default function LoginPage() {
         <div
           className="absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(circle_at_center,black,transparent_72%)]"
           style={{
-            backgroundImage:
-              "radial-gradient(currentColor 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
             backgroundSize: "24px 24px",
             color: "var(--muted-foreground)",
             opacity: 0.08,
@@ -49,28 +45,29 @@ export default function LoginPage() {
           <OikentraLogo />
           <span className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Tu negocio, siempre bajo control
+            Empieza a ordenar tu negocio hoy
           </span>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-balance">
-            Bienvenido de nuevo
-          </h1>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-balance">Crea tu negocio</h1>
           <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground">
-            Ingresa para ver tu caja, tus clientes y los fiados del día.
+            Registra tu caja, tus clientes y sus fiados en un solo lugar.
           </p>
         </div>
 
         <div className="mt-8">
-          <LoginForm />
+          <RegisterForm />
         </div>
 
-        <ul className="mt-9 flex flex-wrap items-center justify-center gap-2">
-          {chips.map((chip) => (
-            <li
-              key={chip.label}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur"
-            >
-              <HugeiconsIcon icon={chip.icon} size={15} strokeWidth={1.8} className="text-primary" aria-hidden="true" />
-              {chip.label}
+        <ul className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          {benefits.map((benefit) => (
+            <li key={benefit} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <HugeiconsIcon
+                icon={CheckmarkCircle02Icon}
+                size={15}
+                strokeWidth={1.8}
+                className="text-primary"
+                aria-hidden="true"
+              />
+              {benefit}
             </li>
           ))}
         </ul>

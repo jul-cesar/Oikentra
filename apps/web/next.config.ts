@@ -2,10 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  async redirects() {
+    return [
+      { source: "/registro", destination: "/register", permanent: false },
+      { source: "/recuperar-contrasena", destination: "/forgot-password", permanent: false },
+      { source: "/restablecer-contrasena", destination: "/reset-password", permanent: false },
+      { source: "/verificar-correo", destination: "/verify-email", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {
-        source: "/verificar-correo",
+        source: "/verify-email",
         headers: [
           { key: "Cache-Control", value: "no-store" },
           { key: "Referrer-Policy", value: "no-referrer" },
@@ -14,7 +22,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/restablecer-contrasena",
+        source: "/reset-password",
         headers: [
           { key: "Cache-Control", value: "no-store" },
           { key: "Referrer-Policy", value: "no-referrer" },
