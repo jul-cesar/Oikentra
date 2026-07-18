@@ -1,10 +1,14 @@
 import { Hono } from 'hono'
 import type { Context } from 'hono'
+import type { RequestLogEnv } from '@oikentra/http-logging'
+import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
 
 import { auth } from './auth'
 import { checkDatabaseConnection } from './db/client'
 
-const app = new Hono()
+const app = new Hono<RequestLogEnv>()
+app.use('*', requestIdMiddleware())
+app.use('*', requestLoggerMiddleware('auth-service'))
 
 function liveResponse(c: Context) {
   return c.json({ status: 'ok', service: 'auth-service' })
@@ -27,8 +31,10 @@ app.get('/', (c) => {
 app.get('/api/auth/health/live', liveResponse)
 
 app.get('/internal/session/validate', async (c) => {
+  const headers = new Headers(c.req.raw.headers)
+  headers.set('X-Request-Id', c.get('requestId'))
   const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
+    headers,
   })
 
   if (!session) {
@@ -47,7 +53,16 @@ app.get('/internal/session/validate', async (c) => {
   return c.body(null, 204)
 })
 
-app.on(['GET', 'POST'], '/api/auth/*', (c) => auth.handler(c.req.raw))
+app.on(['GET', 'POST'], '/api/auth/*', (c) => {
+  const headers = new Headers(c.req.raw.headers)
+  headers.set('X-Request-Id', c.get('requestId'))
+  return auth.handler(new Request(c.req.raw, { headers }))
+})
+
+app.onError((error, c) => {
+  logError('auth-service', error, c, 500)
+  return c.json({ code: 'INTERNAL_SERVER_ERROR', message: 'An internal error occurred.' }, 500)
+})
 
 export default {
   port: Number(process.env.PORT ?? 3000),
