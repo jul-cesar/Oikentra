@@ -1,0 +1,13 @@
+{
+  "name": "@oikentra/http-logging",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "hono": "^4.12.28"
+  }
+}

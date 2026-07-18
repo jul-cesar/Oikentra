@@ -34,9 +34,28 @@ function json(body: object, status: number) {
 
 function requestId(request: Request) {
   const candidate = request.headers.get("x-request-id")?.trim();
-  return candidate && /^[A-Za-z0-9._:-]{1,128}$/.test(candidate)
+  return candidate && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(candidate)
     ? candidate
     : crypto.randomUUID();
+}
+
+function logProxy(fields: {
+  requestId: string;
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+  targetAvailability: "configured" | "missing" | "invalid";
+  upstreamStatus?: number;
+  errorCategory?: string;
+}) {
+  const level = fields.status >= 500 ? "error" : fields.status >= 400 ? "warn" : "info";
+  console[level](JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    service: "web-auth-proxy",
+    ...fields,
+  }));
 }
 
 function getSetCookies(headers: Headers) {
@@ -64,10 +83,38 @@ function getUpstreamUrl(baseUrl: string, path: string[], request: Request) {
 }
 
 async function proxy(request: Request, path: string[]) {
+  const startedAt = performance.now();
   const authBaseUrl = process.env.AUTH_BASE_URL?.trim().replace(/\/$/, "");
   const id = requestId(request);
+  const safePath = `/${path.map((segment) => encodeURIComponent(segment)).join("/")}`;
 
   if (!authBaseUrl) {
+    logProxy({
+      requestId: id,
+      method: request.method,
+      path: safePath,
+      status: 503,
+      durationMs: 0,
+      targetAvailability: "missing",
+      errorCategory: "AUTH_BASE_URL_MISSING",
+    });
+    return json({ code: "SERVICE_UNAVAILABLE", requestId: id }, 503);
+  }
+
+  let parsedBaseUrl: URL;
+  try {
+    parsedBaseUrl = new URL(authBaseUrl);
+    if (!/^https?:$/.test(parsedBaseUrl.protocol)) throw new Error("Unsupported protocol");
+  } catch {
+    logProxy({
+      requestId: id,
+      method: request.method,
+      path: safePath,
+      status: 503,
+      durationMs: 0,
+      targetAvailability: "invalid",
+      errorCategory: "AUTH_BASE_URL_INVALID",
+    });
     return json({ code: "SERVICE_UNAVAILABLE", requestId: id }, 503);
   }
 
@@ -81,7 +128,7 @@ async function proxy(request: Request, path: string[]) {
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
 
   try {
-    const upstream = await fetch(getUpstreamUrl(authBaseUrl, path, request), {
+     const upstream = await fetch(getUpstreamUrl(parsedBaseUrl.toString().replace(/\/$/, ""), path, request), {
       method: request.method,
       headers,
       body: hasBody ? await request.arrayBuffer() : undefined,
@@ -103,12 +150,47 @@ async function proxy(request: Request, path: string[]) {
       responseHeaders.append("Set-Cookie", makeWebCookie(cookie));
     }
 
-    return new Response(upstream.body, {
-      status: upstream.status,
+     if (upstream.status >= 500) {
+       logProxy({
+         requestId: id,
+         method: request.method,
+         path: safePath,
+         status: 502,
+         durationMs: Math.round((performance.now() - startedAt) * 100) / 100,
+         targetAvailability: "configured",
+         upstreamStatus: upstream.status,
+         errorCategory: "UPSTREAM_SERVER_ERROR",
+       });
+       return json({ code: "UPSTREAM_ERROR", requestId: id }, 502);
+     }
+
+     logProxy({
+       requestId: id,
+       method: request.method,
+       path: safePath,
+       status: upstream.status,
+       durationMs: Math.round((performance.now() - startedAt) * 100) / 100,
+       targetAvailability: "configured",
+       upstreamStatus: upstream.status,
+     });
+
+     return new Response(upstream.body, {
+       status: upstream.status,
       statusText: upstream.statusText,
       headers: responseHeaders,
     });
-  } catch {
+   } catch (error) {
+     logProxy({
+       requestId: id,
+       method: request.method,
+       path: safePath,
+       status: 503,
+       durationMs: Math.round((performance.now() - startedAt) * 100) / 100,
+       targetAvailability: "configured",
+       errorCategory: error instanceof Error && error.name === "TimeoutError"
+         ? "UPSTREAM_TIMEOUT"
+         : "UPSTREAM_FETCH_FAILURE",
+     });
     return json({ code: "SERVICE_UNAVAILABLE", requestId: id }, 503);
   }
 }
