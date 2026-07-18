@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface AnimatedGradientBackgroundProps {
@@ -23,14 +23,19 @@ interface Beam {
     pulseSpeed: number;
 }
 
+const opacityMap = {
+    subtle: 0.7,
+    medium: 0.85,
+    strong: 1,
+};
+
 function createBeam(width: number, height: number): Beam {
-    const angle = -35 + Math.random() * 10;
     return {
         x: Math.random() * width * 1.5 - width * 0.25,
         y: Math.random() * height * 1.5 - height * 0.25,
         width: 30 + Math.random() * 60,
         length: height * 2.5,
-        angle: angle,
+        angle: -35 + Math.random() * 10,
         speed: 0.6 + Math.random() * 1.2,
         opacity: 0.12 + Math.random() * 0.16,
         hue: 148 + Math.random() * 28,
@@ -46,88 +51,68 @@ export function BeamsBackground({
 }: AnimatedGradientBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const beamsRef = useRef<Beam[]>([]);
-    const animationFrameRef = useRef<number>(0);
-    const MINIMUM_BEAMS = 20;
-
-    const opacityMap = {
-        subtle: 0.7,
-        medium: 0.85,
-        strong: 1,
-    };
+    const animationFrameRef = useRef<number | null>(null);
+    const reducedMotion = useReducedMotion();
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        const canvasElement = canvasRef.current;
+        if (!canvasElement) return;
+        const canvas = canvasElement;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        const context = canvas.getContext("2d");
+        if (!context) return;
+        const ctx = context;
 
-        const updateCanvasSize = () => {
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            canvas.style.width = `${window.innerWidth}px`;
-            canvas.style.height = `${window.innerHeight}px`;
-            ctx.scale(dpr, dpr);
+        const isLowPower = window.innerWidth <= 768 || (navigator.hardwareConcurrency || 8) <= 4;
+        const renderScale = Math.min(window.devicePixelRatio || 1, isLowPower ? 1 : 1.5) * (isLowPower ? 0.8 : 1);
+        const frameInterval = isLowPower ? 1000 / 30 : 1000 / 45;
+        let viewportWidth = 0;
+        let viewportHeight = 0;
+        let isVisible = true;
+        let lastFrame = 0;
 
-            const totalBeams = MINIMUM_BEAMS * 1.5;
+        function updateCanvasSize() {
+            viewportWidth = window.innerWidth;
+            viewportHeight = window.innerHeight;
+            canvas.width = Math.max(1, Math.floor(viewportWidth * renderScale));
+            canvas.height = Math.max(1, Math.floor(viewportHeight * renderScale));
+            canvas.style.width = `${viewportWidth}px`;
+            canvas.style.height = `${viewportHeight}px`;
+            ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+
+            const baseBeamCount = intensity === "subtle" ? 12 : intensity === "medium" ? 16 : 20;
+            const totalBeams = isLowPower ? Math.max(10, baseBeamCount - 4) : baseBeamCount;
             beamsRef.current = Array.from({ length: totalBeams }, () =>
-                createBeam(canvas.width, canvas.height)
+                createBeam(viewportWidth, viewportHeight),
             );
-        };
-
-        updateCanvasSize();
-        window.addEventListener("resize", updateCanvasSize);
+            if (beamsRef.current.length > 0 && reducedMotion === true) draw();
+        }
 
         function resetBeam(beam: Beam, index: number, totalBeams: number) {
-            if (!canvas) return beam;
-            
             const column = index % 3;
-            const spacing = canvas.width / 3;
+            const spacing = viewportWidth / 3;
 
-            beam.y = canvas.height + 100;
-            beam.x =
-                column * spacing +
-                spacing / 2 +
-                (Math.random() - 0.5) * spacing * 0.5;
+            beam.y = viewportHeight + 100;
+            beam.x = column * spacing + spacing / 2 + (Math.random() - 0.5) * spacing * 0.5;
             beam.width = 100 + Math.random() * 100;
             beam.speed = 0.5 + Math.random() * 0.4;
             beam.hue = 148 + (index * 28) / totalBeams;
             beam.opacity = 0.2 + Math.random() * 0.1;
-            return beam;
         }
 
-        function drawBeam(ctx: CanvasRenderingContext2D, beam: Beam) {
+        function drawBeam(beam: Beam) {
             ctx.save();
             ctx.translate(beam.x, beam.y);
             ctx.rotate((beam.angle * Math.PI) / 180);
 
-            // Calculate pulsing opacity
-            const pulsingOpacity =
-                beam.opacity *
-                (0.8 + Math.sin(beam.pulse) * 0.2) *
-                opacityMap[intensity];
-
+            const pulsingOpacity = beam.opacity *
+                (0.8 + Math.sin(beam.pulse) * 0.2) * opacityMap[intensity];
             const gradient = ctx.createLinearGradient(0, 0, 0, beam.length);
-
-            // Enhanced gradient with multiple color stops
             gradient.addColorStop(0, `hsla(${beam.hue}, 58%, 58%, 0)`);
-            gradient.addColorStop(
-                0.1,
-                `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity * 0.5})`
-            );
-            gradient.addColorStop(
-                0.4,
-                `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity})`
-            );
-            gradient.addColorStop(
-                0.6,
-                `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity})`
-            );
-            gradient.addColorStop(
-                0.9,
-                `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity * 0.5})`
-            );
+            gradient.addColorStop(0.1, `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity * 0.5})`);
+            gradient.addColorStop(0.4, `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity})`);
+            gradient.addColorStop(0.6, `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity})`);
+            gradient.addColorStop(0.9, `hsla(${beam.hue}, 58%, 58%, ${pulsingOpacity * 0.5})`);
             gradient.addColorStop(1, `hsla(${beam.hue}, 58%, 58%, 0)`);
 
             ctx.fillStyle = gradient;
@@ -135,68 +120,82 @@ export function BeamsBackground({
             ctx.restore();
         }
 
-        function animate() {
-            if (!canvas || !ctx) return;
+        function scheduleFrame() {
+            if (reducedMotion === true || !isVisible || animationFrameRef.current !== null) return;
+            animationFrameRef.current = requestAnimationFrame((timestamp) => {
+                animationFrameRef.current = null;
+                if (timestamp - lastFrame < frameInterval) {
+                    scheduleFrame();
+                    return;
+                }
+                lastFrame = timestamp;
+                draw();
+            });
+        }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.filter = "blur(35px)";
+        function draw() {
+            ctx.clearRect(0, 0, viewportWidth, viewportHeight);
+            ctx.filter = isLowPower ? "blur(24px)" : "blur(35px)";
 
             const totalBeams = beamsRef.current.length;
             beamsRef.current.forEach((beam, index) => {
-                beam.y -= beam.speed;
-                beam.pulse += beam.pulseSpeed;
-
-                // Reset beam when it goes off screen
-                if (beam.y + beam.length < -100) {
-                    resetBeam(beam, index, totalBeams);
+                if (reducedMotion !== true) {
+                    beam.y -= beam.speed;
+                    beam.pulse += beam.pulseSpeed;
+                    if (beam.y + beam.length < -100) resetBeam(beam, index, totalBeams);
                 }
-
-                drawBeam(ctx, beam);
+                drawBeam(beam);
             });
 
-            animationFrameRef.current = requestAnimationFrame(animate);
+            ctx.filter = "none";
+            scheduleFrame();
         }
 
-        animate();
+        updateCanvasSize();
+        window.addEventListener("resize", updateCanvasSize);
+
+        const visibilityObserver = new IntersectionObserver(([entry]) => {
+            isVisible = entry.isIntersecting;
+            if (isVisible) draw();
+        });
+        visibilityObserver.observe(canvas);
+
+        const handleVisibilityChange = () => {
+            isVisible = !document.hidden;
+            if (isVisible) draw();
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        draw();
 
         return () => {
             window.removeEventListener("resize", updateCanvasSize);
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-            }
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            visibilityObserver.disconnect();
+            if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [intensity]);
+    }, [intensity, reducedMotion]);
 
     return (
-        <div
-            className={cn(
-                "relative min-h-svh w-full overflow-hidden bg-background",
-                className
-            )}
-        >
+        <div className={cn("relative min-h-svh w-full overflow-hidden bg-background", className)}>
             <canvas
                 ref={canvasRef}
                 className="pointer-events-none absolute inset-0"
-                style={{ filter: "blur(15px)" }}
+                style={{ filter: "blur(8px)" }}
             />
 
             <motion.div
                 className="pointer-events-none absolute inset-0 bg-background/5"
-                animate={{
-                    opacity: [0.05, 0.15, 0.05],
-                }}
-                transition={{
+                animate={reducedMotion ? undefined : { opacity: [0.05, 0.15, 0.05] }}
+                transition={reducedMotion ? undefined : {
                     duration: 10,
                     ease: "easeInOut",
                     repeat: Number.POSITIVE_INFINITY,
                 }}
-                style={{
-                    backdropFilter: "blur(50px)",
-                }}
+                style={{ backdropFilter: reducedMotion ? "blur(18px)" : "blur(30px)" }}
             />
 
             <div className="relative z-10 flex min-h-svh w-full items-center justify-center">
-            {children}
+                {children}
             </div>
         </div>
     );

@@ -191,7 +191,7 @@ Reglas:
 4. Web lee el fragmento una sola vez y lo elimina del historial del navegador.
 5. Web envía el cambio a `/api/restablecer-contrasena`, que valida origen y reenvía a Better Auth.
 
-**Problema conocido, en progreso:** `apps/web/app/api/restablecer-contrasena/route.ts` construye actualmente `AUTH_BASE_URL + /api/auth/reset-password`, aunque `AUTH_BASE_URL` ya representa la base `/api/auth`. Esto puede producir una URL duplicada `/api/auth/api/auth/reset-password`. No está documentado como resuelto; la corrección y las pruebas de extremo a extremo son trabajo de limpieza pendiente.
+La ruta `apps/web/app/api/restablecer-contrasena/route.ts` reenvía a `AUTH_BASE_URL + /reset-password`; `AUTH_BASE_URL` ya representa la base `/api/auth`, por lo que no se duplica ese prefijo.
 
 **Candidatos de limpieza:** unificar el uso de la ruta nativa de Better Auth y del proxy web, eliminar rutas/redirects heredados cuando ya no tengan consumidores, y cubrir la recuperación con pruebas de URL, fragmento, token expirado y respuesta `429`.
 

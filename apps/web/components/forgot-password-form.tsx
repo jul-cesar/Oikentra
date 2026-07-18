@@ -59,7 +59,11 @@ export function ForgotPasswordForm({
 
     const { error } = result
     if (error) {
-      setFormError("No pudimos enviar el correo. Intenta nuevamente.")
+      setFormError(
+        error.code === "PASSWORD_RESET_NOT_AVAILABLE"
+          ? "Esta cuenta solo usa Google. Inicia sesión con Google para continuar."
+          : "No pudimos enviar el correo. Intenta nuevamente.",
+      )
       return
     }
 

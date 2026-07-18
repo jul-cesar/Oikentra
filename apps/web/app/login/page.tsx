@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { LoginForm } from "@/components/login-form"
 import { OikentraLogo } from "../brand/oikentra-logo"
 import { BeamsBackground } from "@/components/ui/beams-background"
+import { AuthEntryGate } from "@/components/auth-entry-gate"
 
 
 export const metadata: Metadata = {
@@ -20,7 +21,8 @@ const chips = [
 
 export default function LoginPage() {
   return (
-     <BeamsBackground intensity="strong">
+     <AuthEntryGate>
+       <BeamsBackground intensity="strong">
 
       <Link
         href="/"
@@ -58,6 +60,7 @@ export default function LoginPage() {
           ))}
         </ul>
       </div>
-      </BeamsBackground>
+       </BeamsBackground>
+     </AuthEntryGate>
   )
 }

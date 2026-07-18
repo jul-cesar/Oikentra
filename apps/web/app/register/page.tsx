@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { OikentraLogo } from "../brand/oikentra-logo"
 import RegisterForm from "@/components/sign-up-form"
 import { BeamsBackground } from "@/components/ui/beams-background"
+import { AuthEntryGate } from "@/components/auth-entry-gate"
 
 
 
@@ -17,7 +18,8 @@ const benefits = ["Gratis para empezar", "Sin tarjeta de crédito", "Listo en 2 
 
 export default function RegisterPage() {
   return (
-    <BeamsBackground intensity="medium">
+    <AuthEntryGate>
+      <BeamsBackground intensity="medium">
       <Link
         href="/"
         className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:left-8 md:top-8"
@@ -55,6 +57,7 @@ export default function RegisterPage() {
           ))}
         </ul>
       </div>
-    </BeamsBackground>
+      </BeamsBackground>
+    </AuthEntryGate>
   )
 }

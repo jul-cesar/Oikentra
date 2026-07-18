@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { expo } from '@better-auth/expo'
 
@@ -17,12 +18,19 @@ export const auth = betterAuth({
     resetPasswordTokenExpiresIn: 3600,
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, token }, request) => {
-      await sendPasswordResetEmail({
+      const outcome = await sendPasswordResetEmail({
         to: user.email,
         userId: user.id,
         token,
         requestId: request?.headers.get('x-request-id') ?? crypto.randomUUID(),
       })
+
+      if (outcome.status === 'provider_only') {
+        throw APIError.from('BAD_REQUEST', {
+          code: 'PASSWORD_RESET_NOT_AVAILABLE',
+          message: 'Password reset is not available for this account.',
+        })
+      }
     },
   },
   emailVerification: {

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const response = await fetch(`${authBaseUrl}/api/auth/reset-password`, {
+    const response = await fetch(`${authBaseUrl}/reset-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
