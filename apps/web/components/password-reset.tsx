@@ -9,10 +9,11 @@ import {
   Store01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { z } from "zod";
 
 import Link from "next/link";
 
+import { readTokenFromHash } from "@/lib/reset-token";
+import { canonicalResetPasswordSchema } from "@/lib/validation/auth-schemas";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,19 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-const resetPasswordSchema = z
-  .object({
-    newPassword: z
-      .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres.")
-      .max(128, "La contraseña no puede superar los 128 caracteres."),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Las contraseñas no coinciden.",
-    path: ["confirmPassword"],
-  });
 
 type ResetPasswordState = "loading" | "ready" | "submitting" | "success" | "error";
 
@@ -49,8 +37,7 @@ export function PasswordReset() {
   }>({});
 
   useEffect(() => {
-    const fragment = new URLSearchParams(window.location.hash.slice(1));
-    const resetToken = fragment.get("token");
+    const resetToken = readTokenFromHash();
 
     window.history.replaceState(null, "", window.location.pathname);
 
@@ -76,7 +63,7 @@ export function PasswordReset() {
     setFieldErrors({});
     setMessage("");
 
-    const validation = resetPasswordSchema.safeParse({
+    const validation = canonicalResetPasswordSchema.safeParse({
       newPassword,
       confirmPassword,
     });
@@ -97,7 +84,10 @@ export function PasswordReset() {
     try {
       const response = await fetch("/api/restablecer-contrasena", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-Id": crypto.randomUUID(),
+        },
         body: JSON.stringify({ token, newPassword }),
       });
 

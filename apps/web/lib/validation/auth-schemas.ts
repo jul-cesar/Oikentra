@@ -38,12 +38,28 @@ export const resetPasswordSchema = z
   .object({
     password: z
       .string({ message: "La contraseña es obligatoria." })
-      .min(8, "La contraseña debe tener al menos 8 caracteres."),
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .max(128, "La contraseña no puede superar los 128 caracteres."),
     confirmPassword: z
       .string({ message: "Confirma tu contraseña." })
       .min(1, "Confirma tu contraseña."),
   })
   .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+export const canonicalResetPasswordSchema = z
+  .object({
+    newPassword: z
+      .string({ message: "La contraseña es obligatoria." })
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .max(128, "La contraseña no puede superar los 128 caracteres."),
+    confirmPassword: z
+      .string({ message: "Confirma tu contraseña." })
+      .min(1, "Confirma tu contraseña."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Las contraseñas no coinciden.",
     path: ["confirmPassword"],
   });
