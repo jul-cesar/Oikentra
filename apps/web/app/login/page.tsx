@@ -32,11 +32,8 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-sm">
         <div className="flex flex-col items-center text-center">
-          <OikentraLogo />
-          <span className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Tu negocio, siempre bajo control
-          </span>
+          <OikentraLogo size="lg" />
+        
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-balance">
             Bienvenido de nuevo
           </h1>

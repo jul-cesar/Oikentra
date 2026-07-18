@@ -28,11 +28,8 @@ export default function RegisterPage() {
 
       <div className="relative w-full max-w-sm">
         <div className="flex flex-col items-center text-center">
-          <OikentraLogo />
-          <span className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Empieza a ordenar tu negocio hoy
-          </span>
+          <OikentraLogo size="lg"/>
+         
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-balance">Crea tu negocio</h1>
           <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground">
             Registra tu caja, tus clientes y sus fiados en un solo lugar.

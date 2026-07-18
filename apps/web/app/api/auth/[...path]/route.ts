@@ -17,7 +17,6 @@ const REQUEST_HEADERS = [
   "referer",
   "user-agent",
   "x-device-id",
-  "x-idempotency-key",
   "x-request-id",
   "x-client-version",
 ] as const;

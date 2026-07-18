@@ -54,9 +54,6 @@ export async function POST(request: Request) {
     return json({ code: "SERVICE_UNAVAILABLE", requestId }, 503);
   }
 
-  const idempotencyKey =
-    request.headers.get("x-idempotency-key") ?? generateRequestId();
-
   try {
     const response = await fetch(`${authBaseUrl}/api/auth/reset-password`, {
       method: "POST",
@@ -65,7 +62,6 @@ export async function POST(request: Request) {
         Accept: "application/json",
         Origin: requestOrigin,
         "X-Request-Id": requestId,
-        "X-Idempotency-Key": idempotencyKey,
       },
       body: JSON.stringify({ token, newPassword }),
       cache: "no-store",

@@ -4,6 +4,18 @@
 
 This document describes the mobile authentication flow for the Oikentra Expo application using Better Auth. It covers the Expo client setup, email/password authentication, native Google Sign-In, deep-link callback routing, session protection, and the external configuration required to ship to production.
 
+## 1.1 Implementation status
+
+| Area | Status | Notes |
+|---|---|---|
+| Better Auth/Expo client | **Completed in code** | Direct client with `EXPO_PUBLIC_AUTH_BASE_URL`, Expo plugin, and SecureStore persistence |
+| Email/password sign-up and sign-in | **Completed in code** | Email verification is required by auth-service |
+| Email verification | **Completed in code** | `oikentra://auth/verify` deep link and resend flow |
+| Native Google Sign-In | **Completed in code** | ID-token exchange for iOS/Android development builds |
+| Session gate and sign-out | **Completed in code** | Loading-aware protected routes and local session cleanup |
+| Password recovery | **Not implemented** | Explicit future work; web recovery is a separate flow |
+| Production OAuth/email verification | **Blocked pending deployment verification** | Requires external credentials, callback, CORS, and email-provider setup |
+
 ## 2. Technology Choices
 
 - **Better Auth Expo client** (`@better-auth/expo`) is the only session authority on the device.
@@ -28,6 +40,7 @@ Rules:
 - `EXPO_PUBLIC_AUTH_BASE_URL` is required and must be the production auth origin.
 - Missing required variables throw a named startup error; the app never falls back to a different server.
 - Client IDs are public. The Google client secret lives only in `apps/auth-service`.
+- The production auth origin is `https://api.oikentra.com/api/auth`; do not put a secret in any `EXPO_PUBLIC_*` variable.
 
 ## 4. Auth Client
 
@@ -73,6 +86,8 @@ await authClient.signIn.social({
 ```
 
 Cancelled flows and misconfiguration surface recoverable errors without exposing secrets.
+
+The mobile client does not implement the web browser OAuth callback. The native flow is the supported mobile Google path; production success still depends on Google Cloud client configuration and the native signing identifiers.
 
 ## 7. Deep Links and Callback Routing
 
@@ -121,9 +136,9 @@ The following cannot be completed in code and must be configured in Google Cloud
 3. Add the three client IDs to:
    - `apps/mobile/.env` as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, and `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`.
    - `apps/auth-service/.env` as `GOOGLE_CLIENT_ID` (web), `GOOGLE_IOS_CLIENT_ID`, and `GOOGLE_ANDROID_CLIENT_ID`.
-4. In Google Cloud Console, add `https://api.oikentra.com/api/auth` as an authorized redirect domain for the web client if required.
+4. For the web client, configure the production callback `https://api.oikentra.com/api/auth/callback/google` in Google Cloud Console as required by the OAuth client. The mobile native flow does not use this browser callback.
 5. For iOS, `app.config.ts` derives the reversed iOS client ID from `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` for the Google Sign-In Expo plugin.
-6. The auth-service deployment must expose `/api/auth/*` with HTTPS and CORS enabled for mobile origins.
+6. The auth-service deployment must expose `/api/auth/*` with HTTPS. Browser CORS must allow the deployed web origin; native mobile requests do not depend on browser CORS, but their deep-link origins must be included in Better Auth trusted origins.
 7. Email verification emails from Better Auth must point to the production auth origin.
 8. A native Google Sign-In `DEVELOPER_ERROR` is separate from email callback validation. Verify the Google Cloud iOS/Android OAuth clients, the `com.oikentra.app` bundle/package identifier, the Android signing certificate SHA-1/SHA-256 values, and the client IDs used by the native build. Do not put the server-only client secret in the mobile app.
 
@@ -134,8 +149,10 @@ The following are intentionally not implemented in this change:
 - Password recovery.
 - Multi-factor authentication (MFA).
 - Offline authenticated access.
-- Web Google Sign-In browser flow (native only).
+- Web Google Sign-In browser flow (native only in this mobile client; the web app has its own direct Better Auth flow).
 
 ## 13. Testing
 
 There is no test runner configured in `apps/mobile`. Verification is done through TypeScript type-checking and runtime testing in iOS/Android development builds. Expo Go is not sufficient for native Google Sign-In validation.
+
+The current repository status should therefore be read as code completion, not production certification. Keep native Google, verification links, session persistence, and error handling in the deployment/device verification checklist.

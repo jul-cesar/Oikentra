@@ -15,17 +15,14 @@ export function Hero() {
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-10 md:pt-24">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />
-            Operación simple para el día a día
-          </span>
+         
 
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-balance sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl md:text-6xl">
             Saber qué vendiste, qué gastaste y cuánto tienes debería ser sencillo.
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground">
-            Oikentra es la aplicación de operaciones para pequeños negocios: registra ventas y gastos,
+            Oikentra es la aplicación de operaciones para pequeños negocios: reg  istra ventas y gastos,
             controla tu inventario y caja, y continúa trabajando aunque no tengas conexión.
           </p>
 

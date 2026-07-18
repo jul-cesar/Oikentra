@@ -42,7 +42,6 @@ export function ForgotPasswordForm({
     setFormError(null)
 
     const requestId = crypto.randomUUID()
-    const idempotencyKey = crypto.randomUUID()
 
     const result = await authClient.requestPasswordReset({
       email: values.email,
@@ -50,7 +49,6 @@ export function ForgotPasswordForm({
       fetchOptions: {
         headers: {
           "X-Request-Id": requestId,
-          "X-Idempotency-Key": idempotencyKey,
         },
       },
     }).catch(() => {

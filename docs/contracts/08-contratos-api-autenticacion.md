@@ -10,7 +10,20 @@ Este servicio utilizará:
 Bun + Hono + Better Auth + Drizzle + PostgreSQL + Redis
 ```
 
-Better Auth manejará los endpoints públicos de autenticación. El proyecto agregará un endpoint interno para que Traefik valide sesiones mediante `ForwardAuth`.
+Better Auth maneja los endpoints públicos de autenticación. El proyecto agrega un endpoint interno para que Traefik valide sesiones mediante `ForwardAuth`.
+
+## 1.1 Estado de implementación
+
+| Área | Estado | Fuente o alcance |
+|---|---|---|
+| `auth-service` como autoridad de usuarios y sesiones | **Completado en código** | `apps/auth-service`, Better Auth + Drizzle + PostgreSQL |
+| API pública | **Completado en código** | `https://api.oikentra.com/api/auth` en producción; `/api/auth/*` en Hono |
+| Cliente web directo | **Completado en código** | Better Auth desde el navegador con `NEXT_PUBLIC_AUTH_BASE_URL` |
+| Cliente Expo/mobile | **Completado en código** | Email/password, verificación, Google nativo, sesión y logout |
+| Validación de sesión para Traefik | **En progreso** | El endpoint existe; falta cerrar la validación integrada en el entorno desplegado |
+| Pruebas completas de producción | **Pendiente de verificación** | No se debe inferir éxito productivo solo por la existencia del código |
+
+La URL pública es el origen de API, no una ruta de la aplicación web. En producción el navegador y los enlaces de autenticación deben usar `https://api.oikentra.com` como origen de Better Auth y `https://api.oikentra.com/api/auth` como base de sus endpoints.
 
 ---
 
@@ -49,10 +62,10 @@ El servicio también permitirá que Traefik valide una sesión antes de enviar u
 ## 4. Base URL
 
 ```txt
-https://api.nombreapp.com/api/auth
+https://api.oikentra.com/api/auth
 ```
 
-Better Auth se montará en Hono así:
+Better Auth está montado en Hono así:
 
 ```ts
 app.on(["GET", "POST"], "/api/auth/*", (c) => {
@@ -87,7 +100,7 @@ Reglas:
 - Contraseña mínima de 8 caracteres.
 - Better Auth genera el usuario y la sesión.
 
-Desde Expo se consumirá preferiblemente con:
+Desde Expo y web se consume mediante el cliente oficial de Better Auth. Expo usa preferiblemente:
 
 ```ts
 await authClient.signUp.email({
@@ -146,7 +159,13 @@ await authClient.signIn.social({
 });
 ```
 
-En Android o iOS, el callback se convierte en un deep link de la aplicación.
+En web, el navegador inicia el flujo directamente contra `NEXT_PUBLIC_AUTH_BASE_URL`. En producción, el callback esperado para el cliente web es:
+
+```txt
+https://api.oikentra.com/api/auth/callback/google
+```
+
+En Android o iOS, el cliente móvil usa Google Sign-In nativo, intercambia el ID token con Better Auth y no usa el callback web del navegador.
 
 El endpoint HTTP interno utilizado por Better Auth no se consumirá manualmente desde la interfaz móvil.
 
@@ -163,6 +182,18 @@ Reglas:
 - La recuperación de contraseña envía un correo mediante Resend.
 - Los tokens de verificación y recuperación expiran en 1 hora.
 - Las rutas exactas pertenecen a Better Auth y no se definen como contratos propios del proyecto.
+
+#### Flujo web de recuperación
+
+1. Web solicita el reset mediante `authClient.requestPasswordReset`.
+2. Auth-service genera el token y envía el correo mediante Resend.
+3. El enlace llega a `/reset-password` con el token en el fragmento URL (`#token=...`), para que no viaje en la petición HTTP inicial.
+4. Web lee el fragmento una sola vez y lo elimina del historial del navegador.
+5. Web envía el cambio a `/api/restablecer-contrasena`, que valida origen y reenvía a Better Auth.
+
+**Problema conocido, en progreso:** `apps/web/app/api/restablecer-contrasena/route.ts` construye actualmente `AUTH_BASE_URL + /api/auth/reset-password`, aunque `AUTH_BASE_URL` ya representa la base `/api/auth`. Esto puede producir una URL duplicada `/api/auth/api/auth/reset-password`. No está documentado como resuelto; la corrección y las pruebas de extremo a extremo son trabajo de limpieza pendiente.
+
+**Candidatos de limpieza:** unificar el uso de la ruta nativa de Better Auth y del proxy web, eliminar rutas/redirects heredados cuando ya no tengan consumidores, y cubrir la recuperación con pruebas de URL, fragmento, token expirado y respuesta `429`.
 
 ---
 
@@ -310,6 +341,26 @@ El router de `/api/auth/*` no utiliza `ForwardAuth`.
 - La sesión y las cookies se persistirán mediante almacenamiento seguro compatible con Expo.
 - La app no guardará contraseñas.
 - Todas las llamadas públicas usarán el mismo dominio de API.
+
+El cliente web realiza solicitudes directas con CORS credentialed. `auth-service` permite como origen confiable `WEB_URL` y los deep links móviles configurados; su CORS permite `Content-Type`, `Authorization` y `X-Request-Id`. `X-Idempotency-Key` no forma parte del flujo de autenticación y fue retirado.
+
+`X-Request-Id` sí se conserva: el cliente puede enviarlo, auth-service lo propaga y lo usa para correlacionar logs, especialmente en recuperación de contraseña. No implementa deduplicación de operaciones.
+
+## 8.1 Variables de entorno de despliegue
+
+No incluir valores secretos en documentación ni imágenes de cliente.
+
+| Servicio | Variables relevantes | Estado |
+|---|---|---|
+| auth-service | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM` | **Requeridas para iniciar** |
+| auth-service móvil | `GOOGLE_IOS_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID` | **Opcionales en código; requeridas para los builds nativos correspondientes** |
+| web | `NEXT_PUBLIC_AUTH_BASE_URL`, `AUTH_BASE_URL` | **Requeridas según el runtime**; la primera se embebe en `next build` |
+| mobile | `EXPO_PUBLIC_AUTH_BASE_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | **Requeridas al iniciar el cliente** |
+| mobile iOS/Android | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | **Requeridas para Google nativo en la plataforma correspondiente** |
+
+Para producción, configurar en Google Cloud el callback `https://api.oikentra.com/api/auth/callback/google` para el cliente web y verificar que `BETTER_AUTH_URL` apunte al origen público del auth-service. La existencia de estas variables no demuestra por sí sola que OAuth, correo o CORS estén operativos en producción.
+
+El fallback de `apps/web/lib/auth-client.ts` a `https://api.oikentra.com/api/auth` es intencional: evita que un `NEXT_PUBLIC_AUTH_BASE_URL` ausente rompa la evaluación/prerender de Next.js. Debe preferirse configurar la variable explícitamente en cada despliegue.
 
 ---
 
