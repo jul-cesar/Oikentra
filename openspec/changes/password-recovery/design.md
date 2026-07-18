@@ -65,4 +65,4 @@ Deploy auth-service config/email/trusted origin first, then web, then mobile. Ro
 
 ## Open Questions
 
-- [ ] Confirm the deployed CSRF mechanism before implementation; current repository convention is same-origin `Origin` validation and must fail closed for missing/foreign browser origins.
+- [ ] Confirmm the deployed CSRF mechanism before implementation; current repository convention is same-origin `Origin` validation and must fail closed for missing/foreign browser origins.
