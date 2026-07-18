@@ -1,92 +1,58 @@
-# Proposal: Password Recovery
+# Proposal: Password Recovery (Revised)
 
 ## Intent
 
-Users who forget their password have no recovery path. Add a web-based reset flow reusing the existing email-verification pattern (web page + deep-link return) with mandatory session revocation on change.
+Add first-class password reset on web and mobile: forgot entry, email token, password form, session revocation. Auth-service is the sole authority. Web and mobile are symmetric clients with platform-appropriate reset paths.
 
 ## Scope
 
-### In Scope
-- Mobile "Forgot password" screen → triggers reset email via Better Auth
-- Web reset page (`/restablecer-contrasena`) + API route
-- Auth-service email template → web URL with `#token=` hash
-- Mobile deep-link return handler (success state only — no password form)
-- Session revocation on password change (all devices)
-- Google-only detection → explanation + Google sign-in (no silent password creation)
-- Unknown-email generic response (prevents enumeration)
-- Offline-aware: mobile checks network before sending request
-
-### Out of Scope
-- Native mobile password form (web is source of truth — resolves exploration overreach)
-- SMS/WhatsApp reset delivery
-- Admin-initiated password reset
-- Remembered-device skip
+| In | Out |
+|----|-----|
+| Web forget + reset pages, mobile forget + reset screens, auth-service email with web+deep-link, Google-only check, session revocation, offline-aware mobile | SMS/WhatsApp, admin-initiated, remembered-device, Redis idempotency |
 
 ## Capabilities
 
-> Contract: `sdd-spec` reads this to determine spec files to create.
+### New
+- `password-recovery`: Full recovery flow — web+mobile forgot entry, auth-service email contract, web proxy reset API, mobile native reset form, session revocation, deep-link return.
 
-### New Capabilities
-- `password-recovery`: Full recovery flow — mobile request entry, web reset page/API, auth-service email contract, secure update + session revocation, deep-link return, validation/error states.
-
-### Modified Capabilities
-None (`openspec/specs/` is empty — no existing specs).
+### Modified
+None (`openspec/specs/` empty).
 
 ## Approach
 
-Web-based reset matching email verification pattern:
+**Forgot (both)**: `authClient.requestPasswordReset()` → auth-service. Callback checks Google-only (`account.password` for credential provider), constructs dual-link email (web `#token=` + mobile `?token=`), logs outcome. Generic response.
 
-1. **Mobile** `forgot-password.tsx`: email input → `authClient.sendResetPasswordEmail({ email, callbackURL: "oikentra://auth/reset-password?verified=1&email=..." })`. Unknown emails → generic "If the account exists, you'll receive an email."
-2. **Auth service** `auth-emails.ts`: construct URL `https://oikentra.com/restablecer-contrasena#token=...`
-3. **Web** `restablecer-contrasena/page.tsx`: read token from `window.location.hash`, show new-password form (Zod validation, min 8 chars, confirm)
-4. **Web API** `api/restablecer-contrasena/route.ts`: POST token + password → Better Auth `/reset-password`. On success, Better Auth revokes all user sessions.
-5. **Web success**: "Contraseña actualizada" + "Abrir Oikentra" deep-link (`oikentra://auth/reset-password?verified=1`) + "Sign in at oikentra.com" fallback
-6. **Mobile** `reset-password.tsx`: receives deep link, checks `authClient.getSession()`, navigates to app home or sign-in
+**Web reset**: `password-reset.tsx` → `POST /api/restablecer-contrasena` proxy → origin + token + password validation → auth-service `resetPassword` → `revokeSessionsOnPasswordReset` → success + deep-link + web fallback.
 
-**Google-only**: detect `account.password === null` before sending email → show "This account uses Google Sign-In. No password to reset." + Google sign-in button.
+**Mobile reset** (native form — new): Deep link (`?token=`) → native form → `authClient.resetPassword()` to auth-service → session check → home/sign-in.
+
+**One path per platform**: Web uses proxy (origin security). Mobile uses direct client (origin irrelevant). Staged `reset-password-form.tsx` (direct-client for web) is archived. Staged `forgot-password-form.tsx` stays — callback owns the logic.
 
 ## Affected Areas
 
-| Area | Impact | Detail |
-|------|--------|--------|
-| `apps/auth-service/src/auth.ts` | Modified | `sendResetPassword` URL target |
-| `apps/auth-service/src/email/auth-emails.ts` | Modified | `#token=` hash URL build |
-| `apps/web/app/restablecer-contrasena/page.tsx` | New | Reset page |
-| `apps/web/components/password-reset.tsx` | New | Client component |
-| `apps/web/app/api/restablecer-contrasena/route.ts` | New | API route |
-| `apps/mobile/lib/auth-client.ts` | Modified | Export `sendResetPasswordEmail`, `resetPassword` |
-| `apps/mobile/components/sign-in-form.tsx` | Modified | "Forgot password?" nav link |
-| `apps/mobile/app/(auth)/forgot-password.tsx` | New | Email input + network check |
-| `apps/mobile/app/(auth)/reset-password.tsx` | New | Deep-link handler (scoped: no password form) |
-| `apps/mobile/lib/validation/auth-schemas.ts` | Modified | Forgot/reset Zod schemas |
+`apps/auth-service/src/auth.ts` (staged), `apps/auth-service/src/email/auth-emails.ts` (staged — dual-link), `apps/web/app/recuperar-contrasena/` (staged), `apps/web/app/restablecer-contrasena/` (staged), `apps/web/components/password-reset.tsx` (staged), `apps/web/lib/validation/auth-schemas.ts` (staged), `apps/web/lib/auth-client.ts` (staged), `apps/mobile/app/(auth)/forgot-password.tsx` (new), `apps/mobile/app/(auth)/reset-password.tsx` (new), `apps/mobile/lib/auth-client.ts` (modified — add exports), `apps/mobile/components/sign-in-form.tsx` (modified — add link), `apps/auth-service/src/auth.ts trustedOrigins` (modified — add reset deep-link).
 
 ## Risks
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| Google-only account confusion | Med | Detect pre-send; explanation + Google sign-in |
-| Token in URL hash vs query | Med | Construct `#token=` manually in email template |
-| Session revocation API gap | Low | Verify Better Auth `revokeSessions`; log failures |
-| Desktop deep-link dead end | Low | Web success shows web fallback link |
+| Two reset paths diverge | Med | Auth-service enforces policy; proxy is validation only |
+| Hash vs query token | Low | Hash prevents server log leaks; query is standard for OS intents |
 
 ## Rollback Plan
 
-1. Revert `sendResetPassword` callback URL to Better Auth default
-2. Delete web page, component, API route, mobile screens, schemas
-3. Revert `auth-client.ts` exports and `sign-in-form.tsx`
-4. Deploy auth-service first, then web, then mobile
+1. Remove mobile screens. 2. Remove web routes + components. 3. Revert email to single URL. 4. Deploy auth-service → web → mobile (forward); reverse for rollback.
 
 ## Dependencies
 
-- Better Auth `resetPassword` plugin endpoint
-- Better Auth session revocation API (`revokeSessions` or equivalent)
-- `oikentra://auth/reset-password` Trusted Origin in `auth.ts`
+Better Auth `requestPasswordReset` / `resetPassword` v1.6.23, `revokeSessionsOnPasswordReset: true` (staged), `oikentra://auth/reset-password` trusted origin (needs addition), mobile `better-auth/expo` + `SecureStore`.
 
 ## Success Criteria
 
-- [ ] End-to-end password reset completes (mobile → email → web → deep-link back)
-- [ ] Google-only users see explanation, never a reset form
-- [ ] Unknown emails get generic response (no account enumeration)
-- [ ] All sessions revoked after password change (old tokens rejected)
-- [ ] Web → mobile deep link works on iOS and Android
-- [ ] Offline state shows "No connection" with retry, no silent failure
+- [ ] Web forgot → email → web reset → deep-link or web sign-in
+- [ ] Mobile forgot → email → mobile native reset → home/sign-in
+- [ ] Mobile forgot → email → web reset (browser) → deep-link back → mobile home/sign-in
+- [ ] Google-only: explanation, never a reset form
+- [ ] Unknown emails: generic response, no enumeration
+- [ ] All sessions revoked after password change
+- [ ] Offline: "No connection" with retry
