@@ -10,7 +10,6 @@ coverage/
 
 sdd/
 openspec/
-
 # Expo
 .expo/
 web-build/
