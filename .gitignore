@@ -8,6 +8,8 @@ dist/
 coverage/
 *.tsbuildinfo
 
+sdd/
+
 # Expo
 .expo/
 web-build/
