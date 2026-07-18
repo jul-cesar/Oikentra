@@ -1,13 +1,13 @@
 import { createAuthClient } from "better-auth/react";
 
 function resolveAuthBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/api/auth`;
+  const value = process.env.NEXT_PUBLIC_AUTH_BASE_URL?.trim();
+
+  if (!value) {
+    throw new Error("NEXT_PUBLIC_AUTH_BASE_URL is required");
   }
 
-  // Better Auth validates the URL while Next statically evaluates client modules.
-  // This value is only used during build/server evaluation, never as deployment config.
-  return "http://localhost:3000/api/auth";
+  return value.replace(/\/$/, "");
 }
 
 export const authBaseUrl = resolveAuthBaseUrl();

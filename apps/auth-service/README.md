@@ -19,7 +19,7 @@ Copy `.env.example` to `.env` for local development and set real values:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/oikentra_auth
 BETTER_AUTH_SECRET=replace-with-a-long-random-secret
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3001
 GOOGLE_CLIENT_ID=replace-with-google-client-id
 GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
 RESEND_API_KEY=replace-with-resend-api-key
@@ -34,6 +34,8 @@ Required startup variables:
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials.
 - `RESEND_API_KEY`: Resend API key.
 - `AUTH_EMAIL_FROM`: Verified sender address, for example `Oikentra <auth@example.com>`.
+
+The web client calls `BETTER_AUTH_URL` directly from the browser. The auth service enables credentialed CORS for the origin configured by `WEB_URL`; set that value to the deployed web origin in production.
 
 Do not commit real credentials. Use a Resend verified domain for `AUTH_EMAIL_FROM` in production.
 

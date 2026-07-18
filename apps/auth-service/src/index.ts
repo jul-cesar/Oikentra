@@ -1,14 +1,26 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import type { Context } from 'hono'
 import type { RequestLogEnv } from '@oikentra/http-logging'
 import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
 
 import { auth } from './auth'
 import { checkDatabaseConnection } from './db/client'
+import { config } from './config/config'
 
 const app = new Hono<RequestLogEnv>()
 app.use('*', requestIdMiddleware())
 app.use('*', requestLoggerMiddleware('auth-service'))
+app.use(
+  '/api/auth/*',
+  cors({
+    origin: config.webUrl,
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+    maxAge: 600,
+  }),
+)
 
 function liveResponse(c: Context) {
   return c.json({ status: 'ok', service: 'auth-service' })

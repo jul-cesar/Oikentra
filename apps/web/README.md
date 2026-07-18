@@ -16,6 +16,10 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Environment
+
+Set `NEXT_PUBLIC_AUTH_BASE_URL` to the Better Auth API endpoint used by the browser. For local development use `http://localhost:3001/api/auth`; production deployments should use the public auth API URL, for example `https://api.oikentra.com/api/auth`. The value is embedded during `next build`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
