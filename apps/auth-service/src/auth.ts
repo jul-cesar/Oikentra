@@ -15,10 +15,13 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     requireEmailVerification: true,
     resetPasswordTokenExpiresIn: 3600,
-    sendResetPassword: async ({ user, url }) => {
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, token }, request) => {
       await sendPasswordResetEmail({
         to: user.email,
-        url,
+        userId: user.id,
+        token,
+        requestId: request?.headers.get('x-request-id') ?? crypto.randomUUID(),
       })
     },
   },

@@ -1,5 +1,8 @@
 import { sendAuthEmail } from './resend-email-service'
 import { config } from '../config/config'
+import { db } from '../db/client'
+import { account } from '../db/schema'
+import { and, eq, isNotNull } from 'drizzle-orm'
 
 function escapeHtml(value: string) {
   return value
@@ -51,20 +54,97 @@ export function sendVerificationEmail({
   })
 }
 
-export function sendPasswordResetEmail({
+type PasswordResetEmailOutcome =
+  | { status: 'accepted' }
+  | { status: 'provider_only' }
+  | { status: 'delivery_failed'; error: unknown }
+
+function logAuthEvent({
+  requestId,
+  category,
+  outcome,
+  error,
+}: {
+  requestId: string
+  category: string
+  outcome: string
+  error?: unknown
+}) {
+  console.log(
+    JSON.stringify({
+      requestId,
+      category,
+      outcome,
+      ...(error
+        ? {
+            error:
+              error instanceof Error ? error.message : 'unknown',
+          }
+        : {}),
+    }),
+  )
+}
+
+export async function sendPasswordResetEmail({
   to,
-  url,
+  userId,
+  token,
+  requestId,
 }: {
   to: string
-  url: string
-}) {
-  return sendAuthEmail({
-    to,
-    subject: 'Restablece tu contraseña de Oikentra',
-    html: actionEmailHtml({
-      actionLabel: 'Restablecer contraseña',
-      description: 'Usa este enlace seguro para restablecer tu contraseña de Oikentra.',
-      url,
-    }),
+  userId: string
+  token: string
+  requestId: string
+}): Promise<PasswordResetEmailOutcome> {
+  const credentialAccounts = await db.query.account.findMany({
+    where: and(
+      eq(account.userId, userId),
+      eq(account.providerId, 'credential'),
+      isNotNull(account.password),
+    ),
+    columns: { id: true },
+    limit: 1,
   })
+
+  if (credentialAccounts.length === 0) {
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'provider_only',
+    })
+    return { status: 'provider_only' }
+  }
+
+  const resetUrl = new URL('/restablecer-contrasena', config.webUrl)
+  resetUrl.hash = new URLSearchParams({ token }).toString()
+
+  try {
+    await sendAuthEmail({
+      to,
+      subject: 'Restablece tu contraseña de Oikentra',
+      html: actionEmailHtml({
+        actionLabel: 'Restablecer contraseña',
+        description:
+          'Usa este enlace seguro para restablecer tu contraseña de Oikentra.',
+        url: resetUrl.toString(),
+      }),
+    })
+
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'accepted',
+    })
+
+    return { status: 'accepted' }
+  } catch (error) {
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'delivery_failed',
+      error,
+    })
+
+    return { status: 'delivery_failed', error }
+  }
 }
