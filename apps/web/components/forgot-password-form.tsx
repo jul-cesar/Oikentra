@@ -46,7 +46,7 @@ export function ForgotPasswordForm({
 
     const result = await authClient.requestPasswordReset({
       email: values.email,
-      redirectTo: `${window.location.origin}/restablecer-contrasena`,
+       redirectTo: `${window.location.origin}/reset-password`,
       fetchOptions: {
         headers: {
           "X-Request-Id": requestId,

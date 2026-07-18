@@ -1,19 +1,13 @@
 import { createAuthClient } from "better-auth/react";
 
 function resolveAuthBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_AUTH_BASE_URL?.trim();
-  if (envUrl) {
-    return envUrl.replace(/\/$/, "");
-  }
-
   if (typeof window !== "undefined") {
-    return window.location.origin;
+    return `${window.location.origin}/api/auth`;
   }
 
-  // Keep static generation independent from deployment-only runtime env vars.
-  // Browser requests resolve against the current origin when the public URL is
-  // not available in the client bundle.
-  return "http://localhost:3000";
+  // Better Auth validates the URL while Next statically evaluates client modules.
+  // This value is only used during build/server evaluation, never as deployment config.
+  return "http://localhost:3000/api/auth";
 }
 
 export const authBaseUrl = resolveAuthBaseUrl();

@@ -48,7 +48,7 @@ export function SignUpForm({
       name: values.name,
       email: values.email,
       password: values.password,
-      callbackURL: `${window.location.origin}/verificar-correo?verified=1`,
+       callbackURL: `${window.location.origin}/verify-email?verified=1`,
     }).catch(() => {
       setFormError("Ocurrió un problema inesperado. Intenta nuevamente.")
       return null
@@ -66,7 +66,7 @@ export function SignUpForm({
     } catch {
       // Continue with the generic verification flow if browser storage is unavailable.
     }
-    window.location.assign("/verificar-correo?sent=1")
+    window.location.assign("/verify-email?sent=1")
   }
 
   async function handleGoogleSignUp() {
