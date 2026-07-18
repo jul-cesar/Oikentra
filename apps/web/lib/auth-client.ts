@@ -1,11 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 
-function readEnv(name: string): string | undefined {
-  return (typeof process !== "undefined" ? process.env[name] : undefined)?.trim();
-}
-
 function resolveAuthBaseUrl(): string {
-  const envUrl = readEnv("AUTH_BASE_URL");
+  const envUrl = process.env.NEXT_PUBLIC_AUTH_BASE_URL?.trim();
   if (envUrl) {
     return envUrl.replace(/\/$/, "");
   }
@@ -15,7 +11,7 @@ function resolveAuthBaseUrl(): string {
   }
 
   // Keep static generation independent from deployment-only runtime env vars.
-  // Browser requests resolve against the current origin when AUTH_BASE_URL is
+  // Browser requests resolve against the current origin when the public URL is
   // not available in the client bundle.
   return "http://localhost:3000";
 }
