@@ -1,11 +1,9 @@
 import { createAuthClient } from "better-auth/react";
 
-function resolveAuthBaseUrl(): string {
-  const value = process.env.NEXT_PUBLIC_AUTH_BASE_URL?.trim();
+const DEFAULT_AUTH_BASE_URL = "https://api.oikentra.com/api/auth";
 
-  if (!value) {
-    throw new Error("NEXT_PUBLIC_AUTH_BASE_URL is required");
-  }
+function resolveAuthBaseUrl(): string {
+  const value = process.env.NEXT_PUBLIC_AUTH_BASE_URL?.trim() || DEFAULT_AUTH_BASE_URL;
 
   return value.replace(/\/$/, "");
 }
