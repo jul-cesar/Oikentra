@@ -16,6 +16,7 @@ WORKDIR /workspace
 
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY --from=dependencies /workspace/apps/reports-service/node_modules ./apps/reports-service/node_modules
+COPY --from=dependencies /workspace/packages/http-logging/node_modules ./packages/http-logging/node_modules
 COPY apps/reports-service/package.json apps/reports-service/package.json
 COPY packages/http-logging/package.json packages/http-logging/package.json
 COPY packages/http-logging/src packages/http-logging/src
