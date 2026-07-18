@@ -3,6 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowRight01Icon,
   MailAtSign01Icon,
@@ -13,40 +15,47 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { authClient, getSafeAuthErrorMessage } from "@/lib/auth-client"
-import { signInSchema } from "@/lib/validation/auth-schemas"
+import {
+  signInSchema,
+  type SignInFormValues,
+} from "@/lib/validation/auth-schemas"
 
 export function LoginForm() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [remember, setRemember] = useState(false)
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  const form = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  })
+
+  async function onSubmit(values: SignInFormValues) {
     if (isPending) return
-
-    const formData = new FormData(event.currentTarget)
-    const parsed = signInSchema.safeParse({
-      email: formData.get("email"),
-      password: formData.get("password"),
-    })
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Revisa los datos ingresados.")
-      return
-    }
 
     setError(null)
     setIsPending(true)
     try {
       const { error: signInError } = await authClient.signIn.email({
-        email: parsed.data.email,
-        password: parsed.data.password,
-        rememberMe: formData.get("remember") === "on",
+        email: values.email,
+        password: values.password,
+        rememberMe: remember,
       })
       if (signInError) {
         if (signInError.code === "EMAIL_NOT_VERIFIED") {
-          router.replace(`/verify-email?email=${encodeURIComponent(parsed.data.email)}`)
+          router.replace(`/verify-email?email=${encodeURIComponent(values.email)}`)
           return
         }
         setError(getSafeAuthErrorMessage(signInError, "No pudimos iniciar sesión. Intenta nuevamente."))
@@ -86,44 +95,64 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5" aria-busy={isPending}>
-      <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-sm font-medium text-foreground">Correo del negocio</label>
-        <div className="group relative">
-          <HugeiconsIcon icon={MailAtSign01Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
-          <input id="email" name="email" type="email" autoComplete="email" required placeholder="tu@negocio.com" className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15" />
-        </div>
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5" aria-busy={isPending}>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="flex flex-col gap-2">
+              <FormLabel htmlFor="email" className="text-sm font-medium text-foreground">Correo del negocio</FormLabel>
+              <FormControl>
+                <div className="group relative">
+                  <HugeiconsIcon icon={MailAtSign01Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
+                  <Input {...field} id="email" type="email" autoComplete="email" placeholder="tu@negocio.com" className="h-12 rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/15" />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="password" className="text-sm font-medium text-foreground">Contraseña</label>
-          <Link href="/forgot-password" className="text-xs font-medium text-primary underline-offset-4 hover:underline">¿La olvidaste?</Link>
-        </div>
-        <div className="group relative">
-          <HugeiconsIcon icon={SquareLock02Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
-          <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required placeholder="••••••••" className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-11 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15" />
-          <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
-            <HugeiconsIcon icon={showPassword ? ViewOffSlashIcon : ViewIcon} size={18} strokeWidth={1.8} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <FormLabel htmlFor="password" className="text-sm font-medium text-foreground">Contraseña</FormLabel>
+                <Link href="/forgot-password" className="text-xs font-medium text-primary underline-offset-4 hover:underline">¿La olvidaste?</Link>
+              </div>
+              <FormControl>
+                <div className="group relative">
+                  <HugeiconsIcon icon={SquareLock02Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
+                  <Input {...field} id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" className="h-12 rounded-xl border-border bg-card pl-11 pr-11 text-sm shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/15" />
+                  <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                    <HugeiconsIcon icon={showPassword ? ViewOffSlashIcon : ViewIcon} size={18} strokeWidth={1.8} aria-hidden="true" />
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
-        <input type="checkbox" name="remember" className="size-4 rounded-[6px] border-border text-primary accent-primary" />
-        Mantener sesión iniciada en este dispositivo
-      </label>
-      {error ? <p className="text-sm text-destructive" role="alert" aria-live="polite">{error}</p> : null}
-      <Button type="submit" size="lg" className="mt-1 h-12 w-full rounded-xl text-sm font-semibold" disabled={isPending}>
-        {isPending ? "Iniciando sesión..." : "Entrar a mi negocio"}
-        <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-      </Button>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true"><span className="h-px flex-1 bg-border" /><span>o continúa con</span><span className="h-px flex-1 bg-border" /></div>
-      <Button type="button" variant="outline" size="lg" className="h-12 w-full rounded-xl" onClick={handleGoogleSignIn} disabled={isPending}>
-        <span className="grid size-5 place-items-center rounded-full border border-border text-xs font-bold" aria-hidden="true">G</span>
-        {isPending ? "Conectando..." : "Continuar con Google"}
-      </Button>
-      <p className="text-center text-sm text-muted-foreground">¿Aún no tienes cuenta? <Link href="/register" className="font-semibold text-primary underline-offset-4 hover:underline">Crea tu negocio gratis</Link></p>
-    </form>
+        <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+          <input type="checkbox" name="remember" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="size-4 rounded-[6px] border-border text-primary accent-primary" />
+          Mantener sesión iniciada en este dispositivo
+        </label>
+        {error ? <p className="text-sm text-destructive" role="alert" aria-live="polite">{error}</p> : null}
+        <Button type="submit" size="lg" className="mt-1 h-12 w-full rounded-xl text-sm font-semibold" disabled={isPending}>
+          {isPending ? "Iniciando sesión..." : "Entrar a mi negocio"}
+          <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+        </Button>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true"><span className="h-px flex-1 bg-border" /><span>o continúa con</span><span className="h-px flex-1 bg-border" /></div>
+        <Button type="button" variant="outline" size="lg" className="h-12 w-full rounded-xl" onClick={handleGoogleSignIn} disabled={isPending}>
+          <span className="grid size-5 place-items-center rounded-full border border-border text-xs font-bold" aria-hidden="true">G</span>
+          {isPending ? "Conectando..." : "Continuar con Google"}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">¿Aún no tienes cuenta? <Link href="/register" className="font-semibold text-primary underline-offset-4 hover:underline">Crea tu negocio gratis</Link></p>
+      </form>
+    </Form>
   )
 }
