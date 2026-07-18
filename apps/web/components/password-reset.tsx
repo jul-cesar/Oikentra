@@ -6,7 +6,6 @@ import {
   CheckmarkCircle02Icon,
   Loading03Icon,
   LockPasswordIcon,
-  Store01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -127,20 +126,7 @@ export function PasswordReset() {
         : LockPasswordIcon;
 
   return (
-    <main className="relative grid min-h-svh place-items-center overflow-hidden bg-background px-5 py-10">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-40 left-1/2 size-[28rem] -translate-x-1/2 rounded-full bg-primary/12 blur-3xl" />
-        <div className="absolute -bottom-48 -right-32 size-[26rem] rounded-full bg-accent/60 blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md">
-        <div className="mb-8 flex items-center justify-center gap-2.5 text-foreground">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <HugeiconsIcon icon={Store01Icon} size={20} strokeWidth={2.2} aria-hidden="true" />
-          </span>
-          <span className="text-xl font-semibold tracking-tight">Oikentra</span>
-        </div>
-
+    <div className="w-full">
         <Card className="gap-0 overflow-hidden rounded-3xl border-border/60 bg-card/95 py-0 shadow-xl shadow-primary/5 backdrop-blur">
           <CardHeader className="items-center gap-4 px-7 pt-9 pb-5 text-center">
             <span
@@ -265,7 +251,6 @@ export function PasswordReset() {
             soporte@oikentra.com
           </a>
         </p>
-      </div>
-    </main>
+    </div>
   );
 }

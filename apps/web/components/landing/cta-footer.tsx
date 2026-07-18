@@ -1,5 +1,6 @@
 import { ArrowRight01Icon, Store01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 
@@ -24,10 +25,10 @@ export function CtaFooter() {
               variant="secondary"
               className="h-12 rounded-xl px-6 text-sm font-semibold"
               render={
-                <a href="#">
+                <Link href="/register">
                   Empezar con Oikentra
                   <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-                </a>
+                </Link>
               }
             />
           </div>

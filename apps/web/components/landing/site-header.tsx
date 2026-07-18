@@ -37,9 +37,9 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             className="hidden sm:inline-flex"
-            render={<a href="#">Iniciar sesión</a>}
+            render={<Link href="/login">Iniciar sesión</Link>}
           />
-          <Button className="rounded-xl" render={<a href="#empezar">Probar Oikentra</a>} />
+          <Button className="rounded-xl" render={<Link href="/register">Probar Oikentra</Link>} />
         </div>
       </div>
     </header>

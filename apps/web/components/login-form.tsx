@@ -76,7 +76,7 @@ export function LoginForm({
         } catch {
           // Continue with the generic verification flow if browser storage is unavailable.
         }
-        window.location.assign("/verificar-correo")
+        window.location.assign("/verify-email")
         return
       }
 
@@ -158,7 +158,7 @@ export function LoginForm({
                 <div className="flex items-center">
                   <FormLabel>Contraseña</FormLabel>
                   <a
-                    href="/recuperar-contrasena"
+                     href="/forgot-password"
                     className="ml-auto text-sm underline-offset-4 hover:underline"
                   >
                     ¿Olvidaste tu contraseña?
@@ -213,7 +213,7 @@ export function LoginForm({
             </Button>
             <FieldDescription className="text-center">
               ¿No tienes una cuenta?{" "}
-              <a href="/registro" className="underline underline-offset-4">
+               <a href="/register" className="underline underline-offset-4">
                 Regístrate
               </a>
             </FieldDescription>
