@@ -4,6 +4,7 @@ import { ArrowLeft01Icon, CreditCardIcon, UserGroupIcon, WifiDisconnected02Icon 
 import { HugeiconsIcon } from "@hugeicons/react"
 import { LoginForm } from "@/components/login-form"
 import { OikentraLogo } from "../brand/oikentra-logo"
+import { BeamsBackground } from "@/components/ui/beams-background"
 
 
 export const metadata: Metadata = {
@@ -19,23 +20,7 @@ const chips = [
 
 export default function LoginPage() {
   return (
-    <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-5 py-10">
-      
-      {/* Fondo ambiental */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-32 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute -bottom-40 -right-24 size-[28rem] rounded-full bg-chart-3/10 blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(circle_at_center,black,transparent_72%)]"
-          style={{
-            backgroundImage:
-              "radial-gradient(currentColor 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-            color: "var(--muted-foreground)",
-            opacity: 0.08,
-          }}
-        />
-      </div>
+     <BeamsBackground intensity="strong">
 
       <Link
         href="/"
@@ -76,6 +61,6 @@ export default function LoginPage() {
           ))}
         </ul>
       </div>
-    </main>
+      </BeamsBackground>
   )
 }

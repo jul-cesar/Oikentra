@@ -4,6 +4,7 @@ import { ArrowLeft01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-ico
 import { HugeiconsIcon } from "@hugeicons/react"
 import { OikentraLogo } from "../brand/oikentra-logo"
 import RegisterForm from "@/components/sign-up-form"
+import { BeamsBackground } from "@/components/ui/beams-background"
 
 
 
@@ -16,22 +17,7 @@ const benefits = ["Gratis para empezar", "Sin tarjeta de crédito", "Listo en 2 
 
 export default function RegisterPage() {
   return (
-    <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-5 py-10">
-      {/* Fondo ambiental */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-32 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute -bottom-40 -right-24 size-[28rem] rounded-full bg-chart-3/10 blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(circle_at_center,black,transparent_72%)]"
-          style={{
-            backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-            color: "var(--muted-foreground)",
-            opacity: 0.08,
-          }}
-        />
-      </div>
-
+    <BeamsBackground intensity="medium">
       <Link
         href="/"
         className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:left-8 md:top-8"
@@ -72,6 +58,6 @@ export default function RegisterPage() {
           ))}
         </ul>
       </div>
-    </main>
+    </BeamsBackground>
   )
 }
