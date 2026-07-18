@@ -10,16 +10,13 @@ function resolveAuthBaseUrl(): string {
     return envUrl.replace(/\/$/, "");
   }
 
-  if (readEnv("NODE_ENV") === "production") {
-    throw new Error(
-      "[web-auth] Missing AUTH_BASE_URL. Set it before a production build."
-    );
-  }
-
   if (typeof window !== "undefined") {
     return window.location.origin;
   }
 
+  // Keep static generation independent from deployment-only runtime env vars.
+  // Browser requests resolve against the current origin when AUTH_BASE_URL is
+  // not available in the client bundle.
   return "http://localhost:3000";
 }
 
