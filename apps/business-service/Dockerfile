@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/business-service/package.json apps/business-service/package.json
 COPY packages/http-logging/package.json packages/http-logging/package.json
 
-RUN pnpm install --filter @oikentra/business-service --prod --frozen-lockfile
+RUN pnpm install --filter @oikentra/business-service... --prod --frozen-lockfile
 
 FROM oven/bun:1.3.14-alpine AS runtime
 

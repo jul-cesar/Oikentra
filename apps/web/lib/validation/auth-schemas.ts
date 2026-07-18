@@ -12,14 +12,6 @@ export const signInSchema = z.object({
 });
 
 export const signUpSchema = z.object({
-  business: z
-    .string({ message: "El nombre del negocio es obligatorio." })
-    .trim()
-    .min(1, "El nombre del negocio es obligatorio."),
-  name: z
-    .string({ message: "El nombre es obligatorio." })
-    .trim()
-    .min(1, "El nombre es obligatorio."),
   email: z
     .string({ message: "El correo electrónico es obligatorio." })
     .trim()

@@ -9,8 +9,6 @@ import {
   ArrowRight01Icon,
   MailAtSign01Icon,
   SquareLock02Icon,
-  Store01Icon,
-  UserIcon,
   ViewIcon,
   ViewOffSlashIcon,
 } from "@hugeicons/core-free-icons"
@@ -40,7 +38,7 @@ export default function RegisterForm() {
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { business: "", name: "", email: "", password: "" },
+    defaultValues: { email: "", password: "" },
   })
 
   async function onSubmit(values: SignUpFormValues) {
@@ -49,8 +47,9 @@ export default function RegisterForm() {
     setError(null)
     setIsPending(true)
     try {
+      // Better Auth requires a name even though registration only collects credentials.
       const { error: signUpError } = await authClient.signUp.email({
-        name: values.name,
+        name: values.email.split("@")[0],
         email: values.email,
         password: values.password,
         callbackURL: `${window.location.origin}/verify-email?verified=1`,
@@ -89,38 +88,6 @@ export default function RegisterForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5" aria-busy={isPending}>
-        <FormField
-          control={form.control}
-          name="business"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-2">
-              <FormLabel htmlFor="business" className="text-sm font-medium text-foreground">Nombre del negocio</FormLabel>
-              <FormControl>
-                <div className="group relative">
-                  <HugeiconsIcon icon={Store01Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
-                  <Input {...field} id="business" type="text" autoComplete="organization" placeholder="Tienda Doña Rosa" className="h-12 rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/15" />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-2">
-              <FormLabel htmlFor="name" className="text-sm font-medium text-foreground">Tu nombre</FormLabel>
-              <FormControl>
-                <div className="group relative">
-                  <HugeiconsIcon icon={UserIcon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
-                  <Input {...field} id="name" type="text" autoComplete="name" placeholder="Rosa Martínez" className="h-12 rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm focus:border-primary focus:ring-4 focus:ring-primary/15" />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"

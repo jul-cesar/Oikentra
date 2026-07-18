@@ -25,15 +25,10 @@ export function SignUpForm() {
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      name: '',
       email: '',
       password: '',
     },
   });
-
-  function onNameSubmitEditing() {
-    emailInputRef.current?.focus();
-  }
 
   function onEmailSubmitEditing() {
     passwordInputRef.current?.focus();
@@ -43,8 +38,9 @@ export function SignUpForm() {
     setError(null);
 
     try {
+      // Better Auth requires a name even though registration only collects credentials.
       const { error: signUpError } = await authClient.signUp.email({
-        name: values.name,
+        name: values.email.split('@')[0],
         email: values.email,
         password: values.password,
         callbackURL: `oikentra://auth/verify?verified=1&email=${encodeURIComponent(values.email)}`,
@@ -76,31 +72,6 @@ export function SignUpForm() {
       </View>
 
       <View className="gap-5">
-        <View className="gap-2">
-          <Label htmlFor="name">Nombre</Label>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onBlur, onChange, value } }) => (
-              <Input
-                id="name"
-                placeholder="Tu nombre"
-                className="h-14 rounded-xl px-4"
-                autoComplete="name"
-                autoCapitalize="words"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                onSubmitEditing={onNameSubmitEditing}
-                returnKeyType="next"
-                submitBehavior="submit"
-              />
-            )}
-          />
-          {errors.name ? (
-            <Text className="text-destructive text-sm">{errors.name.message}</Text>
-          ) : null}
-        </View>
         <View className="gap-2">
           <Label htmlFor="email">Correo electrónico</Label>
           <Controller

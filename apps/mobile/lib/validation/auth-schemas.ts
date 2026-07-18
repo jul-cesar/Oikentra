@@ -6,7 +6,6 @@ export const signInSchema = z.object({
 });
 
 export const signUpSchema = z.object({
-  name: z.string().trim().min(1, 'El nombre es obligatorio.'),
   email: z.string().trim().email('Ingresa un correo electrónico válido.'),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres.'),
 });

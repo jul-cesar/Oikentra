@@ -20,6 +20,7 @@ const chips = [
 export default function LoginPage() {
   return (
     <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-5 py-10">
+      
       {/* Fondo ambiental */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <div className="absolute -top-32 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
