@@ -89,11 +89,13 @@ export async function sendPasswordResetEmail({
   to,
   userId,
   token,
+  url,
   requestId,
 }: {
   to: string
   userId: string
   token: string
+  url: string
   requestId: string
 }): Promise<PasswordResetEmailOutcome> {
   const credentialAccounts = await db.query.account.findMany({
@@ -115,8 +117,17 @@ export async function sendPasswordResetEmail({
     return { status: 'provider_only' }
   }
 
-  const resetUrl = new URL('/restablecer-contrasena', config.webUrl)
-  resetUrl.hash = new URLSearchParams({ token }).toString()
+  const generatedResetUrl = new URL(url)
+  const callbackURL = generatedResetUrl.searchParams.get('callbackURL')
+  const resetUrl = callbackURL
+    ? new URL(callbackURL)
+    : new URL('/restablecer-contrasena', config.webUrl)
+
+  if (resetUrl.protocol === 'oikentra:') {
+    resetUrl.searchParams.set('token', token)
+  } else {
+    resetUrl.hash = new URLSearchParams({ token }).toString()
+  }
 
   try {
     await sendAuthEmail({

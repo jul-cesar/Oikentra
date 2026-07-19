@@ -1,9 +1,12 @@
 import { Hono } from 'hono'
 import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
+import { requireInternalAuth } from './http/middleware/require-internal-auth'
+import type { SyncAuthEnv } from './http/middleware/require-internal-auth'
 
-const app = new Hono()
+const app = new Hono<SyncAuthEnv>()
 app.use('*', requestIdMiddleware())
 app.use('*', requestLoggerMiddleware('sync-service'))
+app.use('/api/sync/*', requireInternalAuth)
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')

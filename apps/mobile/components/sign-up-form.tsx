@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { createAuthRequestOptions } from '@/lib/auth-client';
 import { signUpSchema, type SignUpFormValues } from '@/lib/validation/auth-schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
@@ -44,6 +45,7 @@ export function SignUpForm() {
         email: values.email,
         password: values.password,
         callbackURL: `oikentra://auth/verify?verified=1&email=${encodeURIComponent(values.email)}`,
+        fetchOptions: createAuthRequestOptions(),
       });
 
       if (signUpError) {

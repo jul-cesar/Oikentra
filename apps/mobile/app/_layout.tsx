@@ -25,7 +25,7 @@ function isValidAuthCallback(url: string): boolean {
 }
 
 function isSupportedAuthPath(path: string): boolean {
-  return path === 'verify' || path === 'sign-in';
+  return path === 'verify' || path === 'sign-in' || path === 'reset-password';
 }
 
 async function handleAuthUrl(url: string, navigate: (href: string) => void): Promise<boolean> {
@@ -67,7 +67,7 @@ async function handleAuthUrl(url: string, navigate: (href: string) => void): Pro
   if (verified) params.set('verified', verified);
   const queryString = params.toString();
 
-  navigate(`/(auth)/verify${queryString ? `?${queryString}` : ''}`);
+  navigate(`/(auth)/${path}${queryString ? `?${queryString}` : ''}`);
   return true;
 }
 

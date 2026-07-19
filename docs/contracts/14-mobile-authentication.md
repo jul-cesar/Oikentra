@@ -13,7 +13,7 @@ This document describes the mobile authentication flow for the Oikentra Expo app
 | Email verification | **Completed in code** | `oikentra://auth/verify` deep link and resend flow |
 | Native Google Sign-In | **Completed in code** | ID-token exchange for iOS/Android development builds |
 | Session gate and sign-out | **Completed in code** | Loading-aware protected routes and local session cleanup |
-| Password recovery | **Not implemented** | Explicit future work; web recovery is a separate flow |
+| Password recovery | **Completed in code** | Native request/reset screens with provider-aware recovery messaging |
 | Production OAuth/email verification | **Blocked pending deployment verification** | Requires external credentials, callback, CORS, and email-provider setup |
 
 ## 2. Technology Choices
@@ -22,7 +22,7 @@ This document describes the mobile authentication flow for the Oikentra Expo app
 - **SecureStore** persists sessions and cookies.
 - **No additional state libraries** such as TanStack Query or Zustand are used for auth; `useSession` from Better Auth is sufficient.
 - **Native Google Sign-In** uses `@react-native-google-signin/google-signin` and forwards the ID token to Better Auth.
-- **Deep-link scheme** `oikentra://` routes email verification callbacks back into the app.
+- **Deep-link scheme** `oikentra://` routes email verification and password reset callbacks back into the app.
 
 ## 3. Environment Variables
 
@@ -101,7 +101,15 @@ oikentra://auth/verify
 
 Unknown or malformed paths are rejected in `app/_layout.tsx`. The listener is deduplicated by navigation; invalid callbacks never authenticate a user or alter session state.
 
-## 8. Route Protection
+## 8. Password Recovery
+
+- `app/(auth)/forgot-password.tsx` calls `requestPasswordReset` with `redirectTo: 'oikentra://auth/reset-password'`.
+- `app/(auth)/reset-password.tsx` reads the reset token from the deep-link query and calls `resetPassword`.
+- The auth service preserves the web callback behavior while translating native reset callbacks to `oikentra://auth/reset-password?token=...`.
+- `PASSWORD_RESET_NOT_AVAILABLE` is shown as the Google-only recovery message. The mobile client does not infer providers from local account state.
+- Recovery requests and submissions include a UUID `X-Request-Id`; Better Auth/Expo continues to own credentialed session storage in SecureStore.
+
+## 9. Route Protection
 
 - `app/_layout.tsx` is a loading-aware session gate.
 - Authenticated users inside `app/(auth)/` are redirected to `app/(app)/`.
@@ -109,7 +117,7 @@ Unknown or malformed paths are rejected in `app/_layout.tsx`. The listener is de
 - `app/(app)/_layout.tsx` blocks direct access when there is no active session.
 - `app/(app)/index.tsx` displays the current session user and a sign-out action. Sign-out calls `authClient.signOut()` and clears local persistence.
 
-## 9. Auth-Service Compatibility
+## 10. Auth-Service Compatibility
 
 The following changes keep the mobile client compatible with the existing auth-service contract:
 
@@ -117,8 +125,9 @@ The following changes keep the mobile client compatible with the existing auth-s
 - `apps/auth-service/src/auth.ts` passes an array of Google client IDs to Better Auth so it accepts ID tokens from web, iOS, and Android clients.
 - `apps/auth-service/src/auth.ts` enables the official Better Auth Expo server plugin with `plugins: [expo()]`.
 - `trustedOrigins` explicitly includes `oikentra://auth/verify`, the `oikentra://` app scheme, the existing `oikentra://*` callback pattern, and development `exp://` origins.
+- Password reset email generation uses Better Auth's requested callback URL, retaining the web hash token format and supporting the native reset deep link.
 
-## 10. Security Boundaries
+## 11. Security Boundaries
 
 - No passwords or Google client secrets are stored in the mobile bundle.
 - Mobile Google client IDs are public configuration values. The Google OAuth client secret is server-only and must remain in `apps/auth-service`.
@@ -127,7 +136,7 @@ The following changes keep the mobile client compatible with the existing auth-s
 - Malformed deep links are ignored.
 - The auth base URL is validated at startup.
 
-## 11. External Setup Required
+## 12. External Setup Required
 
 The following cannot be completed in code and must be configured in Google Cloud Console and deployment tooling:
 
@@ -142,16 +151,15 @@ The following cannot be completed in code and must be configured in Google Cloud
 7. Email verification emails from Better Auth must point to the production auth origin.
 8. A native Google Sign-In `DEVELOPER_ERROR` is separate from email callback validation. Verify the Google Cloud iOS/Android OAuth clients, the `com.oikentra.app` bundle/package identifier, the Android signing certificate SHA-1/SHA-256 values, and the client IDs used by the native build. Do not put the server-only client secret in the mobile app.
 
-## 12. Excluded Features
+## 13. Excluded Features
 
 The following are intentionally not implemented in this change:
 
-- Password recovery.
 - Multi-factor authentication (MFA).
 - Offline authenticated access.
 - Web Google Sign-In browser flow (native only in this mobile client; the web app has its own direct Better Auth flow).
 
-## 13. Testing
+## 14. Testing
 
 There is no test runner configured in `apps/mobile`. Verification is done through TypeScript type-checking and runtime testing in iOS/Android development builds. Expo Go is not sufficient for native Google Sign-In validation.
 

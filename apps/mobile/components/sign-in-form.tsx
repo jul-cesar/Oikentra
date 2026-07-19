@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { createAuthRequestOptions, getSafeAuthErrorMessage } from '@/lib/auth-client';
 import { signInSchema, type SignInFormValues } from '@/lib/validation/auth-schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
@@ -41,6 +42,7 @@ export function SignInForm() {
         email: values.email,
         password: values.password,
         rememberMe: true,
+        fetchOptions: createAuthRequestOptions(),
       });
 
       if (signInError) {
@@ -49,7 +51,9 @@ export function SignInForm() {
           return;
         }
 
-        setError('No pudimos iniciar sesión. Revisa tu correo y contraseña.');
+        setError(
+          getSafeAuthErrorMessage(signInError, 'No pudimos iniciar sesión. Intenta nuevamente.')
+        );
         return;
       }
 
@@ -106,6 +110,12 @@ export function SignInForm() {
         <View className="gap-2">
           <View className="min-h-6 flex-row items-center">
             <Label htmlFor="password">Contraseña</Label>
+            <Pressable
+              className="ml-auto min-h-11 justify-center px-1"
+              onPress={() => router.push('/(auth)/forgot-password')}
+              accessibilityRole="button">
+              <Text className="text-primary text-sm font-medium">¿La olvidaste?</Text>
+            </Pressable>
           </View>
           <Controller
             control={control}

@@ -16,6 +16,7 @@
   "dependencies": {
     "@better-auth/expo": "1.6.23",
     "@hookform/resolvers": "^5.4.0",
+    "@oikentra/location-catalog": "workspace:*",
     "@react-native-google-signin/google-signin": "^16.1.2",
     "@rn-primitives/accordion": "^1.5.2",
     "@rn-primitives/alert-dialog": "^1.5.2",

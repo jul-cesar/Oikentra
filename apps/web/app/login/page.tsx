@@ -48,17 +48,7 @@ export default function LoginPage() {
           <LoginForm />
         </div>
 
-        <ul className="mt-9 flex flex-wrap items-center justify-center gap-2">
-          {chips.map((chip) => (
-            <li
-              key={chip.label}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur"
-            >
-              <HugeiconsIcon icon={chip.icon} size={15} strokeWidth={1.8} className="text-primary" aria-hidden="true" />
-              {chip.label}
-            </li>
-          ))}
-        </ul>
+       
       </div>
        </BeamsBackground>
      </AuthEntryGate>

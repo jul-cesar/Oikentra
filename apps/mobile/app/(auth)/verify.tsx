@@ -1,7 +1,7 @@
 import { AuthScreenShell } from '@/components/auth/auth-screen-shell';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { authClient } from '@/lib/auth-client';
+import { authClient, createAuthRequestOptions } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AlertCircle, Check, Mail, RefreshCw } from 'lucide-react-native';
@@ -75,7 +75,7 @@ export default function VerifyScreen() {
     let cancelled = false;
 
     async function checkVerifiedSession() {
-      if (await hasActiveSession() && !cancelled) {
+      if ((await hasActiveSession()) && !cancelled) {
         setHasVerifiedSession(true);
       }
     }
@@ -96,7 +96,10 @@ export default function VerifyScreen() {
 
     async function verifyToken() {
       try {
-        const { error } = await authClient.verifyEmail({ query: { token: token as string } });
+        const { error } = await authClient.verifyEmail({
+          query: { token: token as string },
+          fetchOptions: createAuthRequestOptions(),
+        });
 
         if (cancelled) return;
 
@@ -151,6 +154,7 @@ export default function VerifyScreen() {
       const { error: resendError } = await authClient.sendVerificationEmail({
         email,
         callbackURL: `oikentra://auth/verify?verified=1&email=${encodeURIComponent(email)}`,
+        fetchOptions: createAuthRequestOptions(),
       });
 
       if (resendError) {

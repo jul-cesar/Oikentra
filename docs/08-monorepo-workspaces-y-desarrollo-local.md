@@ -359,7 +359,7 @@ Reglas:
 
 - No se agregan endpoints publicos por fuera de la base del servicio.
 - Los health checks publicos tambien viven bajo la base del servicio, por ejemplo `/api/business/health/live`.
-- Los servicios protegidos que consumen identidad desde ForwardAuth deben exigir un secreto compartido de gateway. Dokploy/Traefik valida la sesion con `auth-service`, elimina o sobreescribe headers enviados por el cliente, y luego inyecta `X-User-Id`, `X-Session-Id` y `X-Gateway-Secret`. El servicio valida `X-Gateway-Secret` contra `GATEWAY_SHARED_SECRET` antes de confiar en los headers de identidad.
+- Los servicios protegidos que consumen identidad desde ForwardAuth deben exigir `X-Internal-Auth`. Dokploy/Traefik valida la sesión con `auth-service`, elimina o sobreescribe ese header enviado por el cliente y copia la assertion RS256 emitida por ForwardAuth. Cada servicio verifica la assertion con su propia clave pública.
 - Endpoints solo internos pueden usar `/internal/*`, pero deben estar disponibles unicamente en la red privada y protegidos por autenticacion de servicio cuando corresponda.
 - Un servicio no debe exponer tablas, repositorios o clientes de base de datos para que otro servicio los reutilice.
 - Cada servicio declara sus dependencias en su propio `package.json`.
@@ -380,7 +380,7 @@ Repositorio Oikentra
 
 Cada despliegue apunta al Dockerfile y configuracion de su servicio. Si un servicio consume un paquete bajo `packages/`, el contexto de construccion debe incluir la raiz, `pnpm-workspace.yaml` y `pnpm-lock.yaml`.
 
-Para servicios protegidos detras de ForwardAuth, cada despliegue define `GATEWAY_SHARED_SECRET` como secreto real del entorno. El proxy debe inyectar o sobreescribir `X-Gateway-Secret` despues de ForwardAuth y debe eliminar o sobreescribir cualquier `X-User-Id`/`X-Session-Id` recibido desde el cliente. Este patron evita que un acceso directo al servicio pueda autenticarse solo enviando headers no vacios.
+Para servicios protegidos detrás de ForwardAuth, `auth-service` conserva la clave privada y cada servicio recibe `INTERNAL_AUTH_PUBLIC_KEY_B64`. El proxy debe reenviar `Cookie` y `Authorization` al endpoint interno, copiar `X-Internal-Auth` de la respuesta y eliminar cualquier valor enviado por el cliente. Este patrón evita que un acceso directo al servicio pueda autenticarse con headers falsos.
 
 Un cambio en el repositorio no obliga a publicar todos los servicios. CI/CD debe detectar los directorios afectados o construir explicitamente el servicio seleccionado.
 

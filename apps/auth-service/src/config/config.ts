@@ -6,6 +6,7 @@ const requiredEnvVars = [
   'RESEND_API_KEY',
   'AUTH_EMAIL_FROM',
   'WEB_URL',
+  'INTERNAL_AUTH_PRIVATE_KEY_B64',
 ] as const
 
 function readRequiredEnv(name: (typeof requiredEnvVars)[number]) {
@@ -41,6 +42,8 @@ export const config = {
   authEmailFrom: readRequiredEnv('AUTH_EMAIL_FROM'),
   betterAuthSecret: readRequiredEnv('BETTER_AUTH_SECRET'),
   betterAuthUrl,
+  internalAuthPrivateKeyBase64: readRequiredEnv('INTERNAL_AUTH_PRIVATE_KEY_B64'),
+  internalAuthAudience: ['business-service', 'sync-service', 'reports-service'],
   googleClientId: readRequiredEnv('GOOGLE_CLIENT_ID'),
   googleClientSecret: readRequiredEnv('GOOGLE_CLIENT_SECRET'),
   googleIosClientId: readOptionalEnv('GOOGLE_IOS_CLIENT_ID'),

@@ -75,9 +75,30 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 )
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userProfiles = pgTable(
+  'user_profiles',
+  {
+    userId: text('user_id')
+      .primaryKey()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    countryCode: text('country_code').notNull(),
+    department: text('department'),
+    city: text('city').notNull(),
+    phone: text('phone'),
+    profileCompletedAt: timestamp('profile_completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index('user_profiles_country_code_idx').on(table.countryCode)],
+)
+
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
+  profile: one(userProfiles),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -93,3 +114,6 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }))
+
+export type UserProfile = typeof userProfiles.$inferSelect
+export type NewUserProfile = typeof userProfiles.$inferInsert
