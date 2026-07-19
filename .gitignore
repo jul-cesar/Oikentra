@@ -2,12 +2,14 @@ node_modules/
 .env
 .env.*
 !.env.example
-
+.vscode
 # Build and tool output
 dist/
 coverage/
 *.tsbuildinfo
 
+sdd/
+openspec/
 # Expo
 .expo/
 web-build/

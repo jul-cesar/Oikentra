@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, ne, sql } from 'drizzle-orm'
 
-import { db } from '../../db/client'
+import { getDb } from '../../db/client'
 import { businesses, type Business, type NewBusiness } from '../../db/schema'
 import type { UpdateBusinessInput } from './types/businesses.types'
 
@@ -19,12 +19,14 @@ export type BusinessRepository = {
 
 export const businessRepository: BusinessRepository = {
   async create(input) {
+    const db = getDb()
     const [business] = await db.insert(businesses).values(input).returning()
 
     return business
   },
 
   async findManyByOwner(ownerUserId) {
+    const db = getDb()
     return db
       .select()
       .from(businesses)
@@ -33,6 +35,7 @@ export const businessRepository: BusinessRepository = {
   },
 
   async findByIdAndOwner(businessId, ownerUserId) {
+    const db = getDb()
     const [business] = await db
       .select()
       .from(businesses)
@@ -66,6 +69,7 @@ export const businessRepository: BusinessRepository = {
   },
 
   async updateByIdAndOwner(businessId, ownerUserId, input) {
+    const db = getDb()
     const [business] = await db
       .update(businesses)
       .set({

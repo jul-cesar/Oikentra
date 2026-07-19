@@ -1,7 +1,9 @@
 import { app } from './app'
-import { config } from './config/config'
+import { getPort, validateRuntimeConfig } from './config/config'
+
+if (import.meta.main) validateRuntimeConfig()
 
 export default {
-  port: config.port,
+  port: getPort(),
   fetch: app.fetch,
 }

@@ -1,4 +1,8 @@
 import { sendAuthEmail } from './resend-email-service'
+import { getConfig } from '../config/config'
+import { getDb } from '../db/client'
+import { account } from '../db/schema'
+import { and, eq, isNotNull } from 'drizzle-orm'
 
 function escapeHtml(value: string) {
   return value
@@ -23,44 +27,137 @@ function actionEmailHtml({
   return `
     <p>${escapeHtml(description)}</p>
     <p><a href="${safeUrl}">${escapeHtml(actionLabel)}</a></p>
-    <p>If the button does not work, copy and paste this link into your browser:</p>
+    <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
     <p><a href="${safeUrl}">${safeUrl}</a></p>
-    <p>If you did not request this, you can ignore this email.</p>
+    <p>Si no solicitaste esto, puedes ignorar este correo.</p>
   `
 }
 
 export function sendVerificationEmail({
   to,
-  url,
+  token,
 }: {
   to: string
-  url: string
+  token: string
 }) {
+  const config = getConfig()
+  const verificationUrl = new URL('/verificar-correo', config.webUrl)
+  verificationUrl.hash = new URLSearchParams({ token }).toString()
+
   return sendAuthEmail({
     to,
-    subject: 'Verify your Oikentra email address',
+    subject: 'Confirma tu correo de Oikentra',
     html: actionEmailHtml({
-      actionLabel: 'Verify email address',
-      description: 'Please verify your email address to finish setting up your Oikentra account.',
-      url,
+      actionLabel: 'Confirmar correo',
+      description: 'Confirma tu correo para terminar de crear tu cuenta de Oikentra.',
+      url: verificationUrl.toString(),
     }),
   })
 }
 
-export function sendPasswordResetEmail({
+type PasswordResetEmailOutcome =
+  | { status: 'accepted' }
+  | { status: 'provider_only' }
+  | { status: 'delivery_failed'; error: unknown }
+
+function logAuthEvent({
+  requestId,
+  category,
+  outcome,
+  error,
+}: {
+  requestId: string
+  category: string
+  outcome: string
+  error?: unknown
+}) {
+  console.log(
+    JSON.stringify({
+      requestId,
+      category,
+      outcome,
+      ...(error
+        ? {
+            error:
+              error instanceof Error ? error.message : 'unknown',
+          }
+        : {}),
+    }),
+  )
+}
+
+export async function sendPasswordResetEmail({
   to,
+  userId,
+  token,
   url,
+  requestId,
 }: {
   to: string
+  userId: string
+  token: string
   url: string
-}) {
-  return sendAuthEmail({
-    to,
-    subject: 'Reset your Oikentra password',
-    html: actionEmailHtml({
-      actionLabel: 'Reset password',
-      description: 'Use this secure link to reset your Oikentra password.',
-      url,
-    }),
+  requestId: string
+}): Promise<PasswordResetEmailOutcome> {
+  const db = getDb()
+  const credentialAccounts = await db.query.account.findMany({
+    where: and(
+      eq(account.userId, userId),
+      eq(account.providerId, 'credential'),
+      isNotNull(account.password),
+    ),
+    columns: { id: true },
+    limit: 1,
   })
+
+  if (credentialAccounts.length === 0) {
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'provider_only',
+    })
+    return { status: 'provider_only' }
+  }
+
+  const generatedResetUrl = new URL(url)
+  const callbackURL = generatedResetUrl.searchParams.get('callbackURL')
+  const resetUrl = callbackURL
+    ? new URL(callbackURL)
+    : new URL('/restablecer-contrasena', getConfig().webUrl)
+
+  if (resetUrl.protocol === 'oikentra:') {
+    resetUrl.searchParams.set('token', token)
+  } else {
+    resetUrl.hash = new URLSearchParams({ token }).toString()
+  }
+
+  try {
+    await sendAuthEmail({
+      to,
+      subject: 'Restablece tu contraseña de Oikentra',
+      html: actionEmailHtml({
+        actionLabel: 'Restablecer contraseña',
+        description:
+          'Usa este enlace seguro para restablecer tu contraseña de Oikentra.',
+        url: resetUrl.toString(),
+      }),
+    })
+
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'accepted',
+    })
+
+    return { status: 'accepted' }
+  } catch (error) {
+    logAuthEvent({
+      requestId,
+      category: 'password_reset_email',
+      outcome: 'delivery_failed',
+      error,
+    })
+
+    return { status: 'delivery_failed', error }
+  }
 }

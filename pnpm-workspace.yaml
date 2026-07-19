@@ -2,6 +2,11 @@ packages:
   - "apps/*"
   - "packages/*"
 
+overrides:
+  "@expo/router-server": "~56.0.16"
+  "expo-web-browser": "~56.0.5"
+
 allowBuilds:
   esbuild: true
+  sharp: true
   unrs-resolver: true

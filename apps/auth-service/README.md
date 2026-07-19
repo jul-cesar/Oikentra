@@ -19,11 +19,12 @@ Copy `.env.example` to `.env` for local development and set real values:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/oikentra_auth
 BETTER_AUTH_SECRET=replace-with-a-long-random-secret
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3001
 GOOGLE_CLIENT_ID=replace-with-google-client-id
 GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
 RESEND_API_KEY=replace-with-resend-api-key
 AUTH_EMAIL_FROM=Oikentra <auth@example.com>
+INTERNAL_AUTH_PRIVATE_KEY_B64=replace-with-base64-pkcs8-private-key
 PORT=3001
 ```
 
@@ -34,6 +35,11 @@ Required startup variables:
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth credentials.
 - `RESEND_API_KEY`: Resend API key.
 - `AUTH_EMAIL_FROM`: Verified sender address, for example `Oikentra <auth@example.com>`.
+- `AUTH_COOKIE_DOMAIN`: Optional cookie domain. Leave it unset locally; set it to `oikentra.com` in production so the auth cookie is sent to both `api.oikentra.com` and `oikentra.com`. It is server-only and must not use a `NEXT_PUBLIC_*` variable.
+
+The web client calls `BETTER_AUTH_URL` directly from the browser. The auth service enables credentialed CORS for the origin configured by `WEB_URL`; set that value to the deployed web origin in production.
+
+When `AUTH_COOKIE_DOMAIN` is set, Better Auth enables cross-subdomain cookies without changing cookie names or session expiration/revocation behavior. Cookies remain `httpOnly` and secure on HTTPS. After changing the cookie domain in a deployed environment, users may need to sign in again because the browser may retain the old host-only cookie separately.
 
 Do not commit real credentials. Use a Resend verified domain for `AUTH_EMAIL_FROM` in production.
 
@@ -53,11 +59,12 @@ When the session is valid, the internal validation endpoint returns:
 
 ```http
 HTTP/1.1 204 No Content
-X-User-Id: <user-id>
-X-Session-Id: <session-id>
+X-Internal-Auth: <short-lived-rs256-jwt>
 ```
 
 When the session is missing or invalid, it returns `401 Unauthorized`. This endpoint must only be reachable from the private service network.
+
+The assertion is signed with the private PKCS#8 key configured by `INTERNAL_AUTH_PRIVATE_KEY_B64` and is valid for 60 seconds. Keep the private key only in auth-service; protected services receive a base64-encoded SPKI public key.
 
 ## Development
 

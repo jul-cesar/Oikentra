@@ -2,12 +2,19 @@
 
 ## Estado actual
 
-- [x] Crear `auth-service`.
-- [x] Crear `oikentraauth`.
-- [x] Conectar Better Auth.
-- [x] Exponer `/api/auth/*`.
-- [ ] Validar registro, login, sesión y logout.
-- [ ] Crear `/internal/session/validate`.
+- [x] Crear `auth-service` y conectar Better Auth con Drizzle/PostgreSQL.
+- [x] Exponer la API pública Better Auth en `/api/auth/*`.
+- [x] Implementar email/password y requisito de verificación de correo.
+- [x] Implementar Google OAuth para web y clientes nativos mobile.
+- [x] Implementar cliente web directo mediante `NEXT_PUBLIC_AUTH_BASE_URL`.
+- [x] Implementar cliente Expo con SecureStore, sesión protegida y logout.
+- [x] Implementar verificación de correo web y mobile mediante enlaces/deep links.
+- [x] Implementar solicitud y cambio de contraseña en el flujo web.
+- [x] Retirar `X-Idempotency-Key` del flujo auth; conservar `X-Request-Id` para observabilidad.
+- [x] Evitar el fallo de prerender de Next cuando falta `NEXT_PUBLIC_AUTH_BASE_URL` mediante fallback público.
+- [ ] Verificar en el entorno desplegado registro, login, sesión, logout, cookies, CORS, email y OAuth.
+- [ ] Cerrar la integración de `/internal/session/validate` con Traefik.
+- [ ] Corregir la URL duplicada `/api/auth/api/auth/reset-password` del proxy web de recuperación.
 
 ---
 
@@ -15,12 +22,10 @@
 
 ## AUTH-01 - Validar flujo por correo
 
-- [ ] Registro.
-- [ ] Login.
-- [ ] Consultar sesión.
-- [ ] Logout.
-- [ ] Probar cookies.
-- [ ] Probar errores.
+- [x] Implementar registro, login, sesión y logout en web y mobile.
+- [x] Requerir verificación de correo antes del login por contraseña.
+- [x] Implementar envío y reenvío de verificación con Resend.
+- [ ] Validar en producción cookies, CORS, emails, expiración de tokens y errores.
 
 **Terminado cuando:** un usuario puede registrarse, iniciar sesión y recuperar su sesión.
 
@@ -30,19 +35,42 @@
 GET /internal/session/validate
 ```
 
-- [ ] Validar cookie con Better Auth.
-- [ ] Responder `401` sin sesión.
-- [ ] Responder `204` con sesión válida.
-- [ ] Enviar `X-User-Id` y `X-Session-Id`.
+- [x] Validar cookie con Better Auth.
+- [x] Responder `401` sin sesión.
+- [x] Responder `204` con sesión válida.
+- [x] Emitir `X-Internal-Auth` y verificarlo localmente en cada servicio protegido.
+- [ ] Integrar y verificar el middleware `ForwardAuth` en el entorno desplegado.
 - [ ] Agregar pruebas.
 
 ## AUTH-03 - Google Auth
 
-- [ ] Configurar credenciales.
-- [ ] Configurar callback.
-- [ ] Probar deep link con Expo.
+- [x] Implementar Google OAuth web contra la API pública.
+- [x] Implementar Google Sign-In nativo mobile con intercambio de ID token.
+- [x] Configurar en código los orígenes confiables y clientes web/iOS/Android opcionales.
+- [ ] Configurar y verificar en producción `BETTER_AUTH_URL`, `WEB_URL`, IDs de cliente y secreto server-only.
+- [ ] Registrar y verificar el callback web `https://api.oikentra.com/api/auth/callback/google`.
+- [ ] Probar Google nativo en builds iOS/Android con identificadores y certificados reales.
 
 Puede hacerse después del login por correo.
+
+## AUTH-04 - Recuperación de contraseña y limpieza
+
+- [x] Implementar solicitud de recuperación web y correo con Resend.
+- [x] Implementar token en fragmento (`#token=...`) y limpieza del fragmento del historial del navegador.
+- [x] Conservar `X-Request-Id` desde web hasta auth-service para correlación de logs.
+- [x] Eliminar `X-Idempotency-Key` no utilizado del flujo y de CORS.
+- [ ] Corregir el proxy web que concatena `/api/auth` dos veces al reenviar `reset-password`.
+- [ ] Decidir si se conserva el proxy de reset o se usa exclusivamente el endpoint nativo de Better Auth.
+- [ ] Agregar pruebas para URL final, token ausente/expirado, origen inválido, `429` y reintentos.
+- [ ] Implementar recuperación de contraseña en mobile; actualmente está fuera de alcance.
+
+## AUTH-05 - Configuración de despliegue
+
+- [x] Documentar `NEXT_PUBLIC_AUTH_BASE_URL` para el cliente web y `AUTH_BASE_URL` para rutas server-side.
+- [x] Documentar `EXPO_PUBLIC_AUTH_BASE_URL` y los IDs públicos de Google mobile.
+- [x] Añadir fallback web para que un valor público ausente no rompa el prerender de Next.
+- [ ] Confirmar variables no secretas en el proveedor de despliegue sin copiar secretos a documentación.
+- [ ] Verificar CORS/trusted origins para `WEB_URL`, `oikentra://` y orígenes Expo de desarrollo.
 
 ---
 
@@ -84,12 +112,13 @@ PATCH /api/business/businesses/:businessId
 
 ## MOB-01 - Base del proyecto
 
-- [ ] Crear `apps/mobile`.
-- [ ] Configurar Expo.
-- [ ] Configurar navegación.
-- [ ] Configurar cliente Better Auth.
-- [ ] Crear pantallas de login y registro.
-- [ ] Proteger rutas autenticadas.
+- [x] Crear `apps/mobile` y configurar Expo Router.
+- [x] Configurar cliente Better Auth/Expo con SecureStore.
+- [x] Crear pantallas de login, registro y verificación.
+- [x] Proteger rutas autenticadas y restaurar sesión.
+- [x] Implementar logout y limpieza de persistencia local.
+- [x] Implementar Google Sign-In nativo para iOS/Android.
+- [ ] Validar en development builds; Expo Go no valida Google nativo.
 
 ## MOB-02 - Negocios
 
@@ -251,13 +280,13 @@ Completar autenticación y crear el primer negocio.
 
 ### Tareas
 
-1. Crear `/internal/session/validate`.
-2. Probar registro, login, sesión y logout.
-3. Crear `business-service`.
-4. Conectar `oikentrabusiness`.
-5. Crear tabla y endpoints de negocios.
-6. Crear la base de la app Expo.
-7. Conectar login y listado de negocios.
+1. Corregir y probar la URL duplicada del reset web.
+2. Verificar producción: CORS, cookies, email y callback de Google.
+3. Integrar `/internal/session/validate` con Traefik.
+4. Crear `business-service`.
+5. Conectar `oikentrabusiness`.
+6. Crear tabla y endpoints de negocios.
+7. Conectar la app mobile con el listado de negocios.
 
 ### Resultado esperado
 

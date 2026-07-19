@@ -8,6 +8,13 @@
       "when": 1783969199476,
       "tag": "0000_initial_auth_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784413546628,
+      "tag": "0001_ambitious_valeria_richards",
+      "breakpoints": true
     }
   ]
 }
