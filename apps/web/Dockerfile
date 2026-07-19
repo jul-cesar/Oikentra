@@ -12,6 +12,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
+COPY packages/location-catalog/package.json packages/location-catalog/package.json
 
 RUN pnpm install --frozen-lockfile --filter @oikentra/web...
 
