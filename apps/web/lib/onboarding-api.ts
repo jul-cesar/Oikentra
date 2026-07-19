@@ -16,7 +16,8 @@ export type Business = {
   timezone?: string
 }
 
-const businessBaseUrl = (process.env.NEXT_PUBLIC_BUSINESS_BASE_URL?.trim() || authBaseUrl.replace(/\/api\/auth$/, "/api/business")).replace(/\/$/, "")
+const ACTIVE_BUSINESS_KEY = "oikentra.activeBusinessId"
+const businessBaseUrl = "/api/business"
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, credentials: "include", headers: { "Content-Type": "application/json", ...init?.headers } })
@@ -39,4 +40,8 @@ export function getBusinesses() {
 
 export function createBusiness(input: { name: string }) {
   return request<Business>(`${businessBaseUrl}/businesses`, { method: "POST", body: JSON.stringify(input) })
+}
+
+export function saveActiveBusinessId(id: string) {
+  window.localStorage.setItem(ACTIVE_BUSINESS_KEY, id)
 }

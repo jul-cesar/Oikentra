@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Environment
 
-Set `NEXT_PUBLIC_AUTH_BASE_URL` to the Better Auth API endpoint used by the browser. For local development use `http://localhost:3001/api/auth`; production deployments should use the public auth API URL, for example `https://api.oikentra.com/api/auth`. The value is embedded during `next build`.
+Set `NEXT_PUBLIC_AUTH_BASE_URL` to the public Better Auth gateway endpoint used by the browser. Keep `BUSINESS_BASE_URL` server-only and set it to the gateway/Traefik upstream that serves `/api/business` (for example, `http://traefik/api/business` locally or `https://api.oikentra.com/api/business` in production). Browser onboarding calls the same-origin Next.js route `/api/business/*`, so it does not require CORS between `oikentra.com` and `api.oikentra.com` and does not target the business-service port directly. `NEXT_PUBLIC_BUSINESS_BASE_URL` is not used.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

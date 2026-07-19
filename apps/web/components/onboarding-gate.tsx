@@ -1,457 +1,437 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react"
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Call02Icon,
+  CheckmarkCircle02Icon,
+  City01Icon,
+  Location01Icon,
+  Store01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
-import {
-  colombiaDepartments,
-  type LocationOption,
-} from "@oikentra/location-catalog";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  createBusiness,
-  getBusinesses,
-  getProfile,
-  saveProfile,
-  type Business,
-} from "@/lib/onboarding-api";
-import {
-  businessOnboardingSchema,
-  profileOnboardingSchema,
-  type BusinessOnboardingValues,
-  type ProfileOnboardingValues,
-} from "@/lib/validation/onboarding-schemas";
+import { Button } from "@/components/ui/button"
+import { createBusiness, getBusinesses, getProfile, saveActiveBusinessId, saveProfile, type Business } from "@/lib/onboarding-api"
+import { colombiaDepartments } from "@oikentra/location-catalog"
+import { SearchableSelect } from "./searchable-select"
 
-function ErrorState({
-  message,
-  onRetry,
-  busy,
-}: {
-  message: string;
-  onRetry: () => void;
-  busy: boolean;
-}) {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center p-6">
-      <div className="max-w-md space-y-4 text-center">
-        <p className="text-sm text-destructive" role="alert">
-          {message}
-        </p>
-        <Button onClick={onRetry} disabled={busy}>
-          {busy ? "Reintentando..." : "Reintentar"}
-        </Button>
-      </div>
-    </div>
-  );
+type Answers = {
+  department: string
+  city: string
+  phone: string
+  businessName: string
 }
 
-export function OnboardingGate({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<
-    "loading" | "profile" | "business" | "ready" | "error"
-  >("loading");
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [error, setError] = useState<string | null>(null);
+const emptyAnswers: Answers = {
+  department: "",
+  city: "",
+  phone: "",
+  businessName: "",
+}
 
-  const load = useCallback(async () => {
-    setStatus("loading");
-    setError(null);
+const steps = [
+  {
+    id: "department",
+    icon: Location01Icon,
+    eyebrow: "Ubicación",
+    title: "¿En qué departamento operas?",
+    subtitle: "Nos ayuda a preparar impuestos y formatos locales para tu negocio.",
+  },
+  {
+    id: "city",
+    icon: City01Icon,
+    eyebrow: "Ubicación",
+    title: "¿Cuál es tu ciudad o municipio?",
+    subtitle: "Elige el lugar donde atiendes a tus clientes.",
+  },
+  {
+    id: "phone",
+    icon: Call02Icon,
+    eyebrow: "Contacto",
+    title: "¿A qué número te contactamos?",
+    subtitle: "Opcional. Lo usamos para recuperar tu cuenta y avisos importantes.",
+  },
+  {
+    id: "businessName",
+    icon: Store01Icon,
+    eyebrow: "Tu negocio",
+    title: "Ponle nombre a tu negocio",
+    subtitle: "Este será el espacio donde registrarás ventas, gastos, clientes y fiados.",
+  },
+] as const
+
+type OnboardingGateProps = { children: React.ReactNode }
+
+type GateStatus = "loading" | "profile" | "business" | "ready" | "error"
+
+export function OnboardingGate({ children }: OnboardingGateProps) {
+  const [status, setStatus] = useState<GateStatus>("loading")
+  const [businesses, setBusinesses] = useState<Business[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  async function load() {
+    setStatus("loading")
+    setError(null)
     try {
-      const profile = await getProfile();
+      const profile = await getProfile()
       if (!profile.profileCompleted) {
-        setStatus("profile");
-        return;
+        setStatus("profile")
+        return
       }
-      const records = await getBusinesses();
-      setBusinesses(records);
-      setStatus("business");
+      setBusinesses(await getBusinesses())
+      setStatus("business")
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "No pudimos cargar tu onboarding.",
-      );
-      setStatus("error");
+      setError(cause instanceof Error ? cause.message : "No pudimos cargar tu onboarding.")
+      setStatus("error")
     }
-  }, []);
+  }
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void load(), 0);
-    return () => window.clearTimeout(timer);
-  }, [load]);
+    const timer = window.setTimeout(() => void load(), 0)
+    return () => window.clearTimeout(timer)
+  }, [])
 
-  if (status === "loading")
+  if (status === "loading") {
+    return <GateMessage>Preparando tu espacio...</GateMessage>
+  }
+  if (status === "error") {
     return (
-      <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">
-        Preparando tu espacio...
-      </div>
-    );
-  if (status === "error")
+      <GateMessage>
+        <p role="alert">{error}</p>
+        <Button type="button" onClick={() => void load()}>Reintentar</Button>
+      </GateMessage>
+    )
+  }
+  if (status === "profile") {
     return (
-      <ErrorState
-        message={error ?? "No pudimos cargar tu onboarding."}
-        onRetry={() => void load()}
-        busy={false}
-      />
-    );
-  if (status === "profile")
-    return <ProfileOnboarding onComplete={() => void load()} />;
-  if (status === "business")
+      <OnboardingFrame>
+        <OnboardingFlow onComplete={() => setStatus("ready")} />
+      </OnboardingFrame>
+    )
+  }
+  if (status === "business") {
     return (
-      <BusinessOnboarding
-        businesses={businesses}
-        onComplete={() => void load()}
-      />
-    );
-  return <>{children}</>;
+      <OnboardingFrame>
+        <BusinessOnboarding businesses={businesses} onComplete={() => setStatus("ready")} />
+      </OnboardingFrame>
+    )
+  }
+  return <>{children}</>
 }
 
-function ProfileOnboarding({ onComplete }: { onComplete: () => void }) {
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const form = useForm<ProfileOnboardingValues>({
-    resolver: zodResolver(profileOnboardingSchema),
-    defaultValues: { department: "", city: "", phone: "" },
-    mode: "onTouched",
-  });
-  const labels = ["Departamento", "Ciudad", "Teléfono"];
-  const fields = ["department", "city", "phone"] as const;
-  const departmentValue = useWatch({
-    control: form.control,
-    name: "department",
-  });
-  const selectedDepartment = colombiaDepartments.find(
-    ({ name }) => name === departmentValue,
-  );
+function GateMessage({ children }: { children: React.ReactNode }) {
+  return <div className="flex min-h-svh w-full min-w-0 flex-col items-center justify-center gap-4 overflow-x-hidden break-words px-4 py-6 text-center text-muted-foreground sm:px-6">{children}</div>
+}
 
-  async function next() {
-    const valid = await form.trigger(fields[step]);
-    if (!valid) return;
-    if (step < fields.length - 1) {
-      setStep((value) => value + 1);
-      return;
+function OnboardingFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="flex min-h-svh w-full min-w-0 items-start justify-center overflow-x-hidden px-4 py-8 sm:px-6 sm:py-12 md:items-center md:px-8 md:py-16">
+      <div className="w-full min-w-0 max-w-lg">{children}</div>
+    </main>
+  )
+}
+
+export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
+  const [answers, setAnswers] = useState<Answers>(emptyAnswers)
+  const [step, setStep] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const current = steps[step]
+  const isLast = step === steps.length - 1
+
+  const selectedDepartment = useMemo(
+    () => colombiaDepartments.find(({ name }) => name === answers.department),
+    [answers.department],
+  )
+
+  function update<K extends keyof Answers>(key: K, value: Answers[K]) {
+    setAnswers((prev) => ({ ...prev, [key]: value }))
+    setError(null)
+  }
+
+  function validate(): string | null {
+    switch (current.id) {
+      case "department":
+        return answers.department ? null : "Elige tu departamento para continuar."
+      case "city":
+        return answers.city ? null : "Elige tu ciudad o municipio."
+      case "phone": {
+        if (!answers.phone) return null
+        const digits = answers.phone.replace(/\D/g, "")
+        return digits.length >= 7 && digits.length <= 10 ? null : "Ingresa un teléfono válido (7 a 10 dígitos)."
+      }
+      case "businessName":
+        return answers.businessName.trim().length >= 2 ? null : "El nombre debe tener al menos 2 caracteres."
+      default:
+        return null
     }
-    setError(null);
-    if (!(await form.trigger())) return;
+  }
+
+  async function goNext() {
+    const validationError = validate()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    if (!isLast) {
+      setStep((value) => value + 1)
+      return
+    }
+    setSubmitting(true)
     try {
       await saveProfile({
-        ...form.getValues(),
-        phone: form.getValues().phone || null,
-      });
-      onComplete();
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "No pudimos guardar tu perfil.",
-      );
+        department: answers.department,
+        city: answers.city,
+        phone: answers.phone || null,
+      })
+      const business = await createBusiness({ name: answers.businessName.trim() })
+      saveActiveBusinessId(business.id)
+      setDone(true)
+    } catch {
+      setError("No pudimos guardar tu información. Inténtalo de nuevo.")
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Paso {step + 1} de 3
-          </p>
-          <CardTitle>Conozcamos tu operación</CardTitle>
-          <CardDescription>
-            Completa estos datos para preparar tu espacio de trabajo.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              className="space-y-5"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void next();
-              }}
-            >
-              {step === 0 ? (
-                <FormField
-                  control={form.control}
-                  name="department"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{labels[step]}</FormLabel>
-                      <FormControl>
-                        <SearchableLocationSelect
-                          value={field.value}
-                          options={colombiaDepartments}
-                          placeholder="Busca un departamento"
-                          onChange={(value) => {
-                            field.onChange(value);
-                            form.setValue("city", "");
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : step === 1 ? (
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{labels[step]}</FormLabel>
-                      <FormControl>
-                        <SearchableLocationSelect
-                          value={field.value}
-                          options={selectedDepartment?.municipalities ?? []}
-                          placeholder={
-                            selectedDepartment
-                              ? "Busca una ciudad o municipio"
-                              : "Elige primero un departamento"
-                          }
-                          disabled={!selectedDepartment}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : (
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teléfono (opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          placeholder="300 000 0000"
-                          autoFocus
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-              {error ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              <div className="flex justify-between gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={step === 0}
-                  onClick={() => setStep((value) => value - 1)}
-                >
-                  Atrás
-                </Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting
-                    ? "Guardando..."
-                    : step === 3
-                      ? "Guardar perfil"
-                      : "Continuar"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+  function goBack() {
+    setError(null)
+    setStep((value) => Math.max(value - 1, 0))
+  }
 
-function SearchableLocationSelect({
-  value,
-  options,
-  placeholder,
-  onChange,
-  disabled = false,
-}: {
-  value: string;
-  options: LocationOption[];
-  placeholder: string;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-}) {
-  const [query, setQuery] = useState(value);
-  const [open, setOpen] = useState(false);
-  const filtered = options
-    .filter(({ name }) =>
-      name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+  if (done) {
+    return (
+      <div className="flex flex-col items-center text-center">
+        <span className="grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={34} strokeWidth={2} aria-hidden="true" />
+        </span>
+        <h1 className="mt-6 break-words text-3xl font-bold tracking-tight text-balance">¡Todo listo, {answers.businessName}!</h1>
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-pretty text-muted-foreground">
+          Tu espacio en {answers.city} quedó configurado. Ya puedes registrar tu primera venta y llevar el control de
+          tus fiados.
+        </p>
+          <Button size="lg" className="mt-8 h-12 rounded-xl px-6 text-sm font-semibold" onClick={onComplete}>
+            Entrar a mi negocio
+            <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+          </Button>
+      </div>
     )
-    .slice(0, 80);
+  }
+
   return (
-    <div className="relative">
-      <Input
-        role="combobox"
-        aria-expanded={open}
-        aria-controls="location-options"
-        value={query}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoFocus
-        onFocus={() => setOpen(true)}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-          onChange("");
-        }}
-        onBlur={() => window.setTimeout(() => setOpen(false), 150)}
-      />
-      {open && !disabled ? (
-        <div
-          id="location-options"
-          role="listbox"
-          className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md"
-        >
-          {filtered.length ? (
-            filtered.map((option) => (
-              <button
-                key={option.code}
-                type="button"
-                role="option"
-                aria-selected={option.name === value}
-                className="block w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-accent"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  onChange(option.name);
-                  setQuery(option.name);
-                  setOpen(false);
-                }}
-              >
-                {option.name}
-              </button>
-            ))
-          ) : (
-            <p className="px-3 py-2 text-sm text-muted-foreground">
-              No encontramos coincidencias.
-            </p>
-          )}
+    <div className="w-full">
+      {/* Progreso por segmentos */}
+      <div className="flex items-center gap-1.5" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={steps.length}>
+        {steps.map((item, index) => (
+          <span
+            key={item.id}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              index <= step ? "bg-primary" : "bg-border"
+            }`}
+          />
+        ))}
+      </div>
+
+      <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+        {current.eyebrow} · Paso {step + 1} de {steps.length}
+      </p>
+
+      <div className="mt-3 flex items-start gap-3">
+        <span className="mt-0.5 grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+          <HugeiconsIcon icon={current.icon} size={22} strokeWidth={1.9} aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <h1 className="break-words text-2xl font-bold tracking-tight text-balance">{current.title}</h1>
+          <p className="mt-1.5 text-sm leading-relaxed text-pretty text-muted-foreground">{current.subtitle}</p>
         </div>
-      ) : null}
+      </div>
+
+      <form
+        className="mt-7"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void goNext()
+        }}
+      >
+        {/* key por paso: fuerza remonte y evita arrastrar el texto de una pregunta a otra */}
+        <div key={current.id} className="min-w-0">
+          {current.id === "department" ? (
+            <SearchableSelect
+              value={answers.department}
+              options={colombiaDepartments}
+              placeholder="Busca tu departamento"
+              onChange={(value) => {
+                update("department", value)
+                // Reinicia la ciudad al cambiar de departamento.
+                setAnswers((prev) => ({ ...prev, department: value, city: "" }))
+              }}
+            />
+          ) : null}
+
+          {current.id === "city" ? (
+            <SearchableSelect
+              value={answers.city}
+              options={selectedDepartment?.municipalities ?? []}
+              placeholder={selectedDepartment ? "Busca tu ciudad o municipio" : "Elige primero un departamento"}
+              disabled={!selectedDepartment}
+              onChange={(value) => update("city", value)}
+            />
+          ) : null}
+
+          {current.id === "phone" ? (
+            <div className="group relative">
+              <HugeiconsIcon
+                icon={Call02Icon}
+                size={19}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+                aria-hidden="true"
+              />
+              <input
+                aria-label="Teléfono"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                autoFocus
+                value={answers.phone}
+                placeholder="300 000 0000"
+                onChange={(event) => update("phone", event.target.value)}
+                className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
+              />
+            </div>
+          ) : null}
+
+          {current.id === "businessName" ? (
+            <div className="group relative">
+              <HugeiconsIcon
+                icon={Store01Icon}
+                size={19}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+                aria-hidden="true"
+              />
+              <input
+                aria-label="Nombre del negocio"
+                type="text"
+                autoFocus
+                value={answers.businessName}
+                placeholder="Tienda Doña Rosa"
+                onChange={(event) => update("businessName", event.target.value)}
+                className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {error ? (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-8 flex items-center gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="h-12 shrink-0 rounded-xl px-3 text-sm font-medium sm:px-4"
+            disabled={step === 0 || submitting}
+            onClick={goBack}
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+            Atrás
+          </Button>
+
+          <Button type="submit" size="lg" className="h-12 min-w-0 flex-1 rounded-xl text-sm font-semibold" disabled={submitting}>
+            {submitting ? "Guardando..." : isLast ? "Crear mi negocio" : "Continuar"}
+            {!submitting ? (
+              <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+            ) : null}
+          </Button>
+        </div>
+
+        {current.id === "phone" ? (
+          <button
+            type="button"
+            onClick={() => {
+              update("phone", "")
+              setStep((value) => value + 1)
+            }}
+            className="mx-auto mt-4 block text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Prefiero agregarlo después
+          </button>
+        ) : null}
+      </form>
     </div>
-  );
+  )
 }
 
-function BusinessOnboarding({
-  businesses,
-  onComplete,
-}: {
-  businesses: Business[];
-  onComplete: () => void;
-}) {
-  const form = useForm<BusinessOnboardingValues>({
-    resolver: zodResolver(businessOnboardingSchema),
-    defaultValues: { name: "" },
-  });
-  const [error, setError] = useState<string | null>(null);
-  async function submit(values: BusinessOnboardingValues) {
+function BusinessOnboarding({ businesses, onComplete }: { businesses: Business[]; onComplete: () => void }) {
+  const [name, setName] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  async function selectBusiness(id: string) {
+    saveActiveBusinessId(id)
+    onComplete()
+  }
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const trimmedName = name.trim()
+    if (trimmedName.length < 2) {
+      setError("El nombre debe tener al menos 2 caracteres.")
+      return
+    }
+    setSubmitting(true)
+    setError(null)
     try {
-      const business = await createBusiness(values);
-      localStorage.setItem("oikentra.activeBusinessId", business.id);
-      onComplete();
+      const business = await createBusiness({ name: trimmedName })
+      saveActiveBusinessId(business.id)
+      onComplete()
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "No pudimos crear el negocio.",
-      );
+      setError(cause instanceof Error ? cause.message : "No pudimos crear el negocio.")
+    } finally {
+      setSubmitting(false)
     }
   }
+
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>
-            {businesses.length
-              ? "Elige tu negocio"
-              : "Ahora crea tu primer negocio"}
-          </CardTitle>
-          <CardDescription>
-            {businesses.length
-              ? "Selecciona el espacio que quieres abrir."
-              : "Este será el espacio donde registrarás tus ventas, gastos y clientes."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form className="space-y-5" onSubmit={form.handleSubmit(submit)}>
-              {businesses.length ? (
-                <div className="space-y-2">
-                  {businesses.map((business) => (
-                    <Button
-                      key={business.id}
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        localStorage.setItem(
-                          "oikentra.activeBusinessId",
-                          business.id,
-                        );
-                        onComplete();
-                      }}
-                    >
-                      {business.name}
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del negocio</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Tienda El Progreso"
-                          autoFocus
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-              {error ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              {!businesses.length ? (
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting ? "Creando..." : "Crear negocio"}
-                </Button>
-              ) : null}
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+    <div className="w-full">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Tu negocio</p>
+      <h1 className="mt-3 text-2xl font-bold tracking-tight text-balance">
+        {businesses.length ? "Elige tu negocio" : "Crea tu primer negocio"}
+      </h1>
+      <p className="mt-1.5 text-sm leading-relaxed text-pretty text-muted-foreground">
+        {businesses.length ? "Selecciona el espacio que quieres abrir." : "Aquí registrarás tus ventas, gastos y clientes."}
+      </p>
+      {businesses.length ? (
+        <div className="mt-7 grid gap-3">
+          {businesses.map((business) => (
+            <Button key={business.id} type="button" variant="outline" className="h-auto min-w-0 justify-start rounded-xl px-3 py-4 text-left whitespace-normal sm:px-4" onClick={() => void selectBusiness(business.id)}>
+              <HugeiconsIcon icon={Store01Icon} size={19} strokeWidth={1.8} aria-hidden="true" />
+              <span className="min-w-0 break-words">{business.name}</span>
+            </Button>
+          ))}
+        </div>
+      ) : (
+        <form className="mt-7" onSubmit={(event) => void submit(event)}>
+          <div className="group relative">
+            <HugeiconsIcon icon={Store01Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <input aria-label="Nombre del negocio" type="text" autoFocus value={name} placeholder="Tienda Doña Rosa" onChange={(event) => { setName(event.target.value); setError(null) }} className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15" />
+          </div>
+          {error ? <p className="mt-3 text-sm text-destructive" role="alert">{error}</p> : null}
+          <Button type="submit" size="lg" className="mt-8 h-12 w-full rounded-xl text-sm font-semibold" disabled={submitting}>
+            {submitting ? "Creando..." : "Crear mi negocio"}
+            {!submitting ? <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" /> : null}
+          </Button>
+        </form>
+      )}
     </div>
-  );
+  )
 }

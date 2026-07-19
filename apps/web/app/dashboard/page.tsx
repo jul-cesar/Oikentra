@@ -29,7 +29,7 @@ function DashboardContent() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-4">
+      <header className="flex flex-col items-start gap-3 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <h1 className="text-xl font-bold">Panel de control</h1>
         <Button
           variant="outline"
@@ -40,8 +40,8 @@ function DashboardContent() {
         </Button>
       </header>
 
-      <main className="flex-1 p-6">
-        <Card className="max-w-xl">
+      <main className="min-w-0 flex-1 p-4 sm:p-6">
+        <Card className="w-full max-w-xl">
           <CardHeader>
             <CardTitle>Bienvenido</CardTitle>
             <CardDescription>
