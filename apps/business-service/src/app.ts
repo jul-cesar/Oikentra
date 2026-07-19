@@ -6,6 +6,7 @@ import { AppError } from './http/errors'
 import type { AppBindings } from './http/request-context'
 import { success } from './http/response'
 import { businessesRoutes } from './modules/businesses/businesses.routes'
+import { customersRoutes } from './modules/customers/customers.routes'
 
 export const app = new Hono<AppBindings>()
 
@@ -27,6 +28,7 @@ app.get('/api/business/health/ready', async (c) => {
 })
 
 app.route('/api/business/businesses', businessesRoutes)
+app.route('/api/business/businesses/:businessId/customers', customersRoutes)
 
 app.onError((error, c) => {
   const requestId = c.get('requestId') ?? crypto.randomUUID()
