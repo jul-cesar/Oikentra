@@ -1,9 +1,22 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
-import { config } from '../config/config'
+import { getConfig } from '../config/config'
 import * as schema from './schema'
 
-export const client = postgres(config.databaseUrl)
+let client: ReturnType<typeof postgres> | undefined
+let db: ReturnType<typeof createDatabase> | undefined
 
-export const db = drizzle(client, { schema })
+function createDatabase() {
+  client = postgres(getConfig().databaseUrl)
+  return drizzle(client, { schema })
+}
+
+export function getDb() {
+  return (db ??= createDatabase())
+}
+
+export function getDatabaseClient() {
+  getDb()
+  return client!
+}

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 
-import { auth } from '../../auth'
+import { getAuth } from '../../auth'
 import { ProfileValidationError, profileService } from './profile.service'
 import { patchProfileSchema, replaceProfileSchema } from './profile.schemas'
 
@@ -13,7 +13,7 @@ export const profileRoutes = new Hono<ProfileBindings>()
 async function getSession(c: ProfileContext) {
   const headers = new Headers(c.req.raw.headers)
   headers.set('X-Request-Id', c.get('requestId'))
-  return auth.api.getSession({ headers })
+  return getAuth().api.getSession({ headers })
 }
 
 function validationResponse(c: ProfileContext, error: { issues: { path: unknown; message: string }[] }) {

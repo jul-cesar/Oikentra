@@ -5,24 +5,23 @@ import type { RequestLogEnv } from '@oikentra/http-logging'
 import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
 import { issueInternalAssertion } from '@oikentra/internal-auth'
 
-import { auth } from './auth'
+import { getAuth } from './auth'
 import { checkDatabaseConnection } from './db/client'
-import { config } from './config/config'
+import { getConfig, validateRuntimeConfig } from './config/config'
 import { profileRoutes } from './modules/profile/profile.routes'
 
 const app = new Hono<RequestLogEnv>()
 app.use('*', requestIdMiddleware())
 app.use('*', requestLoggerMiddleware('auth-service'))
-app.use(
-  '/api/auth/*',
-  cors({
-    origin: config.webUrl,
+app.use('/api/auth/*', async (c, next) => {
+  return cors({
+    origin: getConfig().webUrl,
     allowHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
     credentials: true,
     maxAge: 600,
-  }),
-)
+  })(c, next)
+})
 
 function liveResponse(c: Context) {
   return c.json({ status: 'ok', service: 'auth-service' })
@@ -47,7 +46,7 @@ app.get('/api/auth/health/live', liveResponse)
 app.get('/internal/session/validate', async (c) => {
   const headers = new Headers(c.req.raw.headers)
   headers.set('X-Request-Id', c.get('requestId'))
-  const session = await auth.api.getSession({
+  const session = await getAuth().api.getSession({
     headers,
   })
 
@@ -64,10 +63,10 @@ app.get('/internal/session/validate', async (c) => {
   c.header(
     'X-Internal-Auth',
     await issueInternalAssertion({
-      privateKeyBase64: config.internalAuthPrivateKeyBase64,
+      privateKeyBase64: getConfig().internalAuthPrivateKeyBase64,
       userId: session.user.id,
       sessionId: session.session.id,
-      audience: config.internalAuthAudience,
+      audience: getConfig().internalAuthAudience,
     }),
   )
 
@@ -79,13 +78,15 @@ app.route('/api/auth/profile', profileRoutes)
 app.on(['GET', 'POST'], '/api/auth/*', (c) => {
   const headers = new Headers(c.req.raw.headers)
   headers.set('X-Request-Id', c.get('requestId'))
-  return auth.handler(new Request(c.req.raw, { headers }))
+  return getAuth().handler(new Request(c.req.raw, { headers }))
 })
 
 app.onError((error, c) => {
   logError('auth-service', error, c, 500)
   return c.json({ code: 'INTERNAL_SERVER_ERROR', message: 'An internal error occurred.' }, 500)
 })
+
+if (import.meta.main) validateRuntimeConfig()
 
 export default {
   port: Number(process.env.PORT ?? 3000),

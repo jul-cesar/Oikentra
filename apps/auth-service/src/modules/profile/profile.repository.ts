@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 
-import { db } from '../../db/client'
+import { getDb } from '../../db/client'
 import { userProfiles, type NewUserProfile, type UserProfile } from '../../db/schema'
 
 export type UserProfileRepository = {
@@ -10,11 +10,13 @@ export type UserProfileRepository = {
 
 export const userProfileRepository: UserProfileRepository = {
   async findByUserId(userId) {
+    const db = getDb()
     const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
     return profile ?? null
   },
 
   async upsert(userId, input) {
+    const db = getDb()
     const { createdAt: _createdAt, ...update } = input
     const [profile] = await db
       .insert(userProfiles)

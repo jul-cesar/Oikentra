@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory'
 import { verifyInternalAssertion } from '@oikentra/internal-auth'
 
-import { config } from '../../config/config'
+import { getConfig } from '../../config/config'
 import { AppError } from '../errors'
 import type { AppBindings } from '../request-context'
 
@@ -11,6 +11,8 @@ export const requireAuthHeaders = createMiddleware<AppBindings>(async (c, next) 
   if (!token) {
     throw new AppError('UNAUTHENTICATED', 401, 'A valid authenticated session is required.')
   }
+
+  const config = getConfig()
 
   try {
     const assertion = await verifyInternalAssertion({
