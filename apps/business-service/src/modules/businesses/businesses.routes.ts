@@ -45,6 +45,21 @@ businessesRoutes.get('/:businessId', async (c) => {
   return success(c, business)
 })
 
+businessesRoutes.post('/:businessId/delete', async (c) => {
+  const parsedParams = businessIdParamsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    throw validationError(parsedParams.error)
+  }
+
+  const business = await businessesService.softDelete(
+    c.get('auth').userId,
+    parsedParams.data.businessId,
+  )
+
+  return success(c, business)
+})
+
 businessesRoutes.patch('/:businessId', async (c) => {
   const parsedParams = businessIdParamsSchema.safeParse(c.req.param())
 
