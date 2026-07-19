@@ -1,4 +1,4 @@
-function readRequiredEnv(name: 'DATABASE_URL' | 'GATEWAY_SHARED_SECRET') {
+function readRequiredEnv(name: 'DATABASE_URL' | 'INTERNAL_AUTH_PUBLIC_KEY_B64') {
   const value = process.env[name]?.trim()
 
   if (!value) {
@@ -26,6 +26,7 @@ function readPort() {
 
 export const config = {
   databaseUrl: readRequiredEnv('DATABASE_URL'),
-  gatewaySharedSecret: readRequiredEnv('GATEWAY_SHARED_SECRET'),
+  internalAuthPublicKeyBase64: readRequiredEnv('INTERNAL_AUTH_PUBLIC_KEY_B64'),
+  internalAuthAudience: 'business-service',
   port: readPort(),
 }

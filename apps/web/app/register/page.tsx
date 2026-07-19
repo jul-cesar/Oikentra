@@ -41,21 +41,6 @@ export default function RegisterPage() {
         <div className="mt-8">
           <RegisterForm />
         </div>
-
-        <ul className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          {benefits.map((benefit) => (
-            <li key={benefit} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <HugeiconsIcon
-                icon={CheckmarkCircle02Icon}
-                size={15}
-                strokeWidth={1.8}
-                className="text-primary"
-                aria-hidden="true"
-              />
-              {benefit}
-            </li>
-          ))}
-        </ul>
       </div>
       </BeamsBackground>
     </AuthEntryGate>

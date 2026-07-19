@@ -204,12 +204,14 @@ App envía cookie
         ↓
 Traefik usa ForwardAuth
         ↓
-auth-service valida sesión
+ auth-service valida cookie y emite assertion RS256
         ↓
-Traefik agrega X-User-Id
+ Traefik copia X-Internal-Auth
         ↓
 Microservicio protegido
 ```
+
+El JWT interno nunca se agrega al cliente web o móvil. La cookie Better Auth continúa siendo el mecanismo de sesión en el borde; la assertion solo existe entre Traefik y los servicios protegidos.
 
 Los servicios protegidos todavía deben validar autorización sobre el negocio solicitado.
 
@@ -413,7 +415,7 @@ GET /health/ready
 - Definir cuándo introducir eventos.
 - Definir estrategia de cache e invalidación.
 - Definir una o varias instancias de Redis.
-- Definir autenticación entre servicios.
+- Provisionar y rotar las claves RS256 de autenticación interna.
 - Definir proveedor de PostgreSQL.
 - Definir CI/CD.
 

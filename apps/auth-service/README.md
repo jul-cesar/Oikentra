@@ -55,11 +55,12 @@ When the session is valid, the internal validation endpoint returns:
 
 ```http
 HTTP/1.1 204 No Content
-X-User-Id: <user-id>
-X-Session-Id: <session-id>
+X-Internal-Auth: <short-lived-rs256-jwt>
 ```
 
 When the session is missing or invalid, it returns `401 Unauthorized`. This endpoint must only be reachable from the private service network.
+
+The assertion is signed with the private PKCS#8 key configured by `INTERNAL_AUTH_PRIVATE_KEY_B64` and is valid for 60 seconds. Keep the private key only in auth-service; protected services receive a base64-encoded SPKI public key.
 
 ## Development
 

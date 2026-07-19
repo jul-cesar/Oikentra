@@ -20,7 +20,7 @@ Better Auth maneja los endpoints públicos de autenticación. El proyecto agrega
 | API pública | **Completado en código** | `https://api.oikentra.com/api/auth` en producción; `/api/auth/*` en Hono |
 | Cliente web directo | **Completado en código** | Better Auth desde el navegador con `NEXT_PUBLIC_AUTH_BASE_URL` |
 | Cliente Expo/mobile | **Completado en código** | Email/password, verificación, Google nativo, sesión y logout |
-| Validación de sesión para Traefik | **En progreso** | El endpoint existe; falta cerrar la validación integrada en el entorno desplegado |
+| Validación de sesión para Traefik | **Completado en código** | Cookie Better Auth validada y assertion interna RS256 emitida |
 | Pruebas completas de producción | **Pendiente de verificación** | No se debe inferir éxito productivo solo por la existencia del código |
 
 La URL pública es el origen de API, no una ruta de la aplicación web. En producción el navegador y los enlaces de autenticación deben usar `https://api.oikentra.com` como origen de Better Auth y `https://api.oikentra.com/api/auth` como base de sus endpoints.
@@ -58,6 +58,10 @@ El servicio también permitirá que Traefik valide una sesión antes de enviar u
 ---
 
 # Parte 2: Contratos técnicos
+
+## Perfil de onboarding de Colombia
+
+`PUT /api/auth/profile` recibe `department`, `city` y opcionalmente `phone`. El cliente no debe enviar un país: el servicio usa `countryCode: "CO"` por defecto y persiste `CO` en perfiles nuevos y actualizados. `country_code` se conserva en la base de datos para una futura expansión internacional, pero no es un requisito de interfaz.
 
 ## 4. Base URL
 
@@ -191,6 +195,13 @@ Reglas:
 4. Web lee el fragmento una sola vez y lo elimina del historial del navegador.
 5. Web envía el cambio a `/api/restablecer-contrasena`, que valida origen y reenvía a Better Auth.
 
+#### Flujo móvil de recuperación
+
+1. Mobile solicita el reset con `redirectTo: 'oikentra://auth/reset-password'`.
+2. Auth-service conserva el contrato de proveedor y genera el enlace nativo `oikentra://auth/reset-password?token=...`.
+3. Mobile lee el token del deep link y envía el cambio directamente a Better Auth mediante `authClient.resetPassword`.
+4. Si la cuenta no tiene una cuenta `credential`, auth-service devuelve `PASSWORD_RESET_NOT_AVAILABLE`; los clientes muestran el mensaje para continuar con Google.
+
 La ruta `apps/web/app/api/restablecer-contrasena/route.ts` reenvía a `AUTH_BASE_URL + /reset-password`; `AUTH_BASE_URL` ya representa la base `/api/auth`, por lo que no se duplica ese prefijo.
 
 **Candidatos de limpieza:** unificar el uso de la ruta nativa de Better Auth y del proxy web, eliminar rutas/redirects heredados cuando ya no tengan consumidores, y cubrir la recuperación con pruebas de URL, fragmento, token expirado y respuesta `429`.
@@ -266,8 +277,7 @@ Traefik reenvía las cabeceras originales, incluyendo la cookie de sesión.
 
 ```http
 HTTP/1.1 204 No Content
-X-User-Id: user-id
-X-Session-Id: session-id
+X-Internal-Auth: <signed-jwt>
 ```
 
 ### Respuesta inválida
@@ -303,8 +313,7 @@ app.get("/internal/session/validate", async (c) => {
     );
   }
 
-  c.header("X-User-Id", session.user.id);
-  c.header("X-Session-Id", session.session.id);
+   c.header("X-Internal-Auth", signedAssertion);
 
   return c.body(null, 204);
 });
@@ -317,8 +326,12 @@ app.get("/internal/session/validate", async (c) => {
 Middleware conceptual:
 
 ```yaml
-- traefik.http.middlewares.app-auth.forwardauth.address=http://auth-service:3000/internal/session/validate
-- traefik.http.middlewares.app-auth.forwardauth.authResponseHeaders=X-User-Id,X-Session-Id
+- traefik.http.middlewares.oikon-forward-auth.forwardauth.address=http://auth-service:3001/internal/session/validate
+- traefik.http.middlewares.oikon-forward-auth.forwardauth.authRequestHeaders=Cookie,Authorization
+- traefik.http.middlewares.oikon-forward-auth.forwardauth.authResponseHeaders=X-Internal-Auth
+- traefik.http.middlewares.oikon-strip-internal-auth.headers.customRequestHeaders.X-Internal-Auth=
+
+Apply `oikon-strip-internal-auth` before `oikon-forward-auth` on every protected router. ForwardAuth must copy its `X-Internal-Auth` response header to the downstream request. Keep `auth-service` and `/internal/session/validate` on the private network with no public router.
 ```
 
 Aplicación en servicios protegidos:
@@ -352,13 +365,27 @@ No incluir valores secretos en documentación ni imágenes de cliente.
 
 | Servicio | Variables relevantes | Estado |
 |---|---|---|
-| auth-service | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM` | **Requeridas para iniciar** |
+| auth-service | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `INTERNAL_AUTH_PRIVATE_KEY_B64` | **Requeridas para iniciar** |
+| business/sync/reports | `INTERNAL_AUTH_PUBLIC_KEY_B64` | **Requerida para verificar assertions** |
 | auth-service móvil | `GOOGLE_IOS_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID` | **Opcionales en código; requeridas para los builds nativos correspondientes** |
 | web | `NEXT_PUBLIC_AUTH_BASE_URL`, `AUTH_BASE_URL` | **Requeridas según el runtime**; la primera se embebe en `next build` |
 | mobile | `EXPO_PUBLIC_AUTH_BASE_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | **Requeridas al iniciar el cliente** |
 | mobile iOS/Android | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | **Requeridas para Google nativo en la plataforma correspondiente** |
 
 Para producción, configurar en Google Cloud el callback `https://api.oikentra.com/api/auth/callback/google` para el cliente web y verificar que `BETTER_AUTH_URL` apunte al origen público del auth-service. La existencia de estas variables no demuestra por sí sola que OAuth, correo o CORS estén operativos en producción.
+
+### Provisionamiento de claves internas
+
+Generar una pareja RSA fuera del repositorio y guardar únicamente los valores base64 en el gestor de secretos:
+
+```bash
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out internal-auth-private.pem
+openssl rsa -pubout -in internal-auth-private.pem -out internal-auth-public.pem
+base64 -w 0 internal-auth-private.pem
+base64 -w 0 internal-auth-public.pem
+```
+
+El primer valor se configura solo como `INTERNAL_AUTH_PRIVATE_KEY_B64` en auth-service. El segundo se configura como `INTERNAL_AUTH_PUBLIC_KEY_B64` en business, sync y reports. En plataformas sin `base64 -w 0`, eliminar los saltos de línea del resultado antes de provisionarlo. No registrar, commitear ni incluir las claves reales en imágenes o clientes.
 
 El fallback de `apps/web/lib/auth-client.ts` a `https://api.oikentra.com/api/auth` es intencional: evita que un `NEXT_PUBLIC_AUTH_BASE_URL` ausente rompa la evaluación/prerender de Next.js. Debe preferirse configurar la variable explícitamente en cada despliegue.
 
@@ -397,8 +424,9 @@ Los endpoints propios usarán:
 - HTTPS obligatorio en producción.
 - Rate limiting para registro y login.
 - Secretos en variables de entorno.
-- El cliente no puede definir `X-User-Id`.
-- Traefik debe sobrescribir cabeceras internas de identidad.
+- El cliente no puede definir `X-Internal-Auth`; Traefik debe eliminarlo y copiar únicamente la respuesta de ForwardAuth.
+- El JWT interno no se entrega al navegador ni a la aplicación móvil.
+- El assertion RS256 contiene `iss`, `sub`, `sid`, `aud`, `iat` y `exp`; cada servicio verifica firma, issuer, expiración y su propia audiencia.
 - `/internal/*` solo será accesible desde la red privada.
 - No registrar cookies, contraseñas o secretos en logs.
 - Better Auth será la única autoridad sobre usuarios y sesiones.
@@ -416,5 +444,5 @@ Los endpoints propios usarán:
 - El usuario puede cerrar sesión.
 - Traefik recibe `204` para una sesión válida.
 - Traefik recibe `401` para una sesión inválida.
-- Los microservicios protegidos reciben `X-User-Id`.
+- Los microservicios protegidos reciben y verifican `X-Internal-Auth` localmente.
 - Ningún servicio distinto de `auth-service` accede a las tablas de Better Auth.

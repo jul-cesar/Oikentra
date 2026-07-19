@@ -36,7 +36,7 @@ Copy `.env.example` and provide real deployment values outside Git.
 
 ```txt
 DATABASE_URL=postgres://user:password@localhost:5432/oikentra_business
-GATEWAY_SHARED_SECRET=replace-with-shared-gateway-secret
+INTERNAL_AUTH_PUBLIC_KEY_B64=replace-with-base64-spki-public-key
 PORT=3000
 ```
 
@@ -60,15 +60,13 @@ The `businesses.id` column uses PostgreSQL `uuid`. IDs are generated app-side so
 
 This service does not use Better Auth directly. Dokploy/Traefik must protect public business routes with ForwardAuth through `auth-service`.
 
-After the session is validated, Dokploy/Traefik must inject or overwrite a shared gateway secret and forward only trusted internal identity headers:
+After the session is validated, Traefik must copy the `X-Internal-Auth` response header from ForwardAuth to the protected request:
 
 ```http
-X-User-Id: user-id
-X-Session-Id: session-id
-X-Gateway-Secret: deployment-shared-secret
+X-Internal-Auth: signed-short-lived-assertion
 ```
 
-`X-Gateway-Secret` must match `GATEWAY_SHARED_SECRET`; otherwise protected routes return `401 UNAUTHENTICATED`. Traefik must strip or overwrite any client-supplied `X-User-Id`, `X-Session-Id`, and `X-Gateway-Secret` before proxying to this service. The service never trusts `userId` from body, query, or path. `owner_user_id` always comes from `X-User-Id` after the gateway secret check passes.
+The service verifies the RS256 signature, issuer, expiration, and `business-service` audience locally. Traefik must strip or overwrite any client-supplied `X-Internal-Auth` before forwarding. The service never trusts identity headers or `userId` from body, query, or path. `owner_user_id` always comes from the verified assertion subject.
 
 ## Health Endpoints
 
@@ -91,7 +89,7 @@ Readiness returns `503 DEPENDENCY_UNAVAILABLE` when PostgreSQL is unavailable.
 
 ## Business Endpoints
 
-All business endpoints require `X-User-Id`, `X-Session-Id`, and `X-Gateway-Secret`.
+All business endpoints require `X-Internal-Auth`.
 
 ```http
 POST /api/business/businesses
@@ -99,6 +97,8 @@ GET /api/business/businesses
 GET /api/business/businesses/:businessId
 PATCH /api/business/businesses/:businessId
 ```
+
+Clients select an existing business by retaining its returned `id` and using `GET /:businessId` to verify ownership before entering the business context. Selection is request context, not persisted service state.
 
 Create body:
 

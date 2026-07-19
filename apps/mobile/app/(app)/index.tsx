@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { OnboardingGate } from '@/components/onboarding-gate';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 import { signOutGoogle } from '@/lib/google-auth';
@@ -30,8 +31,7 @@ export default function HomeScreen() {
     return null;
   }
 
-  return (
-    <View className="flex-1 items-center justify-center gap-6 p-4">
+  return <OnboardingGate><View className="flex-1 items-center justify-center gap-6 p-4">
       <Text variant="h2">Pantalla protegida</Text>
       <View className="gap-2">
         <Text variant="muted">Nombre: {session.user.name ?? 'No disponible'}</Text>
@@ -41,6 +41,5 @@ export default function HomeScreen() {
       <Button onPress={handleSignOut} disabled={isSigningOut} className="w-full">
         <Text>{isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}</Text>
       </Button>
-    </View>
-  );
+    </View></OnboardingGate>;
 }

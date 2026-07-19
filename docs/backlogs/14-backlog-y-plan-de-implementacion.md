@@ -38,7 +38,7 @@ GET /internal/session/validate
 - [x] Validar cookie con Better Auth.
 - [x] Responder `401` sin sesión.
 - [x] Responder `204` con sesión válida.
-- [x] Enviar `X-User-Id` y `X-Session-Id`.
+- [x] Emitir `X-Internal-Auth` y verificarlo localmente en cada servicio protegido.
 - [ ] Integrar y verificar el middleware `ForwardAuth` en el entorno desplegado.
 - [ ] Agregar pruebas.
 

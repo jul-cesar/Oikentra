@@ -3,6 +3,7 @@
 import { Suspense } from "react"
 
 import { AuthGuard } from "@/components/auth-guard"
+import { OnboardingGate } from "@/components/onboarding-gate"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -61,7 +62,7 @@ function DashboardContent() {
 function DashboardPageContent() {
   return (
     <AuthGuard>
-      <DashboardContent />
+      <OnboardingGate><DashboardContent /></OnboardingGate>
     </AuthGuard>
   )
 }

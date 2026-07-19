@@ -2,6 +2,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
+import { createAuthRequestOptions, getSafeAuthErrorMessage } from '@/lib/auth-client';
+import { useRouter } from 'expo-router';
 import { GoogleAuthError, signInWithGoogle } from '@/lib/google-auth';
 import * as React from 'react';
 import { Image, Platform, useColorScheme, View } from 'react-native';
@@ -18,6 +20,7 @@ function useGoogleSignIn() {
   const [error, setError] = React.useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = React.useState(false);
   const isSigningInRef = React.useRef(false);
+  const router = useRouter();
 
   async function handleGoogle() {
     if (isSigningInRef.current) {
@@ -41,13 +44,26 @@ function useGoogleSignIn() {
       const { error: signInError } = await authClient.signIn.social({
         provider: 'google',
         idToken: { token: idToken },
+        fetchOptions: createAuthRequestOptions(),
       });
 
       if (signInError) {
-        setError(signInError.message ?? 'Google sign in failed.');
+        setError(
+          getSafeAuthErrorMessage(
+            signInError,
+            'No pudimos iniciar sesión con Google. Intenta nuevamente.'
+          )
+        );
         return;
       }
 
+      const { data: activeSession } = await authClient.getSession();
+      if (!activeSession?.session) {
+        setError('Iniciamos sesión, pero no pudimos abrir tu cuenta. Intenta nuevamente.');
+        return;
+      }
+
+      router.replace('/(app)');
     } catch (err) {
       if (err instanceof GoogleAuthError && err.recoverable) {
         setError(err.message);
@@ -88,9 +104,7 @@ export function SocialConnections() {
           </Button>
         );
       })}
-      {error ? (
-        <Text className="text-destructive text-center text-sm">{error}</Text>
-      ) : null}
+      {error ? <Text className="text-destructive text-center text-sm">{error}</Text> : null}
     </View>
   );
 }

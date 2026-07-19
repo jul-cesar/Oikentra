@@ -1,19 +1,27 @@
 import { createMiddleware } from 'hono/factory'
+import { verifyInternalAssertion } from '@oikentra/internal-auth'
 
 import { config } from '../../config/config'
 import { AppError } from '../errors'
 import type { AppBindings } from '../request-context'
 
 export const requireAuthHeaders = createMiddleware<AppBindings>(async (c, next) => {
-  const gatewaySecret = c.req.header('X-Gateway-Secret')?.trim()
-  const userId = c.req.header('X-User-Id')?.trim()
-  const sessionId = c.req.header('X-Session-Id')?.trim()
+  const token = c.req.header('X-Internal-Auth')?.trim()
 
-  if (gatewaySecret !== config.gatewaySharedSecret || !userId || !sessionId) {
+  if (!token) {
     throw new AppError('UNAUTHENTICATED', 401, 'A valid authenticated session is required.')
   }
 
-  c.set('auth', { userId, sessionId })
+  try {
+    const assertion = await verifyInternalAssertion({
+      token,
+      publicKeyBase64: config.internalAuthPublicKeyBase64,
+      audience: config.internalAuthAudience,
+    })
+    c.set('auth', { userId: assertion.userId, sessionId: assertion.sessionId })
+  } catch {
+    throw new AppError('UNAUTHENTICATED', 401, 'A valid authenticated session is required.')
+  }
 
   await next()
 })

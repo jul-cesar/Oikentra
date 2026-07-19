@@ -3,10 +3,12 @@ import { cors } from 'hono/cors'
 import type { Context } from 'hono'
 import type { RequestLogEnv } from '@oikentra/http-logging'
 import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
+import { issueInternalAssertion } from '@oikentra/internal-auth'
 
 import { auth } from './auth'
 import { checkDatabaseConnection } from './db/client'
 import { config } from './config/config'
+import { profileRoutes } from './modules/profile/profile.routes'
 
 const app = new Hono<RequestLogEnv>()
 app.use('*', requestIdMiddleware())
@@ -16,7 +18,7 @@ app.use(
   cors({
     origin: config.webUrl,
     allowHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
     credentials: true,
     maxAge: 600,
   }),
@@ -59,11 +61,20 @@ app.get('/internal/session/validate', async (c) => {
     )
   }
 
-  c.header('X-User-Id', session.user.id)
-  c.header('X-Session-Id', session.session.id)
+  c.header(
+    'X-Internal-Auth',
+    await issueInternalAssertion({
+      privateKeyBase64: config.internalAuthPrivateKeyBase64,
+      userId: session.user.id,
+      sessionId: session.session.id,
+      audience: config.internalAuthAudience,
+    }),
+  )
 
   return c.body(null, 204)
 })
+
+app.route('/api/auth/profile', profileRoutes)
 
 app.on(['GET', 'POST'], '/api/auth/*', (c) => {
   const headers = new Headers(c.req.raw.headers)

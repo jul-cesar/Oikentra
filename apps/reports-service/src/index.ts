@@ -1,9 +1,12 @@
 import { Hono } from 'hono'
 import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
+import { requireInternalAuth } from './http/middleware/require-internal-auth'
+import type { ReportsAuthEnv } from './http/middleware/require-internal-auth'
 
-const app = new Hono()
+const app = new Hono<ReportsAuthEnv>()
 app.use('*', requestIdMiddleware())
 app.use('*', requestLoggerMiddleware('reports-service'))
+app.use('/api/reports/*', requireInternalAuth)
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')

@@ -41,7 +41,7 @@ export const googleIosClientId = readEnv('EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID');
 export const googleAndroidClientId = readEnv('EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID');
 
 export const authClient = createAuthClient({
-  baseURL: authBaseUrl,
+  baseURL: authBaseUrl.replace(/\/$/, ''),
   plugins: [
     expoClient({
       scheme: 'oikentra',
@@ -51,10 +51,48 @@ export const authClient = createAuthClient({
   ],
 });
 
+function createRequestId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function createAuthRequestOptions() {
+  return {
+    headers: {
+      'X-Request-Id': createRequestId(),
+    },
+  };
+}
+
+export function getSafeAuthErrorMessage(
+  error: { code?: string } | null | undefined,
+  fallback = 'Ocurrió un problema inesperado. Intenta nuevamente.'
+) {
+  switch (error?.code) {
+    case 'INVALID_EMAIL_OR_PASSWORD':
+    case 'USER_NOT_FOUND':
+      return 'El correo o la contraseña no son correctos.';
+    case 'EMAIL_NOT_VERIFIED':
+      return 'Confirma tu correo para continuar.';
+    case 'USER_ALREADY_EXISTS':
+    case 'EMAIL_ALREADY_EXISTS':
+      return 'Ya existe una cuenta con ese correo.';
+    case 'PASSWORD_TOO_SHORT':
+      return 'La contraseña debe tener al menos 8 caracteres.';
+    case 'SOCIAL_PROVIDER_ERROR':
+      return 'No pudimos iniciar sesión con Google. Intenta nuevamente.';
+    default:
+      return fallback;
+  }
+}
+
 export async function persistAuthCookie(setCookieHeader: string): Promise<void> {
   const currentCookie = SecureStore.getItem(AUTH_COOKIE_STORAGE_KEY) ?? undefined;
   const nextCookie = getSetCookie(setCookieHeader, currentCookie);
   await SecureStore.setItemAsync(AUTH_COOKIE_STORAGE_KEY, nextCookie);
+}
+
+export function getAuthCookie(): string | undefined {
+  return SecureStore.getItem(AUTH_COOKIE_STORAGE_KEY) ?? undefined;
 }
 
 export const {

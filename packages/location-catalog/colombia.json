@@ -1,0 +1,4606 @@
+[
+  {
+    "code": "CO-91",
+    "name": "Amazonas",
+    "municipalities": [
+      {
+        "code": "CO-91-leticia",
+        "name": "Leticia"
+      },
+      {
+        "code": "CO-91-puerto-narino",
+        "name": "Puerto Nariño"
+      }
+    ]
+  },
+  {
+    "code": "CO-05",
+    "name": "Antioquia",
+    "municipalities": [
+      {
+        "code": "CO-05-abejorral",
+        "name": "Abejorral"
+      },
+      {
+        "code": "CO-05-abriaqui",
+        "name": "Abriaquí"
+      },
+      {
+        "code": "CO-05-alejandria",
+        "name": "Alejandría"
+      },
+      {
+        "code": "CO-05-amaga",
+        "name": "Amagá"
+      },
+      {
+        "code": "CO-05-amalfi",
+        "name": "Amalfi"
+      },
+      {
+        "code": "CO-05-andes",
+        "name": "Andes"
+      },
+      {
+        "code": "CO-05-angelopolis",
+        "name": "Angelópolis"
+      },
+      {
+        "code": "CO-05-angostura",
+        "name": "Angostura"
+      },
+      {
+        "code": "CO-05-anori",
+        "name": "Anorí"
+      },
+      {
+        "code": "CO-05-anza",
+        "name": "Anzá"
+      },
+      {
+        "code": "CO-05-apartado",
+        "name": "Apartadó"
+      },
+      {
+        "code": "CO-05-arboletes",
+        "name": "Arboletes"
+      },
+      {
+        "code": "CO-05-argelia",
+        "name": "Argelia"
+      },
+      {
+        "code": "CO-05-armenia",
+        "name": "Armenia"
+      },
+      {
+        "code": "CO-05-barbosa",
+        "name": "Barbosa"
+      },
+      {
+        "code": "CO-05-bello",
+        "name": "Bello"
+      },
+      {
+        "code": "CO-05-belmira",
+        "name": "Belmira"
+      },
+      {
+        "code": "CO-05-betania",
+        "name": "Betania"
+      },
+      {
+        "code": "CO-05-betulia",
+        "name": "Betulia"
+      },
+      {
+        "code": "CO-05-briceno",
+        "name": "Briceño"
+      },
+      {
+        "code": "CO-05-buritica",
+        "name": "Buriticá"
+      },
+      {
+        "code": "CO-05-caceres",
+        "name": "Cáceres"
+      },
+      {
+        "code": "CO-05-caicedo",
+        "name": "Caicedo"
+      },
+      {
+        "code": "CO-05-caldas",
+        "name": "Caldas"
+      },
+      {
+        "code": "CO-05-campamento",
+        "name": "Campamento"
+      },
+      {
+        "code": "CO-05-canasgordas",
+        "name": "Cañasgordas"
+      },
+      {
+        "code": "CO-05-caracoli",
+        "name": "Caracolí"
+      },
+      {
+        "code": "CO-05-caramanta",
+        "name": "Caramanta"
+      },
+      {
+        "code": "CO-05-carepa",
+        "name": "Carepa"
+      },
+      {
+        "code": "CO-05-carolina-del-principe",
+        "name": "Carolina del Príncipe"
+      },
+      {
+        "code": "CO-05-caucasia",
+        "name": "Caucasia"
+      },
+      {
+        "code": "CO-05-chigorodo",
+        "name": "Chigorodó"
+      },
+      {
+        "code": "CO-05-cisneros",
+        "name": "Cisneros"
+      },
+      {
+        "code": "CO-05-ciudad-bolivar",
+        "name": "Ciudad Bolívar"
+      },
+      {
+        "code": "CO-05-cocorna",
+        "name": "Cocorná"
+      },
+      {
+        "code": "CO-05-concepcion",
+        "name": "Concepción"
+      },
+      {
+        "code": "CO-05-concordia",
+        "name": "Concordia"
+      },
+      {
+        "code": "CO-05-copacabana",
+        "name": "Copacabana"
+      },
+      {
+        "code": "CO-05-dabeiba",
+        "name": "Dabeiba"
+      },
+      {
+        "code": "CO-05-donmatias",
+        "name": "Donmatías"
+      },
+      {
+        "code": "CO-05-ebejico",
+        "name": "Ebéjico"
+      },
+      {
+        "code": "CO-05-el-bagre",
+        "name": "El Bagre"
+      },
+      {
+        "code": "CO-05-el-carmen-de-viboral",
+        "name": "El Carmen de Viboral"
+      },
+      {
+        "code": "CO-05-el-penol",
+        "name": "El Peñol"
+      },
+      {
+        "code": "CO-05-el-retiro",
+        "name": "El Retiro"
+      },
+      {
+        "code": "CO-05-el-santuario",
+        "name": "El Santuario"
+      },
+      {
+        "code": "CO-05-entrerrios",
+        "name": "Entrerríos"
+      },
+      {
+        "code": "CO-05-envigado",
+        "name": "Envigado"
+      },
+      {
+        "code": "CO-05-fredonia",
+        "name": "Fredonia"
+      },
+      {
+        "code": "CO-05-frontino",
+        "name": "Frontino"
+      },
+      {
+        "code": "CO-05-giraldo",
+        "name": "Giraldo"
+      },
+      {
+        "code": "CO-05-girardota",
+        "name": "Girardota"
+      },
+      {
+        "code": "CO-05-gomez-plata",
+        "name": "Gómez Plata"
+      },
+      {
+        "code": "CO-05-granada",
+        "name": "Granada"
+      },
+      {
+        "code": "CO-05-guadalupe",
+        "name": "Guadalupe"
+      },
+      {
+        "code": "CO-05-guarne",
+        "name": "Guarne"
+      },
+      {
+        "code": "CO-05-guatape",
+        "name": "Guatapé"
+      },
+      {
+        "code": "CO-05-heliconia",
+        "name": "Heliconia"
+      },
+      {
+        "code": "CO-05-hispania",
+        "name": "Hispania"
+      },
+      {
+        "code": "CO-05-itagui",
+        "name": "Itagüí"
+      },
+      {
+        "code": "CO-05-ituango",
+        "name": "Ituango"
+      },
+      {
+        "code": "CO-05-jardin",
+        "name": "Jardín"
+      },
+      {
+        "code": "CO-05-jerico",
+        "name": "Jericó"
+      },
+      {
+        "code": "CO-05-la-ceja",
+        "name": "La Ceja"
+      },
+      {
+        "code": "CO-05-la-estrella",
+        "name": "La Estrella"
+      },
+      {
+        "code": "CO-05-la-pintada",
+        "name": "La Pintada"
+      },
+      {
+        "code": "CO-05-la-union",
+        "name": "La Unión"
+      },
+      {
+        "code": "CO-05-liborina",
+        "name": "Liborina"
+      },
+      {
+        "code": "CO-05-maceo",
+        "name": "Maceo"
+      },
+      {
+        "code": "CO-05-marinilla",
+        "name": "Marinilla"
+      },
+      {
+        "code": "CO-05-medellin",
+        "name": "Medellín"
+      },
+      {
+        "code": "CO-05-montebello",
+        "name": "Montebello"
+      },
+      {
+        "code": "CO-05-murindo",
+        "name": "Murindó"
+      },
+      {
+        "code": "CO-05-mutata",
+        "name": "Mutatá"
+      },
+      {
+        "code": "CO-05-narino",
+        "name": "Nariño"
+      },
+      {
+        "code": "CO-05-nechi",
+        "name": "Nechí"
+      },
+      {
+        "code": "CO-05-necocli",
+        "name": "Necoclí"
+      },
+      {
+        "code": "CO-05-olaya",
+        "name": "Olaya"
+      },
+      {
+        "code": "CO-05-peque",
+        "name": "Peque"
+      },
+      {
+        "code": "CO-05-pueblorrico",
+        "name": "Pueblorrico"
+      },
+      {
+        "code": "CO-05-puerto-berrio",
+        "name": "Puerto Berrío"
+      },
+      {
+        "code": "CO-05-puerto-nare",
+        "name": "Puerto Nare"
+      },
+      {
+        "code": "CO-05-puerto-triunfo",
+        "name": "Puerto Triunfo"
+      },
+      {
+        "code": "CO-05-remedios",
+        "name": "Remedios"
+      },
+      {
+        "code": "CO-05-rionegro",
+        "name": "Rionegro"
+      },
+      {
+        "code": "CO-05-sabanalarga",
+        "name": "Sabanalarga"
+      },
+      {
+        "code": "CO-05-sabaneta",
+        "name": "Sabaneta"
+      },
+      {
+        "code": "CO-05-salgar",
+        "name": "Salgar"
+      },
+      {
+        "code": "CO-05-san-andres-de-cuerquia",
+        "name": "San Andrés de Cuerquia"
+      },
+      {
+        "code": "CO-05-san-carlos",
+        "name": "San Carlos"
+      },
+      {
+        "code": "CO-05-san-francisco",
+        "name": "San Francisco"
+      },
+      {
+        "code": "CO-05-san-jeronimo",
+        "name": "San Jerónimo"
+      },
+      {
+        "code": "CO-05-san-jose-de-la-montana",
+        "name": "San José de la Montaña"
+      },
+      {
+        "code": "CO-05-san-juan-de-uraba",
+        "name": "San Juan de Urabá"
+      },
+      {
+        "code": "CO-05-san-luis",
+        "name": "San Luis"
+      },
+      {
+        "code": "CO-05-san-pedro-de-uraba",
+        "name": "San Pedro de Urabá"
+      },
+      {
+        "code": "CO-05-san-pedro-de-los-milagros",
+        "name": "San Pedro de los Milagros"
+      },
+      {
+        "code": "CO-05-san-rafael",
+        "name": "San Rafael"
+      },
+      {
+        "code": "CO-05-san-roque",
+        "name": "San Roque"
+      },
+      {
+        "code": "CO-05-san-vicente",
+        "name": "San Vicente"
+      },
+      {
+        "code": "CO-05-santa-barbara",
+        "name": "Santa Bárbara"
+      },
+      {
+        "code": "CO-05-santa-fe-de-antioquia",
+        "name": "Santa Fe de Antioquia"
+      },
+      {
+        "code": "CO-05-santa-rosa-de-osos",
+        "name": "Santa Rosa de Osos"
+      },
+      {
+        "code": "CO-05-santo-domingo",
+        "name": "Santo Domingo"
+      },
+      {
+        "code": "CO-05-segovia",
+        "name": "Segovia"
+      },
+      {
+        "code": "CO-05-sonson",
+        "name": "Sonsón"
+      },
+      {
+        "code": "CO-05-sopetran",
+        "name": "Sopetrán"
+      },
+      {
+        "code": "CO-05-tamesis",
+        "name": "Támesis"
+      },
+      {
+        "code": "CO-05-taraza",
+        "name": "Tarazá"
+      },
+      {
+        "code": "CO-05-tarso",
+        "name": "Tarso"
+      },
+      {
+        "code": "CO-05-titiribi",
+        "name": "Titiribí"
+      },
+      {
+        "code": "CO-05-toledo",
+        "name": "Toledo"
+      },
+      {
+        "code": "CO-05-turbo",
+        "name": "Turbo"
+      },
+      {
+        "code": "CO-05-uramita",
+        "name": "Uramita"
+      },
+      {
+        "code": "CO-05-urrao",
+        "name": "Urrao"
+      },
+      {
+        "code": "CO-05-valdivia",
+        "name": "Valdivia"
+      },
+      {
+        "code": "CO-05-valparaiso",
+        "name": "Valparaíso"
+      },
+      {
+        "code": "CO-05-vegachi",
+        "name": "Vegachí"
+      },
+      {
+        "code": "CO-05-venecia",
+        "name": "Venecia"
+      },
+      {
+        "code": "CO-05-vigia-del-fuerte",
+        "name": "Vigía del Fuerte"
+      },
+      {
+        "code": "CO-05-yali",
+        "name": "Yalí"
+      },
+      {
+        "code": "CO-05-yarumal",
+        "name": "Yarumal"
+      },
+      {
+        "code": "CO-05-yolombo",
+        "name": "Yolombó"
+      },
+      {
+        "code": "CO-05-yondo",
+        "name": "Yondó"
+      },
+      {
+        "code": "CO-05-zaragoza",
+        "name": "Zaragoza"
+      }
+    ]
+  },
+  {
+    "code": "CO-81",
+    "name": "Arauca",
+    "municipalities": [
+      {
+        "code": "CO-81-arauca",
+        "name": "Arauca"
+      },
+      {
+        "code": "CO-81-arauquita",
+        "name": "Arauquita"
+      },
+      {
+        "code": "CO-81-cravo-norte",
+        "name": "Cravo Norte"
+      },
+      {
+        "code": "CO-81-fortul",
+        "name": "Fortul"
+      },
+      {
+        "code": "CO-81-puerto-rondon",
+        "name": "Puerto Rondón"
+      },
+      {
+        "code": "CO-81-saravena",
+        "name": "Saravena"
+      },
+      {
+        "code": "CO-81-tame",
+        "name": "Tame"
+      }
+    ]
+  },
+  {
+    "code": "CO-08",
+    "name": "Atlántico",
+    "municipalities": [
+      {
+        "code": "CO-08-baranoa",
+        "name": "Baranoa"
+      },
+      {
+        "code": "CO-08-barranquilla",
+        "name": "Barranquilla"
+      },
+      {
+        "code": "CO-08-campo-de-la-cruz",
+        "name": "Campo de la Cruz"
+      },
+      {
+        "code": "CO-08-candelaria",
+        "name": "Candelaria"
+      },
+      {
+        "code": "CO-08-galapa",
+        "name": "Galapa"
+      },
+      {
+        "code": "CO-08-juan-de-acosta",
+        "name": "Juan de Acosta"
+      },
+      {
+        "code": "CO-08-luruaco",
+        "name": "Luruaco"
+      },
+      {
+        "code": "CO-08-malambo",
+        "name": "Malambo"
+      },
+      {
+        "code": "CO-08-manati",
+        "name": "Manatí"
+      },
+      {
+        "code": "CO-08-palmar-de-varela",
+        "name": "Palmar de Varela"
+      },
+      {
+        "code": "CO-08-piojo",
+        "name": "Piojó"
+      },
+      {
+        "code": "CO-08-polonuevo",
+        "name": "Polonuevo"
+      },
+      {
+        "code": "CO-08-ponedera",
+        "name": "Ponedera"
+      },
+      {
+        "code": "CO-08-puerto-colombia",
+        "name": "Puerto Colombia"
+      },
+      {
+        "code": "CO-08-repelon",
+        "name": "Repelón"
+      },
+      {
+        "code": "CO-08-sabanagrande",
+        "name": "Sabanagrande"
+      },
+      {
+        "code": "CO-08-sabanalarga",
+        "name": "Sabanalarga"
+      },
+      {
+        "code": "CO-08-santa-lucia",
+        "name": "Santa Lucía"
+      },
+      {
+        "code": "CO-08-santo-tomas",
+        "name": "Santo Tomás"
+      },
+      {
+        "code": "CO-08-soledad",
+        "name": "Soledad"
+      },
+      {
+        "code": "CO-08-suan",
+        "name": "Suán"
+      },
+      {
+        "code": "CO-08-tubara",
+        "name": "Tubará"
+      },
+      {
+        "code": "CO-08-usiacuri",
+        "name": "Usiacurí"
+      }
+    ]
+  },
+  {
+    "code": "CO-13",
+    "name": "Bolívar",
+    "municipalities": [
+      {
+        "code": "CO-13-achi",
+        "name": "Achí"
+      },
+      {
+        "code": "CO-13-altos-del-rosario",
+        "name": "Altos del Rosario"
+      },
+      {
+        "code": "CO-13-arenal",
+        "name": "Arenal"
+      },
+      {
+        "code": "CO-13-arjona",
+        "name": "Arjona"
+      },
+      {
+        "code": "CO-13-arroyohondo",
+        "name": "Arroyohondo"
+      },
+      {
+        "code": "CO-13-barranco-de-loba",
+        "name": "Barranco de Loba"
+      },
+      {
+        "code": "CO-13-brazuelo-de-papayal",
+        "name": "Brazuelo de Papayal"
+      },
+      {
+        "code": "CO-13-calamar",
+        "name": "Calamar"
+      },
+      {
+        "code": "CO-13-cantagallo",
+        "name": "Cantagallo"
+      },
+      {
+        "code": "CO-13-cartagena-de-indias",
+        "name": "Cartagena de Indias"
+      },
+      {
+        "code": "CO-13-cicuco",
+        "name": "Cicuco"
+      },
+      {
+        "code": "CO-13-clemencia",
+        "name": "Clemencia"
+      },
+      {
+        "code": "CO-13-cordoba",
+        "name": "Córdoba"
+      },
+      {
+        "code": "CO-13-el-carmen-de-bolivar",
+        "name": "El Carmen de Bolívar"
+      },
+      {
+        "code": "CO-13-el-guamo",
+        "name": "El Guamo"
+      },
+      {
+        "code": "CO-13-el-penon",
+        "name": "El Peñón"
+      },
+      {
+        "code": "CO-13-hatillo-de-loba",
+        "name": "Hatillo de Loba"
+      },
+      {
+        "code": "CO-13-magangue",
+        "name": "Magangué"
+      },
+      {
+        "code": "CO-13-mahates",
+        "name": "Mahates"
+      },
+      {
+        "code": "CO-13-margarita",
+        "name": "Margarita"
+      },
+      {
+        "code": "CO-13-maria-la-baja",
+        "name": "María la Baja"
+      },
+      {
+        "code": "CO-13-mompos",
+        "name": "Mompós"
+      },
+      {
+        "code": "CO-13-montecristo",
+        "name": "Montecristo"
+      },
+      {
+        "code": "CO-13-morales",
+        "name": "Morales"
+      },
+      {
+        "code": "CO-13-norosi",
+        "name": "Norosí"
+      },
+      {
+        "code": "CO-13-pinillos",
+        "name": "Pinillos"
+      },
+      {
+        "code": "CO-13-regidor",
+        "name": "Regidor"
+      },
+      {
+        "code": "CO-13-rio-viejo",
+        "name": "Río Viejo"
+      },
+      {
+        "code": "CO-13-san-cristobal",
+        "name": "San Cristóbal"
+      },
+      {
+        "code": "CO-13-san-estanislao",
+        "name": "San Estanislao"
+      },
+      {
+        "code": "CO-13-san-fernando",
+        "name": "San Fernando"
+      },
+      {
+        "code": "CO-13-san-jacinto-del-cauca",
+        "name": "San Jacinto del Cauca"
+      },
+      {
+        "code": "CO-13-san-jacinto",
+        "name": "San Jacinto"
+      },
+      {
+        "code": "CO-13-san-juan-nepomuceno",
+        "name": "San Juan Nepomuceno"
+      },
+      {
+        "code": "CO-13-san-martin-de-loba",
+        "name": "San Martín de Loba"
+      },
+      {
+        "code": "CO-13-san-pablo",
+        "name": "San Pablo"
+      },
+      {
+        "code": "CO-13-santa-catalina",
+        "name": "Santa Catalina"
+      },
+      {
+        "code": "CO-13-santa-rosa",
+        "name": "Santa Rosa"
+      },
+      {
+        "code": "CO-13-santa-rosa-del-sur",
+        "name": "Santa Rosa del Sur"
+      },
+      {
+        "code": "CO-13-simiti",
+        "name": "Simití"
+      },
+      {
+        "code": "CO-13-soplaviento",
+        "name": "Soplaviento"
+      },
+      {
+        "code": "CO-13-talaigua-nuevo",
+        "name": "Talaigua Nuevo"
+      },
+      {
+        "code": "CO-13-tiquisio",
+        "name": "Tiquisio"
+      },
+      {
+        "code": "CO-13-turbaco",
+        "name": "Turbaco"
+      },
+      {
+        "code": "CO-13-turbana",
+        "name": "Turbaná"
+      },
+      {
+        "code": "CO-13-villanueva",
+        "name": "Villanueva"
+      },
+      {
+        "code": "CO-13-zambrano",
+        "name": "Zambrano"
+      }
+    ]
+  },
+  {
+    "code": "CO-15",
+    "name": "Boyacá",
+    "municipalities": [
+      {
+        "code": "CO-15-almeida",
+        "name": "Almeida"
+      },
+      {
+        "code": "CO-15-aquitania",
+        "name": "Aquitania"
+      },
+      {
+        "code": "CO-15-arcabuco",
+        "name": "Arcabuco"
+      },
+      {
+        "code": "CO-15-belen",
+        "name": "Belén"
+      },
+      {
+        "code": "CO-15-berbeo",
+        "name": "Berbeo"
+      },
+      {
+        "code": "CO-15-beteitiva",
+        "name": "Betéitiva"
+      },
+      {
+        "code": "CO-15-boavita",
+        "name": "Boavita"
+      },
+      {
+        "code": "CO-15-boyaca",
+        "name": "Boyacá"
+      },
+      {
+        "code": "CO-15-briceno",
+        "name": "Briceño"
+      },
+      {
+        "code": "CO-15-buenavista",
+        "name": "Buenavista"
+      },
+      {
+        "code": "CO-15-busbanza",
+        "name": "Busbanzá"
+      },
+      {
+        "code": "CO-15-caldas",
+        "name": "Caldas"
+      },
+      {
+        "code": "CO-15-campohermoso",
+        "name": "Campohermoso"
+      },
+      {
+        "code": "CO-15-cerinza",
+        "name": "Cerinza"
+      },
+      {
+        "code": "CO-15-chinavita",
+        "name": "Chinavita"
+      },
+      {
+        "code": "CO-15-chiquinquira",
+        "name": "Chiquinquirá"
+      },
+      {
+        "code": "CO-15-chiquiza",
+        "name": "Chíquiza"
+      },
+      {
+        "code": "CO-15-chiscas",
+        "name": "Chiscas"
+      },
+      {
+        "code": "CO-15-chita",
+        "name": "Chita"
+      },
+      {
+        "code": "CO-15-chitaraque",
+        "name": "Chitaraque"
+      },
+      {
+        "code": "CO-15-chivata",
+        "name": "Chivatá"
+      },
+      {
+        "code": "CO-15-chivor",
+        "name": "Chivor"
+      },
+      {
+        "code": "CO-15-cienega",
+        "name": "Ciénega"
+      },
+      {
+        "code": "CO-15-combita",
+        "name": "Cómbita"
+      },
+      {
+        "code": "CO-15-coper",
+        "name": "Coper"
+      },
+      {
+        "code": "CO-15-corrales",
+        "name": "Corrales"
+      },
+      {
+        "code": "CO-15-covarachia",
+        "name": "Covarachía"
+      },
+      {
+        "code": "CO-15-cubara",
+        "name": "Cubará"
+      },
+      {
+        "code": "CO-15-cucaita",
+        "name": "Cucaita"
+      },
+      {
+        "code": "CO-15-cuitiva",
+        "name": "Cuítiva"
+      },
+      {
+        "code": "CO-15-duitama",
+        "name": "Duitama"
+      },
+      {
+        "code": "CO-15-el-cocuy",
+        "name": "El Cocuy"
+      },
+      {
+        "code": "CO-15-el-espino",
+        "name": "El Espino"
+      },
+      {
+        "code": "CO-15-firavitoba",
+        "name": "Firavitoba"
+      },
+      {
+        "code": "CO-15-floresta",
+        "name": "Floresta"
+      },
+      {
+        "code": "CO-15-gachantiva",
+        "name": "Gachantivá"
+      },
+      {
+        "code": "CO-15-gameza",
+        "name": "Gámeza"
+      },
+      {
+        "code": "CO-15-garagoa",
+        "name": "Garagoa"
+      },
+      {
+        "code": "CO-15-guacamayas",
+        "name": "Guacamayas"
+      },
+      {
+        "code": "CO-15-guateque",
+        "name": "Guateque"
+      },
+      {
+        "code": "CO-15-guayata",
+        "name": "Guayatá"
+      },
+      {
+        "code": "CO-15-guican",
+        "name": "Güicán"
+      },
+      {
+        "code": "CO-15-iza",
+        "name": "Iza"
+      },
+      {
+        "code": "CO-15-jenesano",
+        "name": "Jenesano"
+      },
+      {
+        "code": "CO-15-jerico",
+        "name": "Jericó"
+      },
+      {
+        "code": "CO-15-la-capilla",
+        "name": "La Capilla"
+      },
+      {
+        "code": "CO-15-la-uvita",
+        "name": "La Uvita"
+      },
+      {
+        "code": "CO-15-la-victoria",
+        "name": "La Victoria"
+      },
+      {
+        "code": "CO-15-labranzagrande",
+        "name": "Labranzagrande"
+      },
+      {
+        "code": "CO-15-macanal",
+        "name": "Macanal"
+      },
+      {
+        "code": "CO-15-maripi",
+        "name": "Maripí"
+      },
+      {
+        "code": "CO-15-miraflores",
+        "name": "Miraflores"
+      },
+      {
+        "code": "CO-15-mongua",
+        "name": "Mongua"
+      },
+      {
+        "code": "CO-15-mongui",
+        "name": "Monguí"
+      },
+      {
+        "code": "CO-15-moniquira",
+        "name": "Moniquirá"
+      },
+      {
+        "code": "CO-15-motavita",
+        "name": "Motavita"
+      },
+      {
+        "code": "CO-15-muzo",
+        "name": "Muzo"
+      },
+      {
+        "code": "CO-15-nobsa",
+        "name": "Nobsa"
+      },
+      {
+        "code": "CO-15-nuevo-colon",
+        "name": "Nuevo Colón"
+      },
+      {
+        "code": "CO-15-oicata",
+        "name": "Oicatá"
+      },
+      {
+        "code": "CO-15-otanche",
+        "name": "Otanche"
+      },
+      {
+        "code": "CO-15-pachavita",
+        "name": "Pachavita"
+      },
+      {
+        "code": "CO-15-paez",
+        "name": "Páez"
+      },
+      {
+        "code": "CO-15-paipa",
+        "name": "Paipa"
+      },
+      {
+        "code": "CO-15-pajarito",
+        "name": "Pajarito"
+      },
+      {
+        "code": "CO-15-panqueba",
+        "name": "Panqueba"
+      },
+      {
+        "code": "CO-15-pauna",
+        "name": "Pauna"
+      },
+      {
+        "code": "CO-15-paya",
+        "name": "Paya"
+      },
+      {
+        "code": "CO-15-paz-del-rio",
+        "name": "Paz del Río"
+      },
+      {
+        "code": "CO-15-pesca",
+        "name": "Pesca"
+      },
+      {
+        "code": "CO-15-pisba",
+        "name": "Pisba"
+      },
+      {
+        "code": "CO-15-puerto-boyaca",
+        "name": "Puerto Boyacá"
+      },
+      {
+        "code": "CO-15-quipama",
+        "name": "Quípama"
+      },
+      {
+        "code": "CO-15-ramiriqui",
+        "name": "Ramiriquí"
+      },
+      {
+        "code": "CO-15-raquira",
+        "name": "Ráquira"
+      },
+      {
+        "code": "CO-15-rondon",
+        "name": "Rondón"
+      },
+      {
+        "code": "CO-15-saboya",
+        "name": "Saboyá"
+      },
+      {
+        "code": "CO-15-sachica",
+        "name": "Sáchica"
+      },
+      {
+        "code": "CO-15-samaca",
+        "name": "Samacá"
+      },
+      {
+        "code": "CO-15-san-eduardo",
+        "name": "San Eduardo"
+      },
+      {
+        "code": "CO-15-san-jose-de-pare",
+        "name": "San José de Pare"
+      },
+      {
+        "code": "CO-15-san-luis-de-gaceno",
+        "name": "San Luis de Gaceno"
+      },
+      {
+        "code": "CO-15-san-mateo",
+        "name": "San Mateo"
+      },
+      {
+        "code": "CO-15-san-miguel-de-sema",
+        "name": "San Miguel de Sema"
+      },
+      {
+        "code": "CO-15-san-pablo-de-borbur",
+        "name": "San Pablo de Borbur"
+      },
+      {
+        "code": "CO-15-santa-maria",
+        "name": "Santa María"
+      },
+      {
+        "code": "CO-15-santa-rosa-de-viterbo",
+        "name": "Santa Rosa de Viterbo"
+      },
+      {
+        "code": "CO-15-santa-sofia",
+        "name": "Santa Sofía"
+      },
+      {
+        "code": "CO-15-santana",
+        "name": "Santana"
+      },
+      {
+        "code": "CO-15-sativanorte",
+        "name": "Sativanorte"
+      },
+      {
+        "code": "CO-15-sativasur",
+        "name": "Sativasur"
+      },
+      {
+        "code": "CO-15-siachoque",
+        "name": "Siachoque"
+      },
+      {
+        "code": "CO-15-soata",
+        "name": "Soatá"
+      },
+      {
+        "code": "CO-15-socha",
+        "name": "Socha"
+      },
+      {
+        "code": "CO-15-socota",
+        "name": "Socotá"
+      },
+      {
+        "code": "CO-15-sogamoso",
+        "name": "Sogamoso"
+      },
+      {
+        "code": "CO-15-somondoco",
+        "name": "Somondoco"
+      },
+      {
+        "code": "CO-15-sora",
+        "name": "Sora"
+      },
+      {
+        "code": "CO-15-soraca",
+        "name": "Soracá"
+      },
+      {
+        "code": "CO-15-sotaquira",
+        "name": "Sotaquirá"
+      },
+      {
+        "code": "CO-15-susacon",
+        "name": "Susacón"
+      },
+      {
+        "code": "CO-15-sutamarchan",
+        "name": "Sutamarchán"
+      },
+      {
+        "code": "CO-15-sutatenza",
+        "name": "Sutatenza"
+      },
+      {
+        "code": "CO-15-tasco",
+        "name": "Tasco"
+      },
+      {
+        "code": "CO-15-tenza",
+        "name": "Tenza"
+      },
+      {
+        "code": "CO-15-tibana",
+        "name": "Tibaná"
+      },
+      {
+        "code": "CO-15-tibasosa",
+        "name": "Tibasosa"
+      },
+      {
+        "code": "CO-15-tinjaca",
+        "name": "Tinjacá"
+      },
+      {
+        "code": "CO-15-tipacoque",
+        "name": "Tipacoque"
+      },
+      {
+        "code": "CO-15-toca",
+        "name": "Toca"
+      },
+      {
+        "code": "CO-15-togui",
+        "name": "Togüí"
+      },
+      {
+        "code": "CO-15-topaga",
+        "name": "Tópaga"
+      },
+      {
+        "code": "CO-15-tota",
+        "name": "Tota"
+      },
+      {
+        "code": "CO-15-tunja",
+        "name": "Tunja"
+      },
+      {
+        "code": "CO-15-tunungua",
+        "name": "Tununguá"
+      },
+      {
+        "code": "CO-15-turmeque",
+        "name": "Turmequé"
+      },
+      {
+        "code": "CO-15-tuta",
+        "name": "Tuta"
+      },
+      {
+        "code": "CO-15-tutaza",
+        "name": "Tutazá"
+      },
+      {
+        "code": "CO-15-umbita",
+        "name": "Úmbita"
+      },
+      {
+        "code": "CO-15-ventaquemada",
+        "name": "Ventaquemada"
+      },
+      {
+        "code": "CO-15-villa-de-leyva",
+        "name": "Villa de Leyva"
+      },
+      {
+        "code": "CO-15-viracacha",
+        "name": "Viracachá"
+      },
+      {
+        "code": "CO-15-zetaquira",
+        "name": "Zetaquira"
+      }
+    ]
+  },
+  {
+    "code": "CO-17",
+    "name": "Caldas",
+    "municipalities": [
+      {
+        "code": "CO-17-aguadas",
+        "name": "Aguadas"
+      },
+      {
+        "code": "CO-17-anserma",
+        "name": "Anserma"
+      },
+      {
+        "code": "CO-17-aranzazu",
+        "name": "Aranzazu"
+      },
+      {
+        "code": "CO-17-belalcazar",
+        "name": "Belalcázar"
+      },
+      {
+        "code": "CO-17-chinchina",
+        "name": "Chinchiná"
+      },
+      {
+        "code": "CO-17-filadelfia",
+        "name": "Filadelfia"
+      },
+      {
+        "code": "CO-17-la-dorada",
+        "name": "La Dorada"
+      },
+      {
+        "code": "CO-17-la-merced",
+        "name": "La Merced"
+      },
+      {
+        "code": "CO-17-manizales",
+        "name": "Manizales"
+      },
+      {
+        "code": "CO-17-manzanares",
+        "name": "Manzanares"
+      },
+      {
+        "code": "CO-17-marmato",
+        "name": "Marmato"
+      },
+      {
+        "code": "CO-17-marquetalia",
+        "name": "Marquetalia"
+      },
+      {
+        "code": "CO-17-marulanda",
+        "name": "Marulanda"
+      },
+      {
+        "code": "CO-17-neira",
+        "name": "Neira"
+      },
+      {
+        "code": "CO-17-norcasia",
+        "name": "Norcasia"
+      },
+      {
+        "code": "CO-17-pacora",
+        "name": "Pácora"
+      },
+      {
+        "code": "CO-17-palestina",
+        "name": "Palestina"
+      },
+      {
+        "code": "CO-17-pensilvania",
+        "name": "Pensilvania"
+      },
+      {
+        "code": "CO-17-riosucio",
+        "name": "Riosucio"
+      },
+      {
+        "code": "CO-17-risaralda",
+        "name": "Risaralda"
+      },
+      {
+        "code": "CO-17-salamina",
+        "name": "Salamina"
+      },
+      {
+        "code": "CO-17-samana",
+        "name": "Samaná"
+      },
+      {
+        "code": "CO-17-san-jose",
+        "name": "San José"
+      },
+      {
+        "code": "CO-17-supia",
+        "name": "Supía"
+      },
+      {
+        "code": "CO-17-victoria",
+        "name": "Victoria"
+      },
+      {
+        "code": "CO-17-villamaria",
+        "name": "Villamaría"
+      },
+      {
+        "code": "CO-17-viterbo",
+        "name": "Viterbo"
+      }
+    ]
+  },
+  {
+    "code": "CO-18",
+    "name": "Caquetá",
+    "municipalities": [
+      {
+        "code": "CO-18-albania",
+        "name": "Albania"
+      },
+      {
+        "code": "CO-18-belen-de-los-andaquies",
+        "name": "Belén de los Andaquíes"
+      },
+      {
+        "code": "CO-18-cartagena-del-chaira",
+        "name": "Cartagena del Chairá"
+      },
+      {
+        "code": "CO-18-curillo",
+        "name": "Curillo"
+      },
+      {
+        "code": "CO-18-el-doncello",
+        "name": "El Doncello"
+      },
+      {
+        "code": "CO-18-el-paujil",
+        "name": "El Paujil"
+      },
+      {
+        "code": "CO-18-florencia",
+        "name": "Florencia"
+      },
+      {
+        "code": "CO-18-la-montanita",
+        "name": "La Montañita"
+      },
+      {
+        "code": "CO-18-milan",
+        "name": "Milán"
+      },
+      {
+        "code": "CO-18-morelia",
+        "name": "Morelia"
+      },
+      {
+        "code": "CO-18-puerto-rico",
+        "name": "Puerto Rico"
+      },
+      {
+        "code": "CO-18-san-jose-del-fragua",
+        "name": "San José del Fragua"
+      },
+      {
+        "code": "CO-18-san-vicente-del-caguan",
+        "name": "San Vicente del Caguán"
+      },
+      {
+        "code": "CO-18-solano",
+        "name": "Solano"
+      },
+      {
+        "code": "CO-18-solita",
+        "name": "Solita"
+      },
+      {
+        "code": "CO-18-valparaiso",
+        "name": "Valparaíso"
+      }
+    ]
+  },
+  {
+    "code": "CO-85",
+    "name": "Casanare",
+    "municipalities": [
+      {
+        "code": "CO-85-aguazul",
+        "name": "Aguazul"
+      },
+      {
+        "code": "CO-85-chameza",
+        "name": "Chámeza"
+      },
+      {
+        "code": "CO-85-hato-corozal",
+        "name": "Hato Corozal"
+      },
+      {
+        "code": "CO-85-la-salina",
+        "name": "La Salina"
+      },
+      {
+        "code": "CO-85-mani",
+        "name": "Maní"
+      },
+      {
+        "code": "CO-85-monterrey",
+        "name": "Monterrey"
+      },
+      {
+        "code": "CO-85-nunchia",
+        "name": "Nunchía"
+      },
+      {
+        "code": "CO-85-orocue",
+        "name": "Orocué"
+      },
+      {
+        "code": "CO-85-paz-de-ariporo",
+        "name": "Paz de Ariporo"
+      },
+      {
+        "code": "CO-85-pore",
+        "name": "Pore"
+      },
+      {
+        "code": "CO-85-recetor",
+        "name": "Recetor"
+      },
+      {
+        "code": "CO-85-sabanalarga",
+        "name": "Sabanalarga"
+      },
+      {
+        "code": "CO-85-sacama",
+        "name": "Sácama"
+      },
+      {
+        "code": "CO-85-san-luis-de-palenque",
+        "name": "San Luis de Palenque"
+      },
+      {
+        "code": "CO-85-tamara",
+        "name": "Támara"
+      },
+      {
+        "code": "CO-85-tauramena",
+        "name": "Tauramena"
+      },
+      {
+        "code": "CO-85-trinidad",
+        "name": "Trinidad"
+      },
+      {
+        "code": "CO-85-villanueva",
+        "name": "Villanueva"
+      },
+      {
+        "code": "CO-85-yopal",
+        "name": "Yopal"
+      }
+    ]
+  },
+  {
+    "code": "CO-19",
+    "name": "Cauca",
+    "municipalities": [
+      {
+        "code": "CO-19-almaguer",
+        "name": "Almaguer"
+      },
+      {
+        "code": "CO-19-argelia",
+        "name": "Argelia"
+      },
+      {
+        "code": "CO-19-balboa",
+        "name": "Balboa"
+      },
+      {
+        "code": "CO-19-bolivar",
+        "name": "Bolívar"
+      },
+      {
+        "code": "CO-19-buenos-aires",
+        "name": "Buenos Aires"
+      },
+      {
+        "code": "CO-19-cajibio",
+        "name": "Cajibío"
+      },
+      {
+        "code": "CO-19-caldono",
+        "name": "Caldono"
+      },
+      {
+        "code": "CO-19-caloto",
+        "name": "Caloto"
+      },
+      {
+        "code": "CO-19-corinto",
+        "name": "Corinto"
+      },
+      {
+        "code": "CO-19-el-tambo",
+        "name": "El Tambo"
+      },
+      {
+        "code": "CO-19-florencia",
+        "name": "Florencia"
+      },
+      {
+        "code": "CO-19-guachene",
+        "name": "Guachené"
+      },
+      {
+        "code": "CO-19-guapi",
+        "name": "Guapí"
+      },
+      {
+        "code": "CO-19-inza",
+        "name": "Inzá"
+      },
+      {
+        "code": "CO-19-jambalo",
+        "name": "Jambaló"
+      },
+      {
+        "code": "CO-19-la-sierra",
+        "name": "La Sierra"
+      },
+      {
+        "code": "CO-19-la-vega",
+        "name": "La Vega"
+      },
+      {
+        "code": "CO-19-lopez-de-micay",
+        "name": "López de Micay"
+      },
+      {
+        "code": "CO-19-mercaderes",
+        "name": "Mercaderes"
+      },
+      {
+        "code": "CO-19-miranda",
+        "name": "Miranda"
+      },
+      {
+        "code": "CO-19-morales",
+        "name": "Morales"
+      },
+      {
+        "code": "CO-19-padilla",
+        "name": "Padilla"
+      },
+      {
+        "code": "CO-19-paez",
+        "name": "Páez"
+      },
+      {
+        "code": "CO-19-patia",
+        "name": "Patía"
+      },
+      {
+        "code": "CO-19-piamonte",
+        "name": "Piamonte"
+      },
+      {
+        "code": "CO-19-piendamo",
+        "name": "Piendamó"
+      },
+      {
+        "code": "CO-19-popayan",
+        "name": "Popayán"
+      },
+      {
+        "code": "CO-19-puerto-tejada",
+        "name": "Puerto Tejada"
+      },
+      {
+        "code": "CO-19-purace",
+        "name": "Puracé"
+      },
+      {
+        "code": "CO-19-rosas",
+        "name": "Rosas"
+      },
+      {
+        "code": "CO-19-san-sebastian",
+        "name": "San Sebastián"
+      },
+      {
+        "code": "CO-19-santa-rosa",
+        "name": "Santa Rosa"
+      },
+      {
+        "code": "CO-19-santander-de-quilichao",
+        "name": "Santander de Quilichao"
+      },
+      {
+        "code": "CO-19-silvia",
+        "name": "Silvia"
+      },
+      {
+        "code": "CO-19-sotara",
+        "name": "Sotará"
+      },
+      {
+        "code": "CO-19-suarez",
+        "name": "Suárez"
+      },
+      {
+        "code": "CO-19-sucre",
+        "name": "Sucre"
+      },
+      {
+        "code": "CO-19-timbio",
+        "name": "Timbío"
+      },
+      {
+        "code": "CO-19-timbiqui",
+        "name": "Timbiquí"
+      },
+      {
+        "code": "CO-19-toribio",
+        "name": "Toribío"
+      },
+      {
+        "code": "CO-19-totoro",
+        "name": "Totoró"
+      },
+      {
+        "code": "CO-19-villa-rica",
+        "name": "Villa Rica"
+      }
+    ]
+  },
+  {
+    "code": "CO-20",
+    "name": "Cesar",
+    "municipalities": [
+      {
+        "code": "CO-20-aguachica",
+        "name": "Aguachica"
+      },
+      {
+        "code": "CO-20-agustin-codazzi",
+        "name": "Agustín Codazzi"
+      },
+      {
+        "code": "CO-20-astrea",
+        "name": "Astrea"
+      },
+      {
+        "code": "CO-20-becerril",
+        "name": "Becerril"
+      },
+      {
+        "code": "CO-20-bosconia",
+        "name": "Bosconia"
+      },
+      {
+        "code": "CO-20-chimichagua",
+        "name": "Chimichagua"
+      },
+      {
+        "code": "CO-20-chiriguana",
+        "name": "Chiriguaná"
+      },
+      {
+        "code": "CO-20-curumani",
+        "name": "Curumaní"
+      },
+      {
+        "code": "CO-20-el-copey",
+        "name": "El Copey"
+      },
+      {
+        "code": "CO-20-el-paso",
+        "name": "El Paso"
+      },
+      {
+        "code": "CO-20-gamarra",
+        "name": "Gamarra"
+      },
+      {
+        "code": "CO-20-gonzalez",
+        "name": "González"
+      },
+      {
+        "code": "CO-20-la-gloria-cesar",
+        "name": "La Gloria (Cesar)"
+      },
+      {
+        "code": "CO-20-la-jagua-de-ibirico",
+        "name": "La Jagua de Ibirico"
+      },
+      {
+        "code": "CO-20-la-paz",
+        "name": "La Paz"
+      },
+      {
+        "code": "CO-20-manaure-balcon-del-cesar",
+        "name": "Manaure Balcón del Cesar"
+      },
+      {
+        "code": "CO-20-pailitas",
+        "name": "Pailitas"
+      },
+      {
+        "code": "CO-20-pelaya",
+        "name": "Pelaya"
+      },
+      {
+        "code": "CO-20-pueblo-bello",
+        "name": "Pueblo Bello"
+      },
+      {
+        "code": "CO-20-rio-de-oro",
+        "name": "Río de Oro"
+      },
+      {
+        "code": "CO-20-san-alberto",
+        "name": "San Alberto"
+      },
+      {
+        "code": "CO-20-san-diego",
+        "name": "San Diego"
+      },
+      {
+        "code": "CO-20-san-martin",
+        "name": "San Martín"
+      },
+      {
+        "code": "CO-20-tamalameque",
+        "name": "Tamalameque"
+      },
+      {
+        "code": "CO-20-valledupar",
+        "name": "Valledupar"
+      }
+    ]
+  },
+  {
+    "code": "CO-27",
+    "name": "Chocó",
+    "municipalities": [
+      {
+        "code": "CO-27-acandi",
+        "name": "Acandí"
+      },
+      {
+        "code": "CO-27-alto-baudo",
+        "name": "Alto Baudó"
+      },
+      {
+        "code": "CO-27-bagado",
+        "name": "Bagadó"
+      },
+      {
+        "code": "CO-27-bahia-solano",
+        "name": "Bahía Solano"
+      },
+      {
+        "code": "CO-27-bajo-baudo",
+        "name": "Bajo Baudó"
+      },
+      {
+        "code": "CO-27-bojaya",
+        "name": "Bojayá"
+      },
+      {
+        "code": "CO-27-canton-de-san-pablo",
+        "name": "Cantón de San Pablo"
+      },
+      {
+        "code": "CO-27-certegui",
+        "name": "Cértegui"
+      },
+      {
+        "code": "CO-27-condoto",
+        "name": "Condoto"
+      },
+      {
+        "code": "CO-27-el-atrato",
+        "name": "El Atrato"
+      },
+      {
+        "code": "CO-27-el-carmen-de-atrato",
+        "name": "El Carmen de Atrato"
+      },
+      {
+        "code": "CO-27-el-carmen-del-darien",
+        "name": "El Carmen del Darién"
+      },
+      {
+        "code": "CO-27-istmina",
+        "name": "Istmina"
+      },
+      {
+        "code": "CO-27-jurado",
+        "name": "Juradó"
+      },
+      {
+        "code": "CO-27-litoral-de-san-juan",
+        "name": "Litoral de San Juan"
+      },
+      {
+        "code": "CO-27-lloro",
+        "name": "Lloró"
+      },
+      {
+        "code": "CO-27-medio-atrato",
+        "name": "Medio Atrato"
+      },
+      {
+        "code": "CO-27-medio-baudo",
+        "name": "Medio Baudó"
+      },
+      {
+        "code": "CO-27-medio-san-juan",
+        "name": "Medio San Juan"
+      },
+      {
+        "code": "CO-27-novita",
+        "name": "Nóvita"
+      },
+      {
+        "code": "CO-27-nuqui",
+        "name": "Nuquí"
+      },
+      {
+        "code": "CO-27-quibdo",
+        "name": "Quibdó"
+      },
+      {
+        "code": "CO-27-rio-iro",
+        "name": "Río Iró"
+      },
+      {
+        "code": "CO-27-rio-quito",
+        "name": "Río Quito"
+      },
+      {
+        "code": "CO-27-riosucio",
+        "name": "Riosucio"
+      },
+      {
+        "code": "CO-27-san-jose-del-palmar",
+        "name": "San José del Palmar"
+      },
+      {
+        "code": "CO-27-sipi",
+        "name": "Sipí"
+      },
+      {
+        "code": "CO-27-tado",
+        "name": "Tadó"
+      },
+      {
+        "code": "CO-27-union-panamericana",
+        "name": "Unión Panamericana"
+      },
+      {
+        "code": "CO-27-unguia",
+        "name": "Unguía"
+      }
+    ]
+  },
+  {
+    "code": "CO-25",
+    "name": "Cundinamarca",
+    "municipalities": [
+      {
+        "code": "CO-25-agua-de-dios",
+        "name": "Agua de Dios"
+      },
+      {
+        "code": "CO-25-alban",
+        "name": "Albán"
+      },
+      {
+        "code": "CO-25-anapoima",
+        "name": "Anapoima"
+      },
+      {
+        "code": "CO-25-anolaima",
+        "name": "Anolaima"
+      },
+      {
+        "code": "CO-25-apulo",
+        "name": "Apulo"
+      },
+      {
+        "code": "CO-25-arbelaez",
+        "name": "Arbeláez"
+      },
+      {
+        "code": "CO-25-beltran",
+        "name": "Beltrán"
+      },
+      {
+        "code": "CO-25-bituima",
+        "name": "Bituima"
+      },
+      {
+        "code": "CO-25-bogota",
+        "name": "Bogotá"
+      },
+      {
+        "code": "CO-25-bojaca",
+        "name": "Bojacá"
+      },
+      {
+        "code": "CO-25-cabrera",
+        "name": "Cabrera"
+      },
+      {
+        "code": "CO-25-cachipay",
+        "name": "Cachipay"
+      },
+      {
+        "code": "CO-25-cajica",
+        "name": "Cajicá"
+      },
+      {
+        "code": "CO-25-caparrapi",
+        "name": "Caparrapí"
+      },
+      {
+        "code": "CO-25-caqueza",
+        "name": "Cáqueza"
+      },
+      {
+        "code": "CO-25-carmen-de-carupa",
+        "name": "Carmen de Carupa"
+      },
+      {
+        "code": "CO-25-chaguani",
+        "name": "Chaguaní"
+      },
+      {
+        "code": "CO-25-chia",
+        "name": "Chía"
+      },
+      {
+        "code": "CO-25-chipaque",
+        "name": "Chipaque"
+      },
+      {
+        "code": "CO-25-choachi",
+        "name": "Choachí"
+      },
+      {
+        "code": "CO-25-choconta",
+        "name": "Chocontá"
+      },
+      {
+        "code": "CO-25-cogua",
+        "name": "Cogua"
+      },
+      {
+        "code": "CO-25-cota",
+        "name": "Cota"
+      },
+      {
+        "code": "CO-25-cucunuba",
+        "name": "Cucunubá"
+      },
+      {
+        "code": "CO-25-el-colegio",
+        "name": "El Colegio"
+      },
+      {
+        "code": "CO-25-el-penon",
+        "name": "El Peñón"
+      },
+      {
+        "code": "CO-25-el-rosal",
+        "name": "El Rosal"
+      },
+      {
+        "code": "CO-25-facatativa",
+        "name": "Facatativá"
+      },
+      {
+        "code": "CO-25-fomeque",
+        "name": "Fómeque"
+      },
+      {
+        "code": "CO-25-fosca",
+        "name": "Fosca"
+      },
+      {
+        "code": "CO-25-funza",
+        "name": "Funza"
+      },
+      {
+        "code": "CO-25-fuquene",
+        "name": "Fúquene"
+      },
+      {
+        "code": "CO-25-fusagasuga",
+        "name": "Fusagasugá"
+      },
+      {
+        "code": "CO-25-gachala",
+        "name": "Gachalá"
+      },
+      {
+        "code": "CO-25-gachancipa",
+        "name": "Gachancipá"
+      },
+      {
+        "code": "CO-25-gacheta",
+        "name": "Gachetá"
+      },
+      {
+        "code": "CO-25-gama",
+        "name": "Gama"
+      },
+      {
+        "code": "CO-25-girardot",
+        "name": "Girardot"
+      },
+      {
+        "code": "CO-25-granada",
+        "name": "Granada"
+      },
+      {
+        "code": "CO-25-guacheta",
+        "name": "Guachetá"
+      },
+      {
+        "code": "CO-25-guaduas",
+        "name": "Guaduas"
+      },
+      {
+        "code": "CO-25-guasca",
+        "name": "Guasca"
+      },
+      {
+        "code": "CO-25-guataqui",
+        "name": "Guataquí"
+      },
+      {
+        "code": "CO-25-guatavita",
+        "name": "Guatavita"
+      },
+      {
+        "code": "CO-25-guayabal-de-siquima",
+        "name": "Guayabal de Síquima"
+      },
+      {
+        "code": "CO-25-guayabetal",
+        "name": "Guayabetal"
+      },
+      {
+        "code": "CO-25-gutierrez",
+        "name": "Gutiérrez"
+      },
+      {
+        "code": "CO-25-jerusalen",
+        "name": "Jerusalén"
+      },
+      {
+        "code": "CO-25-junin",
+        "name": "Junín"
+      },
+      {
+        "code": "CO-25-la-calera",
+        "name": "La Calera"
+      },
+      {
+        "code": "CO-25-la-mesa",
+        "name": "La Mesa"
+      },
+      {
+        "code": "CO-25-la-palma",
+        "name": "La Palma"
+      },
+      {
+        "code": "CO-25-la-pena",
+        "name": "La Peña"
+      },
+      {
+        "code": "CO-25-la-vega",
+        "name": "La Vega"
+      },
+      {
+        "code": "CO-25-lenguazaque",
+        "name": "Lenguazaque"
+      },
+      {
+        "code": "CO-25-macheta",
+        "name": "Machetá"
+      },
+      {
+        "code": "CO-25-madrid",
+        "name": "Madrid"
+      },
+      {
+        "code": "CO-25-manta",
+        "name": "Manta"
+      },
+      {
+        "code": "CO-25-medina",
+        "name": "Medina"
+      },
+      {
+        "code": "CO-25-mosquera",
+        "name": "Mosquera"
+      },
+      {
+        "code": "CO-25-narino",
+        "name": "Nariño"
+      },
+      {
+        "code": "CO-25-nemocon",
+        "name": "Nemocón"
+      },
+      {
+        "code": "CO-25-nilo",
+        "name": "Nilo"
+      },
+      {
+        "code": "CO-25-nimaima",
+        "name": "Nimaima"
+      },
+      {
+        "code": "CO-25-nocaima",
+        "name": "Nocaima"
+      },
+      {
+        "code": "CO-25-pacho",
+        "name": "Pacho"
+      },
+      {
+        "code": "CO-25-paime",
+        "name": "Paime"
+      },
+      {
+        "code": "CO-25-pandi",
+        "name": "Pandi"
+      },
+      {
+        "code": "CO-25-paratebueno",
+        "name": "Paratebueno"
+      },
+      {
+        "code": "CO-25-pasca",
+        "name": "Pasca"
+      },
+      {
+        "code": "CO-25-puerto-salgar",
+        "name": "Puerto Salgar"
+      },
+      {
+        "code": "CO-25-puli",
+        "name": "Pulí"
+      },
+      {
+        "code": "CO-25-quebradanegra",
+        "name": "Quebradanegra"
+      },
+      {
+        "code": "CO-25-quetame",
+        "name": "Quetame"
+      },
+      {
+        "code": "CO-25-quipile",
+        "name": "Quipile"
+      },
+      {
+        "code": "CO-25-ricaurte",
+        "name": "Ricaurte"
+      },
+      {
+        "code": "CO-25-san-antonio-del-tequendama",
+        "name": "San Antonio del Tequendama"
+      },
+      {
+        "code": "CO-25-san-bernardo",
+        "name": "San Bernardo"
+      },
+      {
+        "code": "CO-25-san-cayetano",
+        "name": "San Cayetano"
+      },
+      {
+        "code": "CO-25-san-francisco",
+        "name": "San Francisco"
+      },
+      {
+        "code": "CO-25-san-juan-de-rioseco",
+        "name": "San Juan de Rioseco"
+      },
+      {
+        "code": "CO-25-sasaima",
+        "name": "Sasaima"
+      },
+      {
+        "code": "CO-25-sesquile",
+        "name": "Sesquilé"
+      },
+      {
+        "code": "CO-25-sibate",
+        "name": "Sibaté"
+      },
+      {
+        "code": "CO-25-silvania",
+        "name": "Silvania"
+      },
+      {
+        "code": "CO-25-simijaca",
+        "name": "Simijaca"
+      },
+      {
+        "code": "CO-25-soacha",
+        "name": "Soacha"
+      },
+      {
+        "code": "CO-25-sopo",
+        "name": "Sopó"
+      },
+      {
+        "code": "CO-25-subachoque",
+        "name": "Subachoque"
+      },
+      {
+        "code": "CO-25-suesca",
+        "name": "Suesca"
+      },
+      {
+        "code": "CO-25-supata",
+        "name": "Supatá"
+      },
+      {
+        "code": "CO-25-susa",
+        "name": "Susa"
+      },
+      {
+        "code": "CO-25-sutatausa",
+        "name": "Sutatausa"
+      },
+      {
+        "code": "CO-25-tabio",
+        "name": "Tabio"
+      },
+      {
+        "code": "CO-25-tausa",
+        "name": "Tausa"
+      },
+      {
+        "code": "CO-25-tena",
+        "name": "Tena"
+      },
+      {
+        "code": "CO-25-tenjo",
+        "name": "Tenjo"
+      },
+      {
+        "code": "CO-25-tibacuy",
+        "name": "Tibacuy"
+      },
+      {
+        "code": "CO-25-tibirita",
+        "name": "Tibirita"
+      },
+      {
+        "code": "CO-25-tocaima",
+        "name": "Tocaima"
+      },
+      {
+        "code": "CO-25-tocancipa",
+        "name": "Tocancipá"
+      },
+      {
+        "code": "CO-25-topaipi",
+        "name": "Topaipí"
+      },
+      {
+        "code": "CO-25-ubala",
+        "name": "Ubalá"
+      },
+      {
+        "code": "CO-25-ubaque",
+        "name": "Ubaque"
+      },
+      {
+        "code": "CO-25-ubate",
+        "name": "Ubaté"
+      },
+      {
+        "code": "CO-25-une",
+        "name": "Une"
+      },
+      {
+        "code": "CO-25-utica",
+        "name": "Útica"
+      },
+      {
+        "code": "CO-25-venecia",
+        "name": "Venecia"
+      },
+      {
+        "code": "CO-25-vergara",
+        "name": "Vergara"
+      },
+      {
+        "code": "CO-25-viani",
+        "name": "Vianí"
+      },
+      {
+        "code": "CO-25-villagomez",
+        "name": "Villagómez"
+      },
+      {
+        "code": "CO-25-villapinzon",
+        "name": "Villapinzón"
+      },
+      {
+        "code": "CO-25-villeta",
+        "name": "Villeta"
+      },
+      {
+        "code": "CO-25-viota",
+        "name": "Viotá"
+      },
+      {
+        "code": "CO-25-yacopi",
+        "name": "Yacopí"
+      },
+      {
+        "code": "CO-25-zipacon",
+        "name": "Zipacón"
+      },
+      {
+        "code": "CO-25-zipaquira",
+        "name": "Zipaquirá"
+      }
+    ]
+  },
+  {
+    "code": "CO-23",
+    "name": "Córdoba",
+    "municipalities": [
+      {
+        "code": "CO-23-ayapel",
+        "name": "Ayapel"
+      },
+      {
+        "code": "CO-23-buenavista",
+        "name": "Buenavista"
+      },
+      {
+        "code": "CO-23-canalete",
+        "name": "Canalete"
+      },
+      {
+        "code": "CO-23-cerete",
+        "name": "Cereté"
+      },
+      {
+        "code": "CO-23-chima",
+        "name": "Chimá"
+      },
+      {
+        "code": "CO-23-chinu",
+        "name": "Chinú"
+      },
+      {
+        "code": "CO-23-cienaga-de-oro",
+        "name": "Ciénaga de Oro"
+      },
+      {
+        "code": "CO-23-cotorra",
+        "name": "Cotorra"
+      },
+      {
+        "code": "CO-23-la-apartada",
+        "name": "La Apartada"
+      },
+      {
+        "code": "CO-23-lorica",
+        "name": "Lorica"
+      },
+      {
+        "code": "CO-23-los-cordobas",
+        "name": "Los Córdobas"
+      },
+      {
+        "code": "CO-23-momil",
+        "name": "Momil"
+      },
+      {
+        "code": "CO-23-montelibano",
+        "name": "Montelíbano"
+      },
+      {
+        "code": "CO-23-monteria",
+        "name": "Montería"
+      },
+      {
+        "code": "CO-23-monitos",
+        "name": "Moñitos"
+      },
+      {
+        "code": "CO-23-planeta-rica",
+        "name": "Planeta Rica"
+      },
+      {
+        "code": "CO-23-pueblo-nuevo",
+        "name": "Pueblo Nuevo"
+      },
+      {
+        "code": "CO-23-puerto-escondido",
+        "name": "Puerto Escondido"
+      },
+      {
+        "code": "CO-23-puerto-libertador",
+        "name": "Puerto Libertador"
+      },
+      {
+        "code": "CO-23-purisima",
+        "name": "Purísima"
+      },
+      {
+        "code": "CO-23-sahagun",
+        "name": "Sahagún"
+      },
+      {
+        "code": "CO-23-san-andres-de-sotavento",
+        "name": "San Andrés de Sotavento"
+      },
+      {
+        "code": "CO-23-san-antero",
+        "name": "San Antero"
+      },
+      {
+        "code": "CO-23-san-bernardo-del-viento",
+        "name": "San Bernardo del Viento"
+      },
+      {
+        "code": "CO-23-san-carlos",
+        "name": "San Carlos"
+      },
+      {
+        "code": "CO-23-san-jose-de-ure",
+        "name": "San José de Uré"
+      },
+      {
+        "code": "CO-23-san-pelayo",
+        "name": "San Pelayo"
+      },
+      {
+        "code": "CO-23-tierralta",
+        "name": "Tierralta"
+      },
+      {
+        "code": "CO-23-tuchin",
+        "name": "Tuchín"
+      },
+      {
+        "code": "CO-23-valencia",
+        "name": "Valencia"
+      }
+    ]
+  },
+  {
+    "code": "CO-94",
+    "name": "Guainía",
+    "municipalities": [
+      {
+        "code": "CO-94-inirida",
+        "name": "Inírida"
+      }
+    ]
+  },
+  {
+    "code": "CO-95",
+    "name": "Guaviare",
+    "municipalities": [
+      {
+        "code": "CO-95-calamar",
+        "name": "Calamar"
+      },
+      {
+        "code": "CO-95-el-retorno",
+        "name": "El Retorno"
+      },
+      {
+        "code": "CO-95-miraflores",
+        "name": "Miraflores"
+      },
+      {
+        "code": "CO-95-san-jose-del-guaviare",
+        "name": "San José del Guaviare"
+      }
+    ]
+  },
+  {
+    "code": "CO-41",
+    "name": "Huila",
+    "municipalities": [
+      {
+        "code": "CO-41-acevedo",
+        "name": "Acevedo"
+      },
+      {
+        "code": "CO-41-agrado",
+        "name": "Agrado"
+      },
+      {
+        "code": "CO-41-aipe",
+        "name": "Aipe"
+      },
+      {
+        "code": "CO-41-algeciras",
+        "name": "Algeciras"
+      },
+      {
+        "code": "CO-41-altamira",
+        "name": "Altamira"
+      },
+      {
+        "code": "CO-41-baraya",
+        "name": "Baraya"
+      },
+      {
+        "code": "CO-41-campoalegre",
+        "name": "Campoalegre"
+      },
+      {
+        "code": "CO-41-colombia",
+        "name": "Colombia"
+      },
+      {
+        "code": "CO-41-el-pital",
+        "name": "El Pital"
+      },
+      {
+        "code": "CO-41-elias",
+        "name": "Elías"
+      },
+      {
+        "code": "CO-41-garzon",
+        "name": "Garzón"
+      },
+      {
+        "code": "CO-41-gigante",
+        "name": "Gigante"
+      },
+      {
+        "code": "CO-41-guadalupe",
+        "name": "Guadalupe"
+      },
+      {
+        "code": "CO-41-hobo",
+        "name": "Hobo"
+      },
+      {
+        "code": "CO-41-iquira",
+        "name": "Íquira"
+      },
+      {
+        "code": "CO-41-isnos",
+        "name": "Isnos"
+      },
+      {
+        "code": "CO-41-la-argentina",
+        "name": "La Argentina"
+      },
+      {
+        "code": "CO-41-la-plata",
+        "name": "La Plata"
+      },
+      {
+        "code": "CO-41-nataga",
+        "name": "Nátaga"
+      },
+      {
+        "code": "CO-41-neiva",
+        "name": "Neiva"
+      },
+      {
+        "code": "CO-41-oporapa",
+        "name": "Oporapa"
+      },
+      {
+        "code": "CO-41-paicol",
+        "name": "Paicol"
+      },
+      {
+        "code": "CO-41-palermo",
+        "name": "Palermo"
+      },
+      {
+        "code": "CO-41-palestina",
+        "name": "Palestina"
+      },
+      {
+        "code": "CO-41-pitalito",
+        "name": "Pitalito"
+      },
+      {
+        "code": "CO-41-rivera",
+        "name": "Rivera"
+      },
+      {
+        "code": "CO-41-saladoblanco",
+        "name": "Saladoblanco"
+      },
+      {
+        "code": "CO-41-san-agustin",
+        "name": "San Agustín"
+      },
+      {
+        "code": "CO-41-santa-maria",
+        "name": "Santa María"
+      },
+      {
+        "code": "CO-41-suaza",
+        "name": "Suaza"
+      },
+      {
+        "code": "CO-41-tarqui",
+        "name": "Tarqui"
+      },
+      {
+        "code": "CO-41-tello",
+        "name": "Tello"
+      },
+      {
+        "code": "CO-41-teruel",
+        "name": "Teruel"
+      },
+      {
+        "code": "CO-41-tesalia",
+        "name": "Tesalia"
+      },
+      {
+        "code": "CO-41-timana",
+        "name": "Timaná"
+      },
+      {
+        "code": "CO-41-villavieja",
+        "name": "Villavieja"
+      },
+      {
+        "code": "CO-41-yaguara",
+        "name": "Yaguará"
+      }
+    ]
+  },
+  {
+    "code": "CO-44",
+    "name": "La Guajira",
+    "municipalities": [
+      {
+        "code": "CO-44-albania",
+        "name": "Albania"
+      },
+      {
+        "code": "CO-44-barrancas",
+        "name": "Barrancas"
+      },
+      {
+        "code": "CO-44-dibulla",
+        "name": "Dibulla"
+      },
+      {
+        "code": "CO-44-distraccion",
+        "name": "Distracción"
+      },
+      {
+        "code": "CO-44-el-molino",
+        "name": "El Molino"
+      },
+      {
+        "code": "CO-44-fonseca",
+        "name": "Fonseca"
+      },
+      {
+        "code": "CO-44-hatonuevo",
+        "name": "Hatonuevo"
+      },
+      {
+        "code": "CO-44-la-jagua-del-pilar",
+        "name": "La Jagua del Pilar"
+      },
+      {
+        "code": "CO-44-maicao",
+        "name": "Maicao"
+      },
+      {
+        "code": "CO-44-manaure",
+        "name": "Manaure"
+      },
+      {
+        "code": "CO-44-riohacha",
+        "name": "Riohacha"
+      },
+      {
+        "code": "CO-44-san-juan-del-cesar",
+        "name": "San Juan del Cesar"
+      },
+      {
+        "code": "CO-44-uribia",
+        "name": "Uribia"
+      },
+      {
+        "code": "CO-44-urumita",
+        "name": "Urumita"
+      },
+      {
+        "code": "CO-44-villanueva",
+        "name": "Villanueva"
+      }
+    ]
+  },
+  {
+    "code": "CO-47",
+    "name": "Magdalena",
+    "municipalities": [
+      {
+        "code": "CO-47-algarrobo",
+        "name": "Algarrobo"
+      },
+      {
+        "code": "CO-47-aracataca",
+        "name": "Aracataca"
+      },
+      {
+        "code": "CO-47-ariguani",
+        "name": "Ariguaní"
+      },
+      {
+        "code": "CO-47-cerro-de-san-antonio",
+        "name": "Cerro de San Antonio"
+      },
+      {
+        "code": "CO-47-chibolo",
+        "name": "Chibolo"
+      },
+      {
+        "code": "CO-47-cienaga",
+        "name": "Ciénaga"
+      },
+      {
+        "code": "CO-47-concordia",
+        "name": "Concordia"
+      },
+      {
+        "code": "CO-47-el-banco",
+        "name": "El Banco"
+      },
+      {
+        "code": "CO-47-el-pinon",
+        "name": "El Piñón"
+      },
+      {
+        "code": "CO-47-el-reten",
+        "name": "El Retén"
+      },
+      {
+        "code": "CO-47-fundacion",
+        "name": "Fundación"
+      },
+      {
+        "code": "CO-47-guamal",
+        "name": "Guamal"
+      },
+      {
+        "code": "CO-47-nueva-granada",
+        "name": "Nueva Granada"
+      },
+      {
+        "code": "CO-47-pedraza",
+        "name": "Pedraza"
+      },
+      {
+        "code": "CO-47-pijino-del-carmen",
+        "name": "Pijiño del Carmen"
+      },
+      {
+        "code": "CO-47-pivijay",
+        "name": "Pivijay"
+      },
+      {
+        "code": "CO-47-plato",
+        "name": "Plato"
+      },
+      {
+        "code": "CO-47-pueblo-viejo",
+        "name": "Pueblo Viejo"
+      },
+      {
+        "code": "CO-47-remolino",
+        "name": "Remolino"
+      },
+      {
+        "code": "CO-47-sabanas-de-san-angel",
+        "name": "Sabanas de San Ángel"
+      },
+      {
+        "code": "CO-47-salamina",
+        "name": "Salamina"
+      },
+      {
+        "code": "CO-47-san-sebastian-de-buenavista",
+        "name": "San Sebastián de Buenavista"
+      },
+      {
+        "code": "CO-47-san-zenon",
+        "name": "San Zenón"
+      },
+      {
+        "code": "CO-47-santa-ana",
+        "name": "Santa Ana"
+      },
+      {
+        "code": "CO-47-santa-barbara-de-pinto",
+        "name": "Santa Bárbara de Pinto"
+      },
+      {
+        "code": "CO-47-santa-marta",
+        "name": "Santa Marta"
+      },
+      {
+        "code": "CO-47-sitionuevo",
+        "name": "Sitionuevo"
+      },
+      {
+        "code": "CO-47-tenerife",
+        "name": "Tenerife"
+      },
+      {
+        "code": "CO-47-zapayan",
+        "name": "Zapayán"
+      },
+      {
+        "code": "CO-47-zona-bananera",
+        "name": "Zona Bananera"
+      }
+    ]
+  },
+  {
+    "code": "CO-50",
+    "name": "Meta",
+    "municipalities": [
+      {
+        "code": "CO-50-acacias",
+        "name": "Acacías"
+      },
+      {
+        "code": "CO-50-barranca-de-upia",
+        "name": "Barranca de Upía"
+      },
+      {
+        "code": "CO-50-cabuyaro",
+        "name": "Cabuyaro"
+      },
+      {
+        "code": "CO-50-castilla-la-nueva",
+        "name": "Castilla la Nueva"
+      },
+      {
+        "code": "CO-50-cubarral",
+        "name": "Cubarral"
+      },
+      {
+        "code": "CO-50-cumaral",
+        "name": "Cumaral"
+      },
+      {
+        "code": "CO-50-el-calvario",
+        "name": "El Calvario"
+      },
+      {
+        "code": "CO-50-el-castillo",
+        "name": "El Castillo"
+      },
+      {
+        "code": "CO-50-el-dorado",
+        "name": "El Dorado"
+      },
+      {
+        "code": "CO-50-fuente-de-oro",
+        "name": "Fuente de Oro"
+      },
+      {
+        "code": "CO-50-granada",
+        "name": "Granada"
+      },
+      {
+        "code": "CO-50-guamal",
+        "name": "Guamal"
+      },
+      {
+        "code": "CO-50-la-macarena",
+        "name": "La Macarena"
+      },
+      {
+        "code": "CO-50-la-uribe",
+        "name": "La Uribe"
+      },
+      {
+        "code": "CO-50-lejanias",
+        "name": "Lejanías"
+      },
+      {
+        "code": "CO-50-mapiripan",
+        "name": "Mapiripán"
+      },
+      {
+        "code": "CO-50-mesetas",
+        "name": "Mesetas"
+      },
+      {
+        "code": "CO-50-puerto-concordia",
+        "name": "Puerto Concordia"
+      },
+      {
+        "code": "CO-50-puerto-gaitan",
+        "name": "Puerto Gaitán"
+      },
+      {
+        "code": "CO-50-puerto-lleras",
+        "name": "Puerto Lleras"
+      },
+      {
+        "code": "CO-50-puerto-lopez",
+        "name": "Puerto López"
+      },
+      {
+        "code": "CO-50-puerto-rico",
+        "name": "Puerto Rico"
+      },
+      {
+        "code": "CO-50-restrepo",
+        "name": "Restrepo"
+      },
+      {
+        "code": "CO-50-san-carlos-de-guaroa",
+        "name": "San Carlos de Guaroa"
+      },
+      {
+        "code": "CO-50-san-juan-de-arama",
+        "name": "San Juan de Arama"
+      },
+      {
+        "code": "CO-50-san-juanito",
+        "name": "San Juanito"
+      },
+      {
+        "code": "CO-50-san-martin",
+        "name": "San Martín"
+      },
+      {
+        "code": "CO-50-villavicencio",
+        "name": "Villavicencio"
+      },
+      {
+        "code": "CO-50-vista-hermosa",
+        "name": "Vista Hermosa"
+      }
+    ]
+  },
+  {
+    "code": "CO-52",
+    "name": "Nariño",
+    "municipalities": [
+      {
+        "code": "CO-52-aldana",
+        "name": "Aldana"
+      },
+      {
+        "code": "CO-52-ancuya",
+        "name": "Ancuyá"
+      },
+      {
+        "code": "CO-52-arboleda",
+        "name": "Arboleda"
+      },
+      {
+        "code": "CO-52-barbacoas",
+        "name": "Barbacoas"
+      },
+      {
+        "code": "CO-52-belen",
+        "name": "Belén"
+      },
+      {
+        "code": "CO-52-buesaco",
+        "name": "Buesaco"
+      },
+      {
+        "code": "CO-52-chachagui",
+        "name": "Chachagüí"
+      },
+      {
+        "code": "CO-52-colon",
+        "name": "Colón"
+      },
+      {
+        "code": "CO-52-consaca",
+        "name": "Consacá"
+      },
+      {
+        "code": "CO-52-contadero",
+        "name": "Contadero"
+      },
+      {
+        "code": "CO-52-cordoba",
+        "name": "Córdoba"
+      },
+      {
+        "code": "CO-52-cuaspud",
+        "name": "Cuaspud"
+      },
+      {
+        "code": "CO-52-cumbal",
+        "name": "Cumbal"
+      },
+      {
+        "code": "CO-52-cumbitara",
+        "name": "Cumbitara"
+      },
+      {
+        "code": "CO-52-el-charco",
+        "name": "El Charco"
+      },
+      {
+        "code": "CO-52-el-penol",
+        "name": "El Peñol"
+      },
+      {
+        "code": "CO-52-el-rosario",
+        "name": "El Rosario"
+      },
+      {
+        "code": "CO-52-el-tablon",
+        "name": "El Tablón"
+      },
+      {
+        "code": "CO-52-el-tambo",
+        "name": "El Tambo"
+      },
+      {
+        "code": "CO-52-francisco-pizarro",
+        "name": "Francisco Pizarro"
+      },
+      {
+        "code": "CO-52-funes",
+        "name": "Funes"
+      },
+      {
+        "code": "CO-52-guachucal",
+        "name": "Guachucal"
+      },
+      {
+        "code": "CO-52-guaitarilla",
+        "name": "Guaitarilla"
+      },
+      {
+        "code": "CO-52-gualmatan",
+        "name": "Gualmatán"
+      },
+      {
+        "code": "CO-52-iles",
+        "name": "Iles"
+      },
+      {
+        "code": "CO-52-imues",
+        "name": "Imués"
+      },
+      {
+        "code": "CO-52-ipiales",
+        "name": "Ipiales"
+      },
+      {
+        "code": "CO-52-la-cruz",
+        "name": "La Cruz"
+      },
+      {
+        "code": "CO-52-la-florida",
+        "name": "La Florida"
+      },
+      {
+        "code": "CO-52-la-llanada",
+        "name": "La Llanada"
+      },
+      {
+        "code": "CO-52-la-tola",
+        "name": "La Tola"
+      },
+      {
+        "code": "CO-52-la-union",
+        "name": "La Unión"
+      },
+      {
+        "code": "CO-52-leiva",
+        "name": "Leiva"
+      },
+      {
+        "code": "CO-52-linares",
+        "name": "Linares"
+      },
+      {
+        "code": "CO-52-los-andes",
+        "name": "Los Andes"
+      },
+      {
+        "code": "CO-52-magui-payan",
+        "name": "Magüí Payán"
+      },
+      {
+        "code": "CO-52-mallama",
+        "name": "Mallama"
+      },
+      {
+        "code": "CO-52-mosquera",
+        "name": "Mosquera"
+      },
+      {
+        "code": "CO-52-narino",
+        "name": "Nariño"
+      },
+      {
+        "code": "CO-52-olaya-herrera",
+        "name": "Olaya Herrera"
+      },
+      {
+        "code": "CO-52-ospina",
+        "name": "Ospina"
+      },
+      {
+        "code": "CO-52-pasto",
+        "name": "Pasto"
+      },
+      {
+        "code": "CO-52-policarpa",
+        "name": "Policarpa"
+      },
+      {
+        "code": "CO-52-potosi",
+        "name": "Potosí"
+      },
+      {
+        "code": "CO-52-providencia",
+        "name": "Providencia"
+      },
+      {
+        "code": "CO-52-puerres",
+        "name": "Puerres"
+      },
+      {
+        "code": "CO-52-pupiales",
+        "name": "Pupiales"
+      },
+      {
+        "code": "CO-52-ricaurte",
+        "name": "Ricaurte"
+      },
+      {
+        "code": "CO-52-roberto-payan",
+        "name": "Roberto Payán"
+      },
+      {
+        "code": "CO-52-samaniego",
+        "name": "Samaniego"
+      },
+      {
+        "code": "CO-52-san-bernardo",
+        "name": "San Bernardo"
+      },
+      {
+        "code": "CO-52-san-jose-de-alban",
+        "name": "San José de Albán"
+      },
+      {
+        "code": "CO-52-san-lorenzo",
+        "name": "San Lorenzo"
+      },
+      {
+        "code": "CO-52-san-pablo",
+        "name": "San Pablo"
+      },
+      {
+        "code": "CO-52-san-pedro-de-cartago",
+        "name": "San Pedro de Cartago"
+      },
+      {
+        "code": "CO-52-sandona",
+        "name": "Sandoná"
+      },
+      {
+        "code": "CO-52-santa-barbara",
+        "name": "Santa Bárbara"
+      },
+      {
+        "code": "CO-52-santacruz",
+        "name": "Santacruz"
+      },
+      {
+        "code": "CO-52-sapuyes",
+        "name": "Sapuyes"
+      },
+      {
+        "code": "CO-52-taminango",
+        "name": "Taminango"
+      },
+      {
+        "code": "CO-52-tangua",
+        "name": "Tangua"
+      },
+      {
+        "code": "CO-52-tumaco",
+        "name": "Tumaco"
+      },
+      {
+        "code": "CO-52-tuquerres",
+        "name": "Túquerres"
+      },
+      {
+        "code": "CO-52-yacuanquer",
+        "name": "Yacuanquer"
+      }
+    ]
+  },
+  {
+    "code": "CO-54",
+    "name": "Norte de Santander",
+    "municipalities": [
+      {
+        "code": "CO-54-abrego",
+        "name": "Ábrego"
+      },
+      {
+        "code": "CO-54-arboledas",
+        "name": "Arboledas"
+      },
+      {
+        "code": "CO-54-bochalema",
+        "name": "Bochalema"
+      },
+      {
+        "code": "CO-54-bucarasica",
+        "name": "Bucarasica"
+      },
+      {
+        "code": "CO-54-cachira",
+        "name": "Cáchira"
+      },
+      {
+        "code": "CO-54-cacota",
+        "name": "Cácota"
+      },
+      {
+        "code": "CO-54-chinacota",
+        "name": "Chinácota"
+      },
+      {
+        "code": "CO-54-chitaga",
+        "name": "Chitagá"
+      },
+      {
+        "code": "CO-54-convencion",
+        "name": "Convención"
+      },
+      {
+        "code": "CO-54-cucuta",
+        "name": "Cúcuta"
+      },
+      {
+        "code": "CO-54-cucutilla",
+        "name": "Cucutilla"
+      },
+      {
+        "code": "CO-54-durania",
+        "name": "Duranía"
+      },
+      {
+        "code": "CO-54-el-carmen",
+        "name": "El Carmen"
+      },
+      {
+        "code": "CO-54-el-tarra",
+        "name": "El Tarra"
+      },
+      {
+        "code": "CO-54-el-zulia",
+        "name": "El Zulia"
+      },
+      {
+        "code": "CO-54-gramalote",
+        "name": "Gramalote"
+      },
+      {
+        "code": "CO-54-hacari",
+        "name": "Hacarí"
+      },
+      {
+        "code": "CO-54-herran",
+        "name": "Herrán"
+      },
+      {
+        "code": "CO-54-la-esperanza",
+        "name": "La Esperanza"
+      },
+      {
+        "code": "CO-54-la-playa-de-belen",
+        "name": "La Playa de Belén"
+      },
+      {
+        "code": "CO-54-labateca",
+        "name": "Labateca"
+      },
+      {
+        "code": "CO-54-los-patios",
+        "name": "Los Patios"
+      },
+      {
+        "code": "CO-54-lourdes",
+        "name": "Lourdes"
+      },
+      {
+        "code": "CO-54-mutiscua",
+        "name": "Mutiscua"
+      },
+      {
+        "code": "CO-54-ocana",
+        "name": "Ocaña"
+      },
+      {
+        "code": "CO-54-pamplona",
+        "name": "Pamplona"
+      },
+      {
+        "code": "CO-54-pamplonita",
+        "name": "Pamplonita"
+      },
+      {
+        "code": "CO-54-puerto-santander",
+        "name": "Puerto Santander"
+      },
+      {
+        "code": "CO-54-ragonvalia",
+        "name": "Ragonvalia"
+      },
+      {
+        "code": "CO-54-salazar-de-las-palmas",
+        "name": "Salazar de Las Palmas"
+      },
+      {
+        "code": "CO-54-san-calixto",
+        "name": "San Calixto"
+      },
+      {
+        "code": "CO-54-san-cayetano",
+        "name": "San Cayetano"
+      },
+      {
+        "code": "CO-54-santiago",
+        "name": "Santiago"
+      },
+      {
+        "code": "CO-54-santo-domingo-de-silos",
+        "name": "Santo Domingo de Silos"
+      },
+      {
+        "code": "CO-54-sardinata",
+        "name": "Sardinata"
+      },
+      {
+        "code": "CO-54-teorama",
+        "name": "Teorama"
+      },
+      {
+        "code": "CO-54-tibu",
+        "name": "Tibú"
+      },
+      {
+        "code": "CO-54-toledo",
+        "name": "Toledo"
+      },
+      {
+        "code": "CO-54-villa-caro",
+        "name": "Villa Caro"
+      },
+      {
+        "code": "CO-54-villa-del-rosario",
+        "name": "Villa del Rosario"
+      }
+    ]
+  },
+  {
+    "code": "CO-86",
+    "name": "Putumayo",
+    "municipalities": [
+      {
+        "code": "CO-86-colon",
+        "name": "Colón"
+      },
+      {
+        "code": "CO-86-mocoa",
+        "name": "Mocoa"
+      },
+      {
+        "code": "CO-86-orito",
+        "name": "Orito"
+      },
+      {
+        "code": "CO-86-puerto-asis",
+        "name": "Puerto Asís"
+      },
+      {
+        "code": "CO-86-puerto-caicedo",
+        "name": "Puerto Caicedo"
+      },
+      {
+        "code": "CO-86-puerto-guzman",
+        "name": "Puerto Guzmán"
+      },
+      {
+        "code": "CO-86-puerto-leguizamo",
+        "name": "Puerto Leguízamo"
+      },
+      {
+        "code": "CO-86-san-francisco",
+        "name": "San Francisco"
+      },
+      {
+        "code": "CO-86-san-miguel",
+        "name": "San Miguel"
+      },
+      {
+        "code": "CO-86-santiago",
+        "name": "Santiago"
+      },
+      {
+        "code": "CO-86-sibundoy",
+        "name": "Sibundoy"
+      },
+      {
+        "code": "CO-86-valle-del-guamuez",
+        "name": "Valle del Guamuez"
+      },
+      {
+        "code": "CO-86-villagarzon",
+        "name": "Villagarzón"
+      }
+    ]
+  },
+  {
+    "code": "CO-63",
+    "name": "Quindío",
+    "municipalities": [
+      {
+        "code": "CO-63-armenia",
+        "name": "Armenia"
+      },
+      {
+        "code": "CO-63-buenavista",
+        "name": "Buenavista"
+      },
+      {
+        "code": "CO-63-calarca",
+        "name": "Calarcá"
+      },
+      {
+        "code": "CO-63-circasia",
+        "name": "Circasia"
+      },
+      {
+        "code": "CO-63-cordoba",
+        "name": "Córdoba"
+      },
+      {
+        "code": "CO-63-filandia",
+        "name": "Filandia"
+      },
+      {
+        "code": "CO-63-genova",
+        "name": "Génova"
+      },
+      {
+        "code": "CO-63-la-tebaida",
+        "name": "La Tebaida"
+      },
+      {
+        "code": "CO-63-montenegro",
+        "name": "Montenegro"
+      },
+      {
+        "code": "CO-63-pijao",
+        "name": "Pijao"
+      },
+      {
+        "code": "CO-63-quimbaya",
+        "name": "Quimbaya"
+      },
+      {
+        "code": "CO-63-salento",
+        "name": "Salento"
+      }
+    ]
+  },
+  {
+    "code": "CO-66",
+    "name": "Risaralda",
+    "municipalities": [
+      {
+        "code": "CO-66-apia",
+        "name": "Apía"
+      },
+      {
+        "code": "CO-66-balboa",
+        "name": "Balboa"
+      },
+      {
+        "code": "CO-66-belen-de-umbria",
+        "name": "Belén de Umbría"
+      },
+      {
+        "code": "CO-66-dosquebradas",
+        "name": "Dosquebradas"
+      },
+      {
+        "code": "CO-66-guatica",
+        "name": "Guática"
+      },
+      {
+        "code": "CO-66-la-celia",
+        "name": "La Celia"
+      },
+      {
+        "code": "CO-66-la-virginia",
+        "name": "La Virginia"
+      },
+      {
+        "code": "CO-66-marsella",
+        "name": "Marsella"
+      },
+      {
+        "code": "CO-66-mistrato",
+        "name": "Mistrató"
+      },
+      {
+        "code": "CO-66-pereira",
+        "name": "Pereira"
+      },
+      {
+        "code": "CO-66-pueblo-rico",
+        "name": "Pueblo Rico"
+      },
+      {
+        "code": "CO-66-quinchia",
+        "name": "Quinchía"
+      },
+      {
+        "code": "CO-66-santa-rosa-de-cabal",
+        "name": "Santa Rosa de Cabal"
+      },
+      {
+        "code": "CO-66-santuario",
+        "name": "Santuario"
+      }
+    ]
+  },
+  {
+    "code": "CO-88",
+    "name": "San Andrés y Providencia",
+    "municipalities": [
+      {
+        "code": "CO-88-providencia-y-santa-catalina-islas",
+        "name": "Providencia y Santa Catalina Islas"
+      },
+      {
+        "code": "CO-88-san-andres",
+        "name": "San Andrés"
+      }
+    ]
+  },
+  {
+    "code": "CO-68",
+    "name": "Santander",
+    "municipalities": [
+      {
+        "code": "CO-68-aguada",
+        "name": "Aguada"
+      },
+      {
+        "code": "CO-68-albania",
+        "name": "Albania"
+      },
+      {
+        "code": "CO-68-aratoca",
+        "name": "Aratoca"
+      },
+      {
+        "code": "CO-68-barbosa",
+        "name": "Barbosa"
+      },
+      {
+        "code": "CO-68-barichara",
+        "name": "Barichara"
+      },
+      {
+        "code": "CO-68-barrancabermeja",
+        "name": "Barrancabermeja"
+      },
+      {
+        "code": "CO-68-betulia",
+        "name": "Betulia"
+      },
+      {
+        "code": "CO-68-bolivar",
+        "name": "Bolívar"
+      },
+      {
+        "code": "CO-68-bucaramanga",
+        "name": "Bucaramanga"
+      },
+      {
+        "code": "CO-68-cabrera",
+        "name": "Cabrera"
+      },
+      {
+        "code": "CO-68-california",
+        "name": "California"
+      },
+      {
+        "code": "CO-68-capitanejo",
+        "name": "Capitanejo"
+      },
+      {
+        "code": "CO-68-carcasi",
+        "name": "Carcasí"
+      },
+      {
+        "code": "CO-68-cepita",
+        "name": "Cepitá"
+      },
+      {
+        "code": "CO-68-cerrito",
+        "name": "Cerrito"
+      },
+      {
+        "code": "CO-68-charala",
+        "name": "Charalá"
+      },
+      {
+        "code": "CO-68-charta",
+        "name": "Charta"
+      },
+      {
+        "code": "CO-68-chima",
+        "name": "Chima"
+      },
+      {
+        "code": "CO-68-chipata",
+        "name": "Chipatá"
+      },
+      {
+        "code": "CO-68-cimitarra",
+        "name": "Cimitarra"
+      },
+      {
+        "code": "CO-68-concepcion",
+        "name": "Concepción"
+      },
+      {
+        "code": "CO-68-confines",
+        "name": "Confines"
+      },
+      {
+        "code": "CO-68-contratacion",
+        "name": "Contratación"
+      },
+      {
+        "code": "CO-68-coromoro",
+        "name": "Coromoro"
+      },
+      {
+        "code": "CO-68-curiti",
+        "name": "Curití"
+      },
+      {
+        "code": "CO-68-el-carmen-de-chucuri",
+        "name": "El Carmen de Chucurí"
+      },
+      {
+        "code": "CO-68-el-guacamayo",
+        "name": "El Guacamayo"
+      },
+      {
+        "code": "CO-68-el-penon",
+        "name": "El Peñón"
+      },
+      {
+        "code": "CO-68-el-playon",
+        "name": "El Playón"
+      },
+      {
+        "code": "CO-68-el-socorro",
+        "name": "El Socorro"
+      },
+      {
+        "code": "CO-68-encino",
+        "name": "Encino"
+      },
+      {
+        "code": "CO-68-enciso",
+        "name": "Enciso"
+      },
+      {
+        "code": "CO-68-florian",
+        "name": "Florián"
+      },
+      {
+        "code": "CO-68-floridablanca",
+        "name": "Floridablanca"
+      },
+      {
+        "code": "CO-68-galan",
+        "name": "Galán"
+      },
+      {
+        "code": "CO-68-gambita",
+        "name": "Gámbita"
+      },
+      {
+        "code": "CO-68-giron",
+        "name": "Girón"
+      },
+      {
+        "code": "CO-68-guaca",
+        "name": "Guaca"
+      },
+      {
+        "code": "CO-68-guadalupe",
+        "name": "Guadalupe"
+      },
+      {
+        "code": "CO-68-guapota",
+        "name": "Guapotá"
+      },
+      {
+        "code": "CO-68-guavata",
+        "name": "Guavatá"
+      },
+      {
+        "code": "CO-68-guepsa",
+        "name": "Güepsa"
+      },
+      {
+        "code": "CO-68-hato",
+        "name": "Hato"
+      },
+      {
+        "code": "CO-68-jesus-maria",
+        "name": "Jesús María"
+      },
+      {
+        "code": "CO-68-jordan",
+        "name": "Jordán"
+      },
+      {
+        "code": "CO-68-la-belleza",
+        "name": "La Belleza"
+      },
+      {
+        "code": "CO-68-la-paz",
+        "name": "La Paz"
+      },
+      {
+        "code": "CO-68-landazuri",
+        "name": "Landázuri"
+      },
+      {
+        "code": "CO-68-lebrija",
+        "name": "Lebrija"
+      },
+      {
+        "code": "CO-68-los-santos",
+        "name": "Los Santos"
+      },
+      {
+        "code": "CO-68-macaravita",
+        "name": "Macaravita"
+      },
+      {
+        "code": "CO-68-malaga",
+        "name": "Málaga"
+      },
+      {
+        "code": "CO-68-matanza",
+        "name": "Matanza"
+      },
+      {
+        "code": "CO-68-mogotes",
+        "name": "Mogotes"
+      },
+      {
+        "code": "CO-68-molagavita",
+        "name": "Molagavita"
+      },
+      {
+        "code": "CO-68-ocamonte",
+        "name": "Ocamonte"
+      },
+      {
+        "code": "CO-68-oiba",
+        "name": "Oiba"
+      },
+      {
+        "code": "CO-68-onzaga",
+        "name": "Onzaga"
+      },
+      {
+        "code": "CO-68-palmar",
+        "name": "Palmar"
+      },
+      {
+        "code": "CO-68-palmas-del-socorro",
+        "name": "Palmas del Socorro"
+      },
+      {
+        "code": "CO-68-paramo",
+        "name": "Páramo"
+      },
+      {
+        "code": "CO-68-piedecuesta",
+        "name": "Piedecuesta"
+      },
+      {
+        "code": "CO-68-pinchote",
+        "name": "Pinchote"
+      },
+      {
+        "code": "CO-68-puente-nacional",
+        "name": "Puente Nacional"
+      },
+      {
+        "code": "CO-68-puerto-parra",
+        "name": "Puerto Parra"
+      },
+      {
+        "code": "CO-68-puerto-wilches",
+        "name": "Puerto Wilches"
+      },
+      {
+        "code": "CO-68-rionegro",
+        "name": "Rionegro"
+      },
+      {
+        "code": "CO-68-sabana-de-torres",
+        "name": "Sabana de Torres"
+      },
+      {
+        "code": "CO-68-san-andres",
+        "name": "San Andrés"
+      },
+      {
+        "code": "CO-68-san-benito",
+        "name": "San Benito"
+      },
+      {
+        "code": "CO-68-san-gil",
+        "name": "San Gil"
+      },
+      {
+        "code": "CO-68-san-joaquin",
+        "name": "San Joaquín"
+      },
+      {
+        "code": "CO-68-san-jose-de-miranda",
+        "name": "San José de Miranda"
+      },
+      {
+        "code": "CO-68-san-miguel",
+        "name": "San Miguel"
+      },
+      {
+        "code": "CO-68-san-vicente-de-chucuri",
+        "name": "San Vicente de Chucurí"
+      },
+      {
+        "code": "CO-68-santa-barbara",
+        "name": "Santa Bárbara"
+      },
+      {
+        "code": "CO-68-santa-helena-del-opon",
+        "name": "Santa Helena del Opón"
+      },
+      {
+        "code": "CO-68-simacota",
+        "name": "Simacota"
+      },
+      {
+        "code": "CO-68-suaita",
+        "name": "Suaita"
+      },
+      {
+        "code": "CO-68-sucre",
+        "name": "Sucre"
+      },
+      {
+        "code": "CO-68-surata",
+        "name": "Suratá"
+      },
+      {
+        "code": "CO-68-tona",
+        "name": "Tona"
+      },
+      {
+        "code": "CO-68-valle-de-san-jose",
+        "name": "Valle de San José"
+      },
+      {
+        "code": "CO-68-velez",
+        "name": "Vélez"
+      },
+      {
+        "code": "CO-68-vetas",
+        "name": "Vetas"
+      },
+      {
+        "code": "CO-68-villanueva",
+        "name": "Villanueva"
+      },
+      {
+        "code": "CO-68-zapatoca",
+        "name": "Zapatoca"
+      }
+    ]
+  },
+  {
+    "code": "CO-70",
+    "name": "Sucre",
+    "municipalities": [
+      {
+        "code": "CO-70-buenavista",
+        "name": "Buenavista"
+      },
+      {
+        "code": "CO-70-caimito",
+        "name": "Caimito"
+      },
+      {
+        "code": "CO-70-chalan",
+        "name": "Chalán"
+      },
+      {
+        "code": "CO-70-coloso",
+        "name": "Colosó"
+      },
+      {
+        "code": "CO-70-corozal",
+        "name": "Corozal"
+      },
+      {
+        "code": "CO-70-covenas",
+        "name": "Coveñas"
+      },
+      {
+        "code": "CO-70-el-roble",
+        "name": "El Roble"
+      },
+      {
+        "code": "CO-70-galeras",
+        "name": "Galeras"
+      },
+      {
+        "code": "CO-70-guaranda",
+        "name": "Guaranda"
+      },
+      {
+        "code": "CO-70-la-union",
+        "name": "La Unión"
+      },
+      {
+        "code": "CO-70-los-palmitos",
+        "name": "Los Palmitos"
+      },
+      {
+        "code": "CO-70-majagual",
+        "name": "Majagual"
+      },
+      {
+        "code": "CO-70-morroa",
+        "name": "Morroa"
+      },
+      {
+        "code": "CO-70-ovejas",
+        "name": "Ovejas"
+      },
+      {
+        "code": "CO-70-sampues",
+        "name": "Sampués"
+      },
+      {
+        "code": "CO-70-san-antonio-de-palmito",
+        "name": "San Antonio de Palmito"
+      },
+      {
+        "code": "CO-70-san-benito-abad",
+        "name": "San Benito Abad"
+      },
+      {
+        "code": "CO-70-san-juan-de-betulia",
+        "name": "San Juan de Betulia"
+      },
+      {
+        "code": "CO-70-san-marcos",
+        "name": "San Marcos"
+      },
+      {
+        "code": "CO-70-san-onofre",
+        "name": "San Onofre"
+      },
+      {
+        "code": "CO-70-san-pedro",
+        "name": "San Pedro"
+      },
+      {
+        "code": "CO-70-since",
+        "name": "Sincé"
+      },
+      {
+        "code": "CO-70-sincelejo",
+        "name": "Sincelejo"
+      },
+      {
+        "code": "CO-70-sucre",
+        "name": "Sucre"
+      },
+      {
+        "code": "CO-70-tolu",
+        "name": "Tolú"
+      },
+      {
+        "code": "CO-70-tolu-viejo",
+        "name": "Tolú Viejo"
+      }
+    ]
+  },
+  {
+    "code": "CO-73",
+    "name": "Tolima",
+    "municipalities": [
+      {
+        "code": "CO-73-alpujarra",
+        "name": "Alpujarra"
+      },
+      {
+        "code": "CO-73-alvarado",
+        "name": "Alvarado"
+      },
+      {
+        "code": "CO-73-ambalema",
+        "name": "Ambalema"
+      },
+      {
+        "code": "CO-73-anzoategui",
+        "name": "Anzoátegui"
+      },
+      {
+        "code": "CO-73-armero",
+        "name": "Armero"
+      },
+      {
+        "code": "CO-73-ataco",
+        "name": "Ataco"
+      },
+      {
+        "code": "CO-73-cajamarca",
+        "name": "Cajamarca"
+      },
+      {
+        "code": "CO-73-carmen-de-apicala",
+        "name": "Carmen de Apicalá"
+      },
+      {
+        "code": "CO-73-casabianca",
+        "name": "Casabianca"
+      },
+      {
+        "code": "CO-73-chaparral",
+        "name": "Chaparral"
+      },
+      {
+        "code": "CO-73-coello",
+        "name": "Coello"
+      },
+      {
+        "code": "CO-73-coyaima",
+        "name": "Coyaima"
+      },
+      {
+        "code": "CO-73-cunday",
+        "name": "Cunday"
+      },
+      {
+        "code": "CO-73-dolores",
+        "name": "Dolores"
+      },
+      {
+        "code": "CO-73-el-espinal",
+        "name": "El Espinal"
+      },
+      {
+        "code": "CO-73-falan",
+        "name": "Falán"
+      },
+      {
+        "code": "CO-73-flandes",
+        "name": "Flandes"
+      },
+      {
+        "code": "CO-73-fresno",
+        "name": "Fresno"
+      },
+      {
+        "code": "CO-73-guamo",
+        "name": "Guamo"
+      },
+      {
+        "code": "CO-73-herveo",
+        "name": "Herveo"
+      },
+      {
+        "code": "CO-73-honda",
+        "name": "Honda"
+      },
+      {
+        "code": "CO-73-ibague",
+        "name": "Ibagué"
+      },
+      {
+        "code": "CO-73-icononzo",
+        "name": "Icononzo"
+      },
+      {
+        "code": "CO-73-lerida",
+        "name": "Lérida"
+      },
+      {
+        "code": "CO-73-libano",
+        "name": "Líbano"
+      },
+      {
+        "code": "CO-73-mariquita",
+        "name": "Mariquita"
+      },
+      {
+        "code": "CO-73-melgar",
+        "name": "Melgar"
+      },
+      {
+        "code": "CO-73-murillo",
+        "name": "Murillo"
+      },
+      {
+        "code": "CO-73-natagaima",
+        "name": "Natagaima"
+      },
+      {
+        "code": "CO-73-ortega",
+        "name": "Ortega"
+      },
+      {
+        "code": "CO-73-palocabildo",
+        "name": "Palocabildo"
+      },
+      {
+        "code": "CO-73-piedras",
+        "name": "Piedras"
+      },
+      {
+        "code": "CO-73-planadas",
+        "name": "Planadas"
+      },
+      {
+        "code": "CO-73-prado",
+        "name": "Prado"
+      },
+      {
+        "code": "CO-73-purificacion",
+        "name": "Purificación"
+      },
+      {
+        "code": "CO-73-rioblanco",
+        "name": "Rioblanco"
+      },
+      {
+        "code": "CO-73-roncesvalles",
+        "name": "Roncesvalles"
+      },
+      {
+        "code": "CO-73-rovira",
+        "name": "Rovira"
+      },
+      {
+        "code": "CO-73-saldana",
+        "name": "Saldaña"
+      },
+      {
+        "code": "CO-73-san-antonio",
+        "name": "San Antonio"
+      },
+      {
+        "code": "CO-73-san-luis",
+        "name": "San Luis"
+      },
+      {
+        "code": "CO-73-santa-isabel",
+        "name": "Santa Isabel"
+      },
+      {
+        "code": "CO-73-suarez",
+        "name": "Suárez"
+      },
+      {
+        "code": "CO-73-valle-de-san-juan",
+        "name": "Valle de San Juan"
+      },
+      {
+        "code": "CO-73-venadillo",
+        "name": "Venadillo"
+      },
+      {
+        "code": "CO-73-villahermosa",
+        "name": "Villahermosa"
+      },
+      {
+        "code": "CO-73-villarrica",
+        "name": "Villarrica"
+      }
+    ]
+  },
+  {
+    "code": "CO-76",
+    "name": "Valle del Cauca",
+    "municipalities": [
+      {
+        "code": "CO-76-alcala",
+        "name": "Alcalá"
+      },
+      {
+        "code": "CO-76-andalucia",
+        "name": "Andalucía"
+      },
+      {
+        "code": "CO-76-ansermanuevo",
+        "name": "Ansermanuevo"
+      },
+      {
+        "code": "CO-76-argelia",
+        "name": "Argelia"
+      },
+      {
+        "code": "CO-76-bolivar",
+        "name": "Bolívar"
+      },
+      {
+        "code": "CO-76-buenaventura",
+        "name": "Buenaventura"
+      },
+      {
+        "code": "CO-76-buga",
+        "name": "Buga"
+      },
+      {
+        "code": "CO-76-bugalagrande",
+        "name": "Bugalagrande"
+      },
+      {
+        "code": "CO-76-caicedonia",
+        "name": "Caicedonia"
+      },
+      {
+        "code": "CO-76-cali",
+        "name": "Cali"
+      },
+      {
+        "code": "CO-76-calima",
+        "name": "Calima"
+      },
+      {
+        "code": "CO-76-candelaria",
+        "name": "Candelaria"
+      },
+      {
+        "code": "CO-76-cartago",
+        "name": "Cartago"
+      },
+      {
+        "code": "CO-76-dagua",
+        "name": "Dagua"
+      },
+      {
+        "code": "CO-76-el-aguila",
+        "name": "El Águila"
+      },
+      {
+        "code": "CO-76-el-cairo",
+        "name": "El Cairo"
+      },
+      {
+        "code": "CO-76-el-cerrito",
+        "name": "El Cerrito"
+      },
+      {
+        "code": "CO-76-el-dovio",
+        "name": "El Dovio"
+      },
+      {
+        "code": "CO-76-florida",
+        "name": "Florida"
+      },
+      {
+        "code": "CO-76-ginebra",
+        "name": "Ginebra"
+      },
+      {
+        "code": "CO-76-guacari",
+        "name": "Guacarí"
+      },
+      {
+        "code": "CO-76-jamundi",
+        "name": "Jamundí"
+      },
+      {
+        "code": "CO-76-la-cumbre",
+        "name": "La Cumbre"
+      },
+      {
+        "code": "CO-76-la-union",
+        "name": "La Unión"
+      },
+      {
+        "code": "CO-76-la-victoria",
+        "name": "La Victoria"
+      },
+      {
+        "code": "CO-76-obando",
+        "name": "Obando"
+      },
+      {
+        "code": "CO-76-palmira",
+        "name": "Palmira"
+      },
+      {
+        "code": "CO-76-pradera",
+        "name": "Pradera"
+      },
+      {
+        "code": "CO-76-restrepo",
+        "name": "Restrepo"
+      },
+      {
+        "code": "CO-76-riofrio",
+        "name": "Riofrío"
+      },
+      {
+        "code": "CO-76-roldanillo",
+        "name": "Roldanillo"
+      },
+      {
+        "code": "CO-76-san-pedro",
+        "name": "San Pedro"
+      },
+      {
+        "code": "CO-76-sevilla",
+        "name": "Sevilla"
+      },
+      {
+        "code": "CO-76-toro",
+        "name": "Toro"
+      },
+      {
+        "code": "CO-76-trujillo",
+        "name": "Trujillo"
+      },
+      {
+        "code": "CO-76-tulua",
+        "name": "Tuluá"
+      },
+      {
+        "code": "CO-76-ulloa",
+        "name": "Ulloa"
+      },
+      {
+        "code": "CO-76-versalles",
+        "name": "Versalles"
+      },
+      {
+        "code": "CO-76-vijes",
+        "name": "Vijes"
+      },
+      {
+        "code": "CO-76-yotoco",
+        "name": "Yotoco"
+      },
+      {
+        "code": "CO-76-yumbo",
+        "name": "Yumbo"
+      },
+      {
+        "code": "CO-76-zarzal",
+        "name": "Zarzal"
+      }
+    ]
+  },
+  {
+    "code": "CO-97",
+    "name": "Vaupés",
+    "municipalities": [
+      {
+        "code": "CO-97-caruru",
+        "name": "Carurú"
+      },
+      {
+        "code": "CO-97-mitu",
+        "name": "Mitú"
+      },
+      {
+        "code": "CO-97-taraira",
+        "name": "Taraira"
+      }
+    ]
+  },
+  {
+    "code": "CO-99",
+    "name": "Vichada",
+    "municipalities": [
+      {
+        "code": "CO-99-cumaribo",
+        "name": "Cumaribo"
+      },
+      {
+        "code": "CO-99-la-primavera",
+        "name": "La Primavera"
+      },
+      {
+        "code": "CO-99-puerto-carreno",
+        "name": "Puerto Carreño"
+      },
+      {
+        "code": "CO-99-santa-rosalia",
+        "name": "Santa Rosalía"
+      }
+    ]
+  }
+]

@@ -34,8 +34,8 @@ Todas las rutas requieren sesión válida mediante Traefik `ForwardAuth`.
 Cabeceras internas:
 
 ```http
-X-User-Id: user-id
-X-Session-Id: session-id
+X-Internal-Auth: signed-short-lived-assertion
+La identidad se obtiene exclusivamente de los claims verificados de `X-Internal-Auth`; no se aceptan cabeceras de identidad del cliente.
 ```
 
 ---
