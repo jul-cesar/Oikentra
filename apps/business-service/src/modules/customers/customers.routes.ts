@@ -13,15 +13,15 @@ import { requireAuthHeaders } from '../../http/middleware/require-auth-headers'
 
 export const customersRoutes = new Hono<AppBindings>()
 
-//customersRoutes.use('*', requireAuthHeaders)
-customersRoutes.use("*", async (c, next) => {
-  c.set("auth", {
-    userId: "test-user-123",
-    sessionId: "test-session-456",
-  })
+customersRoutes.use('*', requireAuthHeaders)
+// customersRoutes.use("*", async (c, next) => {
+//   c.set("auth", {
+//     userId: "test-user-123",
+//     sessionId: "test-session-456",
+//   })
 
-  await next()
-})
+//   await next()
+// })
 
 customersRoutes.get('/', async (c) => {
   const parsedParams = customerIdParamsSchema.pick({ businessId: true }).safeParse(c.req.param())
