@@ -1,18 +1,22 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
+import { getConfig } from '../config/config'
 import * as schema from './schema'
 
-const databaseUrl = process.env.DATABASE_URL
+let client: ReturnType<typeof postgres> | undefined
+let db: ReturnType<typeof createDatabase> | undefined
 
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL is required')
+function createDatabase() {
+  client = postgres(getConfig().databaseUrl)
+  return drizzle(client, { schema })
 }
 
-const client = postgres(databaseUrl)
-
-export const db = drizzle(client, { schema })
+export function getDb() {
+  return (db ??= createDatabase())
+}
 
 export async function checkDatabaseConnection() {
-  await client.unsafe('select 1')
+  getDb()
+  await client!.unsafe('select 1')
 }

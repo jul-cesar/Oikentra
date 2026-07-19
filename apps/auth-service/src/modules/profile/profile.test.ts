@@ -32,7 +32,7 @@ describe('profile contract', () => {
     expect(isProfileComplete({ countryCode: 'CO', department: 'Sucre', city: 'Sincelejo' })).toBe(true)
   })
 
-  test('persists CO when the client omits countryCode', async () => {
+  test('uses an injected repository without initializing PostgreSQL', async () => {
     let savedCountryCode: string | undefined
     const repository: UserProfileRepository = {
       findByUserId: async () => null,

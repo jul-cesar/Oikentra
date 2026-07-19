@@ -1,4 +1,5 @@
 const requiredEnvVars = [
+  'DATABASE_URL',
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
   'GOOGLE_CLIENT_ID',
@@ -23,31 +24,35 @@ function readOptionalEnv(name: string) {
   return process.env[name]?.trim()
 }
 
-const betterAuthUrl = readRequiredEnv('BETTER_AUTH_URL')
-const webUrl = readRequiredEnv('WEB_URL')
+function readUrl(name: 'BETTER_AUTH_URL' | 'WEB_URL') {
+  const value = readRequiredEnv(name)
 
-try {
-  new URL(betterAuthUrl)
-} catch {
-  throw new Error('BETTER_AUTH_URL must be a valid URL')
+  try {
+    new URL(value)
+  } catch {
+    throw new Error(`${name} must be a valid URL`)
+  }
+
+  return value
 }
 
-try {
-  new URL(webUrl)
-} catch {
-  throw new Error('WEB_URL must be a valid URL')
+export function getConfig() {
+  return {
+    authEmailFrom: readRequiredEnv('AUTH_EMAIL_FROM'),
+    betterAuthSecret: readRequiredEnv('BETTER_AUTH_SECRET'),
+    betterAuthUrl: readUrl('BETTER_AUTH_URL'),
+    databaseUrl: readRequiredEnv('DATABASE_URL'),
+    internalAuthPrivateKeyBase64: readRequiredEnv('INTERNAL_AUTH_PRIVATE_KEY_B64'),
+    internalAuthAudience: ['business-service', 'sync-service', 'reports-service'],
+    googleClientId: readRequiredEnv('GOOGLE_CLIENT_ID'),
+    googleClientSecret: readRequiredEnv('GOOGLE_CLIENT_SECRET'),
+    googleIosClientId: readOptionalEnv('GOOGLE_IOS_CLIENT_ID'),
+    googleAndroidClientId: readOptionalEnv('GOOGLE_ANDROID_CLIENT_ID'),
+    resendApiKey: readRequiredEnv('RESEND_API_KEY'),
+    webUrl: readUrl('WEB_URL'),
+  }
 }
 
-export const config = {
-  authEmailFrom: readRequiredEnv('AUTH_EMAIL_FROM'),
-  betterAuthSecret: readRequiredEnv('BETTER_AUTH_SECRET'),
-  betterAuthUrl,
-  internalAuthPrivateKeyBase64: readRequiredEnv('INTERNAL_AUTH_PRIVATE_KEY_B64'),
-  internalAuthAudience: ['business-service', 'sync-service', 'reports-service'],
-  googleClientId: readRequiredEnv('GOOGLE_CLIENT_ID'),
-  googleClientSecret: readRequiredEnv('GOOGLE_CLIENT_SECRET'),
-  googleIosClientId: readOptionalEnv('GOOGLE_IOS_CLIENT_ID'),
-  googleAndroidClientId: readOptionalEnv('GOOGLE_ANDROID_CLIENT_ID'),
-  resendApiKey: readRequiredEnv('RESEND_API_KEY'),
-  webUrl,
+export function validateRuntimeConfig() {
+  getConfig()
 }

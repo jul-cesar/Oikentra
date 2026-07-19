@@ -1,5 +1,5 @@
-import { client } from './client'
+import { getDatabaseClient } from './client'
 
 export async function checkDatabaseConnection() {
-  await client.unsafe('select 1')
+  await getDatabaseClient().unsafe('select 1')
 }

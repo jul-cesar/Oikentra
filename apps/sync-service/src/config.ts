@@ -5,7 +5,13 @@ function readRequiredEnv(name: 'INTERNAL_AUTH_PUBLIC_KEY_B64') {
   return value
 }
 
-export const config = {
-  internalAuthPublicKeyBase64: readRequiredEnv('INTERNAL_AUTH_PUBLIC_KEY_B64'),
-  internalAuthAudience: 'sync-service',
+export function getConfig() {
+  return {
+    internalAuthPublicKeyBase64: readRequiredEnv('INTERNAL_AUTH_PUBLIC_KEY_B64'),
+    internalAuthAudience: 'sync-service',
+  }
+}
+
+export function validateRuntimeConfig() {
+  getConfig()
 }

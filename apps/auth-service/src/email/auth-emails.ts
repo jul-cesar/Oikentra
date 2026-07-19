@@ -1,6 +1,6 @@
 import { sendAuthEmail } from './resend-email-service'
-import { config } from '../config/config'
-import { db } from '../db/client'
+import { getConfig } from '../config/config'
+import { getDb } from '../db/client'
 import { account } from '../db/schema'
 import { and, eq, isNotNull } from 'drizzle-orm'
 
@@ -40,6 +40,7 @@ export function sendVerificationEmail({
   to: string
   token: string
 }) {
+  const config = getConfig()
   const verificationUrl = new URL('/verificar-correo', config.webUrl)
   verificationUrl.hash = new URLSearchParams({ token }).toString()
 
@@ -98,6 +99,7 @@ export async function sendPasswordResetEmail({
   url: string
   requestId: string
 }): Promise<PasswordResetEmailOutcome> {
+  const db = getDb()
   const credentialAccounts = await db.query.account.findMany({
     where: and(
       eq(account.userId, userId),
@@ -121,7 +123,7 @@ export async function sendPasswordResetEmail({
   const callbackURL = generatedResetUrl.searchParams.get('callbackURL')
   const resetUrl = callbackURL
     ? new URL(callbackURL)
-    : new URL('/restablecer-contrasena', config.webUrl)
+    : new URL('/restablecer-contrasena', getConfig().webUrl)
 
   if (resetUrl.protocol === 'oikentra:') {
     resetUrl.searchParams.set('token', token)
