@@ -1,14 +1,14 @@
 import { z } from 'zod'
 
-import { businessStatuses } from '../../db/schema'
+import { businessStatuses, businessTypes } from '../../db/schema'
 
 export const businessIdParamsSchema = z.object({
-  businessId: z.string().uuid(),
+  businessId: z.string().min(1),
 })
 
 export const createBusinessSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  businessType: z.string().trim().min(1).max(80).optional(),
+  businessType: z.enum(businessTypes).optional(),
   currencyCode: z.string().trim().length(3).toUpperCase().optional(),
   timezone: z.string().trim().min(1).max(80).optional(),
 })
@@ -16,7 +16,7 @@ export const createBusinessSchema = z.object({
 export const updateBusinessSchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
-    businessType: z.string().trim().min(1).max(80).nullable().optional(),
+    businessType: z.enum(businessTypes).nullable().optional(),
     currencyCode: z.string().trim().length(3).toUpperCase().optional(),
     timezone: z.string().trim().min(1).max(80).optional(),
     status: z.enum(businessStatuses).optional(),

@@ -22,8 +22,19 @@ function toBusinessResponse(business: Business): BusinessResponse {
 export function createBusinessesService(repository: BusinessRepository = businessRepository) {
   return {
     async create(ownerUserId: string, input: CreateBusinessInput) {
+      const existingBusiness = await repository.findByNameAndOwner(input.name, ownerUserId)
+
+      if (existingBusiness) {
+        throw new AppError(
+          'BUSINESS_ALREADY_EXISTS',
+          409,
+          'A business with the same name already exists for this owner.',
+        )
+      }
+
       const now = new Date()
       const business = await repository.create({
+        id: crypto.randomUUID(),
         ownerUserId,
         name: input.name,
         businessType: input.businessType ?? null,
@@ -54,7 +65,29 @@ export function createBusinessesService(repository: BusinessRepository = busines
       return toBusinessResponse(business)
     },
 
+    async softDelete(ownerUserId: string, businessId: string) {
+      const business = await repository.softDeleteByIdAndOwner(businessId, ownerUserId)
+
+      if (!business) {
+        throw new AppError('BUSINESS_NOT_FOUND', 404, 'The business was not found.')
+      }
+
+      return toBusinessResponse(business)
+    },
+
     async update(ownerUserId: string, businessId: string, input: UpdateBusinessInput) {
+      if (input.name) {
+        const existingBusiness = await repository.findByNameAndOwner(input.name, ownerUserId, businessId)
+
+        if (existingBusiness) {
+            throw new AppError(
+              'BUSINESS_ALREADY_EXISTS',
+              409,
+              'A business with the same name already exists for this owner.',
+            )
+          }
+      }
+
       const business = await repository.updateByIdAndOwner(businessId, ownerUserId, input)
 
       if (!business) {
