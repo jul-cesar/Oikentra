@@ -24,6 +24,27 @@ function readOptionalEnv(name: string) {
   return process.env[name]?.trim()
 }
 
+function readCookieDomain() {
+  const value = readOptionalEnv('AUTH_COOKIE_DOMAIN')
+
+  if (!value) return undefined
+
+  const domain = value.startsWith('.') ? value.slice(1) : value
+  const isValidDomain =
+    domain.length <= 253 &&
+    domain.split('.').every((label) =>
+      label.length > 0 &&
+      label.length <= 63 &&
+      /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label),
+    )
+
+  if (!isValidDomain) {
+    throw new Error('AUTH_COOKIE_DOMAIN must be a valid cookie domain')
+  }
+
+  return value
+}
+
 function readUrl(name: 'BETTER_AUTH_URL' | 'WEB_URL') {
   const value = readRequiredEnv(name)
 
@@ -39,6 +60,7 @@ function readUrl(name: 'BETTER_AUTH_URL' | 'WEB_URL') {
 export function getConfig() {
   return {
     authEmailFrom: readRequiredEnv('AUTH_EMAIL_FROM'),
+    authCookieDomain: readCookieDomain(),
     betterAuthSecret: readRequiredEnv('BETTER_AUTH_SECRET'),
     betterAuthUrl: readUrl('BETTER_AUTH_URL'),
     databaseUrl: readRequiredEnv('DATABASE_URL'),

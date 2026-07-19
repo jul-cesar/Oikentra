@@ -355,6 +355,8 @@ El router de `/api/auth/*` no utiliza `ForwardAuth`.
 - La app no guardará contraseñas.
 - Todas las llamadas públicas usarán el mismo dominio de API.
 
+For the production split-origin web flow, set the auth-service-only variable `AUTH_COOKIE_DOMAIN=oikentra.com`. This enables Better Auth `advanced.crossSubDomainCookies` so the browser sends the unchanged session cookie from `api.oikentra.com` to the same-origin web proxy at `oikentra.com`. Leave it unset in local development so localhost cookies remain host-only. Better Auth keeps the existing cookie names, `httpOnly`, and HTTPS security behavior. Users may need to sign in again after changing cookie scope because the old host-only cookie is not automatically migrated.
+
 El cliente web realiza solicitudes directas con CORS credentialed. `auth-service` permite como origen confiable `WEB_URL` y los deep links móviles configurados; su CORS permite `Content-Type`, `Authorization` y `X-Request-Id`. `X-Idempotency-Key` no forma parte del flujo de autenticación y fue retirado.
 
 `X-Request-Id` sí se conserva: el cliente puede enviarlo, auth-service lo propaga y lo usa para correlacionar logs, especialmente en recuperación de contraseña. No implementa deduplicación de operaciones.
@@ -368,6 +370,7 @@ No incluir valores secretos en documentación ni imágenes de cliente.
 | auth-service | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `INTERNAL_AUTH_PRIVATE_KEY_B64` | **Requeridas para iniciar** |
 | business/sync/reports | `INTERNAL_AUTH_PUBLIC_KEY_B64` | **Requerida para verificar assertions** |
 | auth-service móvil | `GOOGLE_IOS_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID` | **Opcionales en código; requeridas para los builds nativos correspondientes** |
+| auth-service (production web split-origin) | `AUTH_COOKIE_DOMAIN=oikentra.com` | **Optional; leave unset locally** |
 | web | `NEXT_PUBLIC_AUTH_BASE_URL`, `AUTH_BASE_URL` | **Requeridas según el runtime**; la primera se embebe en `next build` |
 | mobile | `EXPO_PUBLIC_AUTH_BASE_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | **Requeridas al iniciar el cliente** |
 | mobile iOS/Android | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | **Requeridas para Google nativo en la plataforma correspondiente** |

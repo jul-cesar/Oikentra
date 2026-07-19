@@ -69,6 +69,16 @@ function createAuth() {
     ],
     secret: config.betterAuthSecret,
     baseURL: config.betterAuthUrl,
+    ...(config.authCookieDomain
+      ? {
+          advanced: {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: config.authCookieDomain,
+            },
+          },
+        }
+      : {}),
     plugins: [expo()],
   })
 }
