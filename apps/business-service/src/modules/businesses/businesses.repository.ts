@@ -52,6 +52,7 @@ export const businessRepository: BusinessRepository = {
   },
 
   async findByNameAndOwner(name, ownerUserId, excludeId) {
+    const db = getDb()
     const conditions = [
       eq(businesses.ownerUserId, ownerUserId),
       sql`lower(${businesses.name}) = lower(${name})`,
@@ -90,6 +91,7 @@ export const businessRepository: BusinessRepository = {
   },
 
   async softDeleteByIdAndOwner(businessId, ownerUserId) {
+    const db = getDb()
     const now = new Date()
 
     const [business] = await db
