@@ -47,13 +47,13 @@ app.onError((error, c) => {
     )
   }
 
-  logError('business-service', error, c, 500)
+  console.error(error)
 
   return c.json(
     {
       code: 'INTERNAL_SERVER_ERROR',
       message: 'An internal error occurred.',
-      details: null,
+      details: error instanceof Error ? error.message : null,
       requestId,
     },
     500,

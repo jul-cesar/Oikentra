@@ -40,12 +40,16 @@ export function createCustomersService(repository: CustomerRepository = customer
       return toCustomerResponse(customer)
     },
 
-    async list(businessId: string) {
+    async list(userId: string, businessId: string) {
+      await businessesService.get(userId, businessId)
+
       const records = await repository.findManyByBusiness(businessId)
       return records.map(toCustomerResponse)
     },
 
-    async get(customerId: string, businessId: string) {
+    async get(userId: string, customerId: string, businessId: string) {
+      await businessesService.get(userId, businessId)
+
       const customer = await repository.findByIdAndBusiness(customerId, businessId)
       if (!customer) {
         throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
@@ -53,7 +57,9 @@ export function createCustomersService(repository: CustomerRepository = customer
       return toCustomerResponse(customer)
     },
 
-    async update(customerId: string, businessId: string, input: UpdateCustomerInput) {
+    async update(userId: string, customerId: string, businessId: string, input: UpdateCustomerInput) {
+      await businessesService.get(userId, businessId)
+
       const customer = await repository.updateByIdAndBusiness(customerId, businessId, input)
       if (!customer) {
         throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
@@ -61,7 +67,9 @@ export function createCustomersService(repository: CustomerRepository = customer
       return toCustomerResponse(customer)
     },
 
-    async softDelete(customerId: string, businessId: string) {
+    async softDelete(userId: string, customerId: string, businessId: string) {
+      await businessesService.get(userId, businessId)
+
       const customer = await repository.softDeleteByIdAndBusiness(customerId, businessId)
       if (!customer) {
         throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')

@@ -30,7 +30,7 @@ customersRoutes.get('/', async (c) => {
     throw validationError(parsedParams.error)
   }
 
-  const records = await customersService.list(parsedParams.data.businessId)
+  const records = await customersService.list(c.get('auth').userId, parsedParams.data.businessId)
 
   return success(c, records)
 })
@@ -65,6 +65,7 @@ customersRoutes.get('/:customerId', async (c) => {
   }
 
   const customer = await customersService.get(
+    c.get('auth').userId,
     parsedParams.data.customerId,
     parsedParams.data.businessId,
   )
@@ -80,6 +81,7 @@ customersRoutes.post('/:customerId/delete', async (c) => {
   }
 
   const customer = await customersService.softDelete(
+    c.get('auth').userId,
     parsedParams.data.customerId,
     parsedParams.data.businessId,
   )
@@ -101,6 +103,7 @@ customersRoutes.patch('/:customerId', async (c) => {
   }
 
   const customer = await customersService.update(
+    c.get('auth').userId,
     parsedParams.data.customerId,
     parsedParams.data.businessId,
     parsedBody.data,
