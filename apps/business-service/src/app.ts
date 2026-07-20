@@ -8,6 +8,7 @@ import { success } from './http/response'
 import { businessesRoutes } from './modules/businesses/businesses.routes'
 import { customersRoutes } from './modules/customers/customers.routes'
 import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.routes'
+import { creditsRoutes } from './modules/credits/credits.routes'
 
 export const app = new Hono<AppBindings>()
 
@@ -31,6 +32,7 @@ app.get('/api/business/health/ready', async (c) => {
 app.route('/api/business/businesses', businessesRoutes)
 app.route('/api/business/businesses/:businessId/customers', customersRoutes)
 app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRoutes)
+app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
 
 app.onError((error, c) => {
   const requestId = c.get('requestId') ?? crypto.randomUUID()

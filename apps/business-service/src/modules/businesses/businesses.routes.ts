@@ -13,15 +13,15 @@ import {
 
 export const businessesRoutes = new Hono<AppBindings>()
 
-businessesRoutes.use('*', requireAuthHeaders)
-// businessesRoutes.use("*", async (c, next) => {
-//   c.set("auth", {
-//     userId: "test-user-123",
-//     sessionId: "test-session-456",
-//   })
+//businessesRoutes.use('*', requireAuthHeaders)
+ businessesRoutes.use("*", async (c, next) => {
+   c.set("auth", {
+     userId: "test-user-123",
+     sessionId: "test-session-456",
+   })
 
-//   await next()
-// })
+   await next()
+ })
 
 businessesRoutes.post('/', async (c) => {
   const parsed = createBusinessSchema.safeParse(await c.req.json().catch(() => null))

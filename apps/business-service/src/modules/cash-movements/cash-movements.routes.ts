@@ -24,11 +24,6 @@ cashMovementsRoutes.use('*', requireAuthHeaders)
 //   await next()
 // })
 
-cashMovementsRoutes.use('*', async (c, next) => {
-  c.set('auth', { userId: 'test-user-123', sessionId: 'test-session-456' })
-  await next()
-})
-
 cashMovementsRoutes.post('/sales', async (c) => {
   const parsedBody = createSaleSchema.safeParse(await c.req.json().catch(() => null))
 

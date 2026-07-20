@@ -1,8 +1,9 @@
-﻿import type { Customer } from '../../db/schema'
-import { AppError } from '../../http/errors'
-import { businessesService } from '../businesses/businesses.service'
-import { customerRepository, type CustomerRepository } from './customers.repository'
-import type { CustomerResponse, CreateCustomerInput, UpdateCustomerInput } from './types/customers.types'
+﻿import type { Customer } from "../../db/schema";
+import { AppError } from "../../http/errors";
+import { businessesService } from "../businesses/businesses.service";
+import { customerRepository, type CustomerRepository } from "./customers.repository";
+import { creditRepository } from "../credits/credits.repository";
+import type { CustomerResponse, CreateCustomerInput, UpdateCustomerInput } from "./types/customers.types";
 
 function toCustomerResponse(customer: Customer): CustomerResponse {
   return {
@@ -16,15 +17,28 @@ function toCustomerResponse(customer: Customer): CustomerResponse {
     createdAt: customer.createdAt.toISOString(),
     updatedAt: customer.updatedAt.toISOString(),
     deletedAt: customer.deletedAt?.toISOString() ?? null,
+  };
+}
+
+async function calculateCustomerDebt(
+  customerId: string,
+  businessId: string,
+): Promise<{ totalDebt: number; activeCredits: number }> {
+  const pendingCredits = await creditRepository.getActiveCreditsByCustomer(customerId, businessId);
+  let totalDebt = 0;
+  for (const credit of pendingCredits) {
+    const paid = await creditRepository.getCreditTotalPaid(credit.id);
+    totalDebt += credit.originalAmount - paid;
   }
+  return { totalDebt, activeCredits: pendingCredits.length };
 }
 
 export function createCustomersService(repository: CustomerRepository = customerRepository) {
   return {
     async create(userId: string, businessId: string, input: CreateCustomerInput) {
-      await businessesService.get(userId, businessId)
+      await businessesService.get(userId, businessId);
 
-      const now = new Date()
+      const now = new Date();
       const customer = await repository.create({
         id: crypto.randomUUID(),
         userId,
@@ -32,51 +46,57 @@ export function createCustomersService(repository: CustomerRepository = customer
         name: input.name,
         phone: input.phone ?? null,
         notes: input.notes ?? null,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         version: 1,
         createdAt: now,
         updatedAt: now,
-      })
-      return toCustomerResponse(customer)
+      });
+      return toCustomerResponse(customer);
     },
 
     async list(userId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
-
-      const records = await repository.findManyByBusiness(businessId)
-      return records.map(toCustomerResponse)
+      await businessesService.get(userId, businessId);
+      const records = await repository.findManyByBusiness(businessId);
+      return records.map(toCustomerResponse);
     },
 
     async get(userId: string, customerId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
+      await businessesService.get(userId, businessId);
 
-      const customer = await repository.findByIdAndBusiness(customerId, businessId)
+      const customer = await repository.findByIdAndBusiness(customerId, businessId);
       if (!customer) {
-        throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
+        throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
       }
-      return toCustomerResponse(customer)
+
+      const { totalDebt, activeCredits } = await calculateCustomerDebt(customerId, businessId);
+
+      return {
+        ...toCustomerResponse(customer),
+        totalDebt,
+        activeCredits,
+      };
     },
 
     async update(userId: string, customerId: string, businessId: string, input: UpdateCustomerInput) {
-      await businessesService.get(userId, businessId)
+      await businessesService.get(userId, businessId);
 
-      const customer = await repository.updateByIdAndBusiness(customerId, businessId, input)
+      const customer = await repository.updateByIdAndBusiness(customerId, businessId, input);
       if (!customer) {
-        throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
+        throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
       }
-      return toCustomerResponse(customer)
+      return toCustomerResponse(customer);
     },
 
     async softDelete(userId: string, customerId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
+      await businessesService.get(userId, businessId);
 
-      const customer = await repository.softDeleteByIdAndBusiness(customerId, businessId)
+      const customer = await repository.softDeleteByIdAndBusiness(customerId, businessId);
       if (!customer) {
-        throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
+        throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
       }
-      return toCustomerResponse(customer)
+      return toCustomerResponse(customer);
     },
-  }
+  };
 }
 
-export const customersService = createCustomersService()
+export const customersService = createCustomersService();
