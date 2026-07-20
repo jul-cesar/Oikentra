@@ -2,16 +2,18 @@ import '@/global.css';
 
 import { authClient, persistAuthCookie } from '@/lib/auth-client';
 import { configureGoogleSignIn } from '@/lib/google-auth';
+import { makeQueryClient } from '@/lib/query-client';
 import { NAV_THEME } from '@/lib/theme';
+import { ThemePreferenceProvider, useThemePreference } from '@/lib/theme-context';
 import { PortalHost } from '@rn-primitives/portal';
-import { Text } from '@/components/ui/text';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { ThemeProvider } from 'expo-router/react-navigation';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as React from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { useUniwind } from 'uniwind';
+import { OikentraLoader } from '@/components/ui/oikentra-loader';
+import { ScopedTheme } from 'uniwind';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -72,7 +74,19 @@ async function handleAuthUrl(url: string, navigate: (href: string) => void): Pro
 }
 
 export default function RootLayout() {
-  const { theme } = useUniwind();
+  const [queryClient] = React.useState(() => makeQueryClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemePreferenceProvider>
+        <RootLayoutInner />
+      </ThemePreferenceProvider>
+    </QueryClientProvider>
+  );
+}
+
+function RootLayoutInner() {
+  const { theme } = useThemePreference();
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const segments = useSegments();
@@ -133,16 +147,13 @@ export default function RootLayout() {
   }, [inAuthGroup, initialUrlResolved, isPending, isVerificationRoute, router, session]);
 
   return (
-    <ThemeProvider value={NAV_THEME[theme ?? 'light']}>
+    <ThemeProvider value={NAV_THEME[theme]}>
       <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false }} />
-      <PortalHost />
-      {isPending || !initialUrlResolved ? (
-        <View className="absolute inset-0 items-center justify-center">
-          <ActivityIndicator />
-          <Text className="text-muted-foreground mt-4 text-sm">Cargando sesión...</Text>
-        </View>
-      ) : null}
+      <ScopedTheme theme={theme}>
+        <Stack screenOptions={{ headerShown: false }} />
+        <PortalHost />
+        {isPending || !initialUrlResolved ? <OikentraLoader label="Cargando sesión..." /> : null}
+      </ScopedTheme>
     </ThemeProvider>
   );
 }

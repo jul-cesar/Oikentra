@@ -4,6 +4,7 @@ import { useSyncExternalStore, useEffect } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 
 import { useSession } from "@/hooks/use-session"
+import { OikentraLoader } from "@/components/ui/oikentra-loader"
 
 function useHash() {
   return useSyncExternalStore(
@@ -56,14 +57,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (isPending) {
     return (
-      <div className="flex min-h-svh items-center justify-center">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <span
-            className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent"
-            aria-hidden="true"
-          />
-          Cargando...
-        </div>
+      <div className="flex min-h-svh items-center justify-center p-6">
+        <OikentraLoader label="Verificando tu sesión" />
       </div>
     )
   }

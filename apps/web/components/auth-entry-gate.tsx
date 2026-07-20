@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 import { useSession } from "@/hooks/use-session"
+import { OikentraLoader } from "@/components/ui/oikentra-loader"
 
 export function AuthEntryGate({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -14,7 +15,7 @@ export function AuthEntryGate({ children }: { children: React.ReactNode }) {
   }, [error, isPending, router, user])
 
   if (isPending || user) {
-    return <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">Cargando...</div>
+    return <div className="flex min-h-svh items-center justify-center p-6"><OikentraLoader label={user ? "Abriendo tu espacio" : "Verificando tu sesión"} /></div>
   }
 
   if (error) {

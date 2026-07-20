@@ -1,15 +1,16 @@
+import { OikentraLoader } from '@/components/ui/oikentra-loader';
 import { authClient } from '@/lib/auth-client';
 import { Redirect, Stack } from 'expo-router';
 import * as React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 export default function AppLayout() {
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
+      <View className="flex-1">
+        <OikentraLoader label="Verificando tu sesión" />
       </View>
     );
   }
