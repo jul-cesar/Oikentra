@@ -100,7 +100,7 @@ export const cashMovements = pgTable(
     index('cash_movements_business_date_idx').on(table.businessId, table.businessDate),
     index('cash_movements_business_type_date_idx').on(table.businessId, table.type, table.businessDate),
     index('cash_movements_business_status_date_idx').on(table.businessId, table.status, table.businessDate),
-    uniqueIndex('cash_movements_source_unique').on(table.sourceType, table.sourceId),
+    index('cash_movements_source_type_source_id_idx').on(table.sourceType, table.sourceId),
   ],
 )
 

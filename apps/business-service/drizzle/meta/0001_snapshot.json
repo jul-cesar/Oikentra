@@ -1,6 +1,6 @@
 {
-  "id": "0e4ecfbb-a1b2-4739-a2f2-461b2be7dd08",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "2690ae25-1a19-41ca-b38b-a87983869005",
+  "prevId": "0e4ecfbb-a1b2-4739-a2f2-461b2be7dd08",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -309,8 +309,8 @@
           "method": "btree",
           "with": {}
         },
-        "cash_movements_source_unique": {
-          "name": "cash_movements_source_unique",
+        "cash_movements_source_type_source_id_idx": {
+          "name": "cash_movements_source_type_source_id_idx",
           "columns": [
             {
               "expression": "source_type",
@@ -325,7 +325,7 @@
               "nulls": "last"
             }
           ],
-          "isUnique": true,
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}

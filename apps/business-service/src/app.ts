@@ -6,6 +6,9 @@ import { AppError } from './http/errors'
 import type { AppBindings } from './http/request-context'
 import { success } from './http/response'
 import { businessesRoutes } from './modules/businesses/businesses.routes'
+import { customersRoutes } from './modules/customers/customers.routes'
+import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.routes'
+import { creditsRoutes } from './modules/credits/credits.routes'
 
 export const app = new Hono<AppBindings>()
 
@@ -27,6 +30,9 @@ app.get('/api/business/health/ready', async (c) => {
 })
 
 app.route('/api/business/businesses', businessesRoutes)
+app.route('/api/business/businesses/:businessId/customers', customersRoutes)
+app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRoutes)
+app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
 
 app.onError((error, c) => {
   const requestId = c.get('requestId') ?? crypto.randomUUID()
@@ -45,13 +51,13 @@ app.onError((error, c) => {
     )
   }
 
-  logError('business-service', error, c, 500)
+  console.error(error)
 
   return c.json(
     {
       code: 'INTERNAL_SERVER_ERROR',
       message: 'An internal error occurred.',
-      details: null,
+      details: error instanceof Error ? error.message : null,
       requestId,
     },
     500,
