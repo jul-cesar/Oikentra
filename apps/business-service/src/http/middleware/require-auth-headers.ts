@@ -6,13 +6,22 @@ import { AppError } from '../errors'
 import type { AppBindings } from '../request-context'
 
 export const requireAuthHeaders = createMiddleware<AppBindings>(async (c, next) => {
+  const config = getConfig()
+
+  if (config.internalAuthDevBypass.enabled) {
+    c.set('auth', {
+      userId: config.internalAuthDevBypass.userId,
+      sessionId: config.internalAuthDevBypass.sessionId,
+    })
+    await next()
+    return
+  }
+
   const token = c.req.header('X-Internal-Auth')?.trim()
 
   if (!token) {
     throw new AppError('UNAUTHENTICATED', 401, 'A valid authenticated session is required.')
   }
-
-  const config = getConfig()
 
   try {
     const assertion = await verifyInternalAssertion({

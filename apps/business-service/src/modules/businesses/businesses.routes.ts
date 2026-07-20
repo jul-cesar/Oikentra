@@ -13,15 +13,7 @@ import {
 
 export const businessesRoutes = new Hono<AppBindings>()
 
-//businessesRoutes.use('*', requireAuthHeaders)
- businessesRoutes.use("*", async (c, next) => {
-   c.set("auth", {
-     userId: "test-user-123",
-     sessionId: "test-session-456",
-   })
-
-   await next()
- })
+businessesRoutes.use('*', requireAuthHeaders)
 
 businessesRoutes.post('/', async (c) => {
   const parsed = createBusinessSchema.safeParse(await c.req.json().catch(() => null))
@@ -49,21 +41,6 @@ businessesRoutes.get('/:businessId', async (c) => {
   }
 
   const business = await businessesService.get(c.get('auth').userId, parsedParams.data.businessId)
-
-  return success(c, business)
-})
-
-businessesRoutes.post('/:businessId/delete', async (c) => {
-  const parsedParams = businessIdParamsSchema.safeParse(c.req.param())
-
-  if (!parsedParams.success) {
-    throw validationError(parsedParams.error)
-  }
-
-  const business = await businessesService.softDelete(
-    c.get('auth').userId,
-    parsedParams.data.businessId,
-  )
 
   return success(c, business)
 })

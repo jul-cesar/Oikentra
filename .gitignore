@@ -19,5 +19,5 @@ expo-env.d.ts
 .DS_Store
 *.log
 
-
+graphify-out/
 .atl
