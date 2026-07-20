@@ -1,8 +1,8 @@
 ﻿import type { z } from 'zod'
 import type { CashMovement, CashMovementStatus, CashMovementType } from '../../../db/schema'
-import type { createCashMovementSchema, cancelCashMovementSchema } from '../cash-movements.schemas'
+import type { createSaleSchema, cancelCashMovementSchema } from '../cash-movements.schemas'
 
-export type CreateCashMovementInput = z.infer<typeof createCashMovementSchema>
+export type CreateCashMovementInput = z.infer<typeof createSaleSchema>
 export type CancelCashMovementInput = z.infer<typeof cancelCashMovementSchema>
 
 export type CashMovementResponse = {
