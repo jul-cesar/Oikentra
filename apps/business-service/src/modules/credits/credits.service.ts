@@ -1,4 +1,5 @@
-﻿import { AppError } from '../../http/errors'
+﻿import type { CreditStatus } from '../../db/schema'
+import { AppError } from '../../http/errors'
 import { creditRepository, type CreditRepository } from './credits.repository'
 import { businessesService } from '../businesses/businesses.service'
 import { customerRepository } from '../customers/customers.repository'
@@ -66,7 +67,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
     async list(
       userId: string,
       businessId: string,
-      filters?: { customerId?: string; status?: string; from?: string; to?: string; limit?: number; cursor?: string },
+      filters?: { customerId?: string; status?: CreditStatus; from?: string; to?: string; limit?: number; cursor?: string },
     ) {
       await businessesService.get(userId, businessId)
 

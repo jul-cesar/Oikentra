@@ -8,6 +8,10 @@ import {
   type Credit,
   type CreditPayment,
   type NewCredit,
+  type NewCreditPayment,
+  type CashMovement,
+  type NewCashMovement,
+  type CreditStatus,
 } from '../../db/schema'
 
 export type CreditRepository = {
@@ -19,7 +23,7 @@ export type CreditRepository = {
   findCreditById(creditId: string): Promise<Credit | null>
   findCreditsByBusiness(
     businessId: string,
-    filters?: { customerId?: string; status?: string; from?: string; to?: string; limit?: number; cursor?: string },
+    filters?: { customerId?: string; status?: CreditStatus; from?: string; to?: string; limit?: number; cursor?: string },
   ): Promise<Credit[]>
   findPaymentsByCreditId(creditId: string): Promise<CreditPayment[]>
   findPaymentByIdAndCredit(paymentId: string, creditId: string): Promise<CreditPayment | null>
@@ -30,7 +34,7 @@ export type CreditRepository = {
   ): Promise<Credit | null>
   updateCreditStatus(
     creditId: string,
-    status: 'PAID' | 'CANCELLED',
+    status: CreditStatus,
     timestamp: Date,
   ): Promise<void>
   cancelPayment(
@@ -41,9 +45,7 @@ export type CreditRepository = {
   getActiveCreditsByCustomer(customerId: string, businessId: string): Promise<Credit[]>
 }
 
-type NewCreditPayment = typeof creditPayments.$inferInsert;
-type CashMovement = typeof cashMovements.$inferSelect;
-type NewCreditPaymentInput = Omit<NewCreditPayment, 'id' | 'createdAt' | 'updatedAt'>;
+type NewCreditPaymentInput = Omit<NewCreditPayment, 'id' | 'createdAt' | 'updatedAt' | 'cashMovementId'>;
 
 export const creditRepository: CreditRepository = {
   async createCredit(input) {
@@ -138,7 +140,7 @@ export const creditRepository: CreditRepository = {
       .where(
         and(eq(creditPayments.creditId, creditId), eq(creditPayments.status, 'ACTIVE')),
       )
-    return result?.total ?? 0
+    return result?.total ? Number(result.total) : 0
   },
 
   async updateCreditStatus(creditId, status, timestamp) {
