@@ -9,7 +9,14 @@ export type Profile = {
   phone?: string | null;
 };
 
-export type Business = { id: string; name: string; businessType?: string | null };
+export type Business = {
+  id: string;
+  name: string;
+  businessType?: string | null;
+  currencyCode?: string;
+  timezone?: string;
+  status?: string;
+};
 
 const businessBaseUrl = (
   process.env.EXPO_PUBLIC_BUSINESS_BASE_URL?.trim() ||
@@ -42,14 +49,42 @@ export function saveProfile(input: { department: string; city: string; phone?: s
   return request<Profile>(`${authBaseUrl}/profile`, { method: 'PUT', body: JSON.stringify(input) });
 }
 
+export function patchProfile(input: { department?: string; city?: string; phone?: string | null }) {
+  return request<Profile>(`${authBaseUrl}/profile`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
 export function getBusinesses() {
   return request<Business[]>(`${businessBaseUrl}/businesses`);
 }
 
+export function getBusiness(id: string) {
+  return request<Business>(`${businessBaseUrl}/businesses/${encodeURIComponent(id)}`);
+}
+
 export function createBusiness(input: { name: string }) {
-  return request<Business>(`${businessBaseUrl}/businesses`, { method: 'POST', body: JSON.stringify(input) });
+  return request<Business>(`${businessBaseUrl}/businesses`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateBusiness(
+  id: string,
+  input: Partial<Pick<Business, 'name' | 'businessType' | 'currencyCode' | 'timezone'>>
+) {
+  return request<Business>(`${businessBaseUrl}/businesses/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
 }
 
 export function saveActiveBusinessId(id: string) {
   return SecureStore.setItemAsync(ACTIVE_BUSINESS_KEY, id);
+}
+
+export function getActiveBusinessId() {
+  return SecureStore.getItem(ACTIVE_BUSINESS_KEY) ?? null;
 }

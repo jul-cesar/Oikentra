@@ -1,6 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useMemo, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
@@ -13,116 +17,173 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Button } from "@/components/ui/button"
-import { createBusiness, getBusinesses, getProfile, saveActiveBusinessId, saveProfile, type Business } from "@/lib/onboarding-api"
+import { OikentraLoader } from "@/components/ui/oikentra-loader"
+import { Input } from "@/components/ui/input"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { saveActiveBusinessId, type Business } from "@/lib/onboarding-api"
+import {
+  useBusinesses,
+  useCreateBusiness,
+  useProfile,
+  useSaveProfile,
+} from "@/lib/queries/onboarding"
+import {
+  businessOnboardingSchema,
+  profileOnboardingSchema,
+} from "@/lib/validation/onboarding-schemas"
 import { colombiaDepartments } from "@oikentra/location-catalog"
 import { SearchableSelect } from "./searchable-select"
 
-type Answers = {
-  department: string
-  city: string
-  phone: string
-  businessName: string
-}
+const onboardingFlowSchema = profileOnboardingSchema
+  .extend({
+    businessName: businessOnboardingSchema.shape.name,
+  })
+  .refine(
+    (values) => {
+      if (!values.phone) return true
+      const digits = values.phone.replace(/\D/g, "")
+      return digits.length >= 7 && digits.length <= 10
+    },
+    {
+      message: "Ingresa un teléfono válido (7 a 10 dígitos).",
+      path: ["phone"],
+    },
+  )
+  .refine((values) => values.businessName.trim().length >= 2, {
+    message: "El nombre debe tener al menos 2 caracteres.",
+    path: ["businessName"],
+  })
 
-const emptyAnswers: Answers = {
-  department: "",
-  city: "",
-  phone: "",
-  businessName: "",
-}
+type OnboardingFlowValues = z.infer<typeof onboardingFlowSchema>
+
+type StepId = keyof OnboardingFlowValues
 
 const steps = [
   {
-    id: "department",
+    id: "department" as const,
     icon: Location01Icon,
     eyebrow: "Ubicación",
     title: "¿En qué departamento operas?",
     subtitle: "Nos ayuda a preparar impuestos y formatos locales para tu negocio.",
   },
   {
-    id: "city",
+    id: "city" as const,
     icon: City01Icon,
     eyebrow: "Ubicación",
     title: "¿Cuál es tu ciudad o municipio?",
     subtitle: "Elige el lugar donde atiendes a tus clientes.",
   },
   {
-    id: "phone",
+    id: "phone" as const,
     icon: Call02Icon,
     eyebrow: "Contacto",
     title: "¿A qué número te contactamos?",
     subtitle: "Opcional. Lo usamos para recuperar tu cuenta y avisos importantes.",
   },
   {
-    id: "businessName",
+    id: "businessName" as const,
     icon: Store01Icon,
     eyebrow: "Tu negocio",
     title: "Ponle nombre a tu negocio",
     subtitle: "Este será el espacio donde registrarás ventas, gastos, clientes y fiados.",
   },
-] as const
+] satisfies { id: StepId; icon: typeof Location01Icon; eyebrow: string; title: string; subtitle: string }[]
+
+const emptyFlowValues: OnboardingFlowValues = {
+  department: "",
+  city: "",
+  phone: "",
+  businessName: "",
+}
 
 type OnboardingGateProps = { children: React.ReactNode }
 
-type GateStatus = "loading" | "profile" | "business" | "ready" | "error"
-
 export function OnboardingGate({ children }: OnboardingGateProps) {
-  const [status, setStatus] = useState<GateStatus>("loading")
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [completed, setCompleted] = useState(false)
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+  } = useProfile()
+  const profileCompleted = Boolean(profile?.profileCompleted)
+  const {
+    data: businesses,
+    isLoading: businessesLoading,
+    error: businessesError,
+    refetch: refetchBusinesses,
+  } = useBusinesses({ enabled: profileCompleted })
 
-  async function load() {
-    setStatus("loading")
-    setError(null)
-    try {
-      const profile = await getProfile()
-      if (!profile.profileCompleted) {
-        setStatus("profile")
-        return
-      }
-      setBusinesses(await getBusinesses())
-      setStatus("business")
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No pudimos cargar tu onboarding.")
-      setStatus("error")
-    }
+  if (completed) {
+    return <>{children}</>
   }
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => void load(), 0)
-    return () => window.clearTimeout(timer)
-  }, [])
-
-  if (status === "loading") {
-    return <GateMessage>Preparando tu espacio...</GateMessage>
-  }
-  if (status === "error") {
+  if (profileLoading) {
     return (
       <GateMessage>
-        <p role="alert">{error}</p>
-        <Button type="button" onClick={() => void load()}>Reintentar</Button>
+        <OikentraLoader label="Preparando tu espacio" />
       </GateMessage>
     )
   }
-  if (status === "profile") {
+
+  if (profileError) {
+    return (
+      <GateMessage>
+        <p role="alert">{profileError.message}</p>
+        <Button type="button" onClick={() => void refetchProfile()}>
+          Reintentar
+        </Button>
+      </GateMessage>
+    )
+  }
+
+  if (!profileCompleted) {
     return (
       <OnboardingFrame>
-        <OnboardingFlow onComplete={() => setStatus("ready")} />
+        <OnboardingFlow onComplete={() => setCompleted(true)} />
       </OnboardingFrame>
     )
   }
-  if (status === "business") {
+
+  if (businessesLoading) {
     return (
-      <OnboardingFrame>
-        <BusinessOnboarding businesses={businesses} onComplete={() => setStatus("ready")} />
-      </OnboardingFrame>
+      <GateMessage>
+        <OikentraLoader label="Preparando tu espacio" />
+      </GateMessage>
     )
   }
-  return <>{children}</>
+
+  if (businessesError) {
+    return (
+      <GateMessage>
+        <p role="alert">{businessesError.message}</p>
+        <Button type="button" onClick={() => void refetchBusinesses()}>
+          Reintentar
+        </Button>
+      </GateMessage>
+    )
+  }
+
+  return (
+    <OnboardingFrame>
+      <BusinessOnboarding businesses={businesses ?? []} />
+    </OnboardingFrame>
+  )
 }
 
 function GateMessage({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-svh w-full min-w-0 flex-col items-center justify-center gap-4 overflow-x-hidden break-words px-4 py-6 text-center text-muted-foreground sm:px-6">{children}</div>
+  return (
+    <div className="flex min-h-svh w-full min-w-0 flex-col items-center justify-center gap-4 overflow-x-hidden break-words px-4 py-6 text-center text-muted-foreground sm:px-6">
+      {children}
+    </div>
+  )
 }
 
 function OnboardingFrame({ children }: { children: React.ReactNode }) {
@@ -134,73 +195,75 @@ function OnboardingFrame({ children }: { children: React.ReactNode }) {
 }
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
-  const [answers, setAnswers] = useState<Answers>(emptyAnswers)
+  const router = useRouter()
   const [step, setStep] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const saveProfileMutation = useSaveProfile()
+  const createBusinessMutation = useCreateBusiness()
+
+  const form = useForm<OnboardingFlowValues>({
+    resolver: zodResolver(onboardingFlowSchema),
+    defaultValues: emptyFlowValues,
+    mode: "onChange",
+  })
 
   const current = steps[step]
+  const currentId: StepId = current.id
   const isLast = step === steps.length - 1
 
+  const department = useWatch({ control: form.control, name: "department" })
   const selectedDepartment = useMemo(
-    () => colombiaDepartments.find(({ name }) => name === answers.department),
-    [answers.department],
+    () => colombiaDepartments.find(({ name }) => name === department),
+    [department],
   )
 
-  function update<K extends keyof Answers>(key: K, value: Answers[K]) {
-    setAnswers((prev) => ({ ...prev, [key]: value }))
-    setError(null)
-  }
+  const values = form.getValues()
 
-  function validate(): string | null {
-    switch (current.id) {
-      case "department":
-        return answers.department ? null : "Elige tu departamento para continuar."
-      case "city":
-        return answers.city ? null : "Elige tu ciudad o municipio."
-      case "phone": {
-        if (!answers.phone) return null
-        const digits = answers.phone.replace(/\D/g, "")
-        return digits.length >= 7 && digits.length <= 10 ? null : "Ingresa un teléfono válido (7 a 10 dígitos)."
-      }
-      case "businessName":
-        return answers.businessName.trim().length >= 2 ? null : "El nombre debe tener al menos 2 caracteres."
-      default:
-        return null
+  async function onSubmit(data: OnboardingFlowValues) {
+    setSubmitError(null)
+    try {
+      await saveProfileMutation.mutateAsync({
+        department: data.department,
+        city: data.city,
+        phone: data.phone || null,
+      })
+      const business = await createBusinessMutation.mutateAsync({
+        name: data.businessName.trim(),
+      })
+      saveActiveBusinessId(business.id)
+      router.push(`/dashboard/${business.id}`)
+      setDone(true)
+    } catch (cause) {
+      setSubmitError(
+        cause instanceof Error
+          ? cause.message
+          : "No pudimos guardar tu información. Inténtalo de nuevo.",
+      )
     }
   }
 
   async function goNext() {
-    const validationError = validate()
-    if (validationError) {
-      setError(validationError)
+    setSubmitError(null)
+    if (isLast) {
+      await form.handleSubmit(onSubmit)()
       return
     }
-    if (!isLast) {
+    const valid = await form.trigger(currentId)
+    if (valid) {
       setStep((value) => value + 1)
-      return
-    }
-    setSubmitting(true)
-    try {
-      await saveProfile({
-        department: answers.department,
-        city: answers.city,
-        phone: answers.phone || null,
-      })
-      const business = await createBusiness({ name: answers.businessName.trim() })
-      saveActiveBusinessId(business.id)
-      setDone(true)
-    } catch {
-      setError("No pudimos guardar tu información. Inténtalo de nuevo.")
-    } finally {
-      setSubmitting(false)
     }
   }
 
   function goBack() {
-    setError(null)
+    setSubmitError(null)
     setStep((value) => Math.max(value - 1, 0))
+  }
+
+  function skipPhone() {
+    form.setValue("phone", "")
+    setSubmitError(null)
+    setStep((value) => value + 1)
   }
 
   if (done) {
@@ -209,23 +272,34 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         <span className="grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} size={34} strokeWidth={2} aria-hidden="true" />
         </span>
-        <h1 className="mt-6 break-words text-3xl font-bold tracking-tight text-balance">¡Todo listo, {answers.businessName}!</h1>
+        <h1 className="mt-6 break-words text-3xl font-bold tracking-tight text-balance">
+          ¡Todo listo, {values.businessName}!
+        </h1>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-pretty text-muted-foreground">
-          Tu espacio en {answers.city} quedó configurado. Ya puedes registrar tu primera venta y llevar el control de
-          tus fiados.
+          Tu espacio en {values.city} quedó configurado. Ya puedes registrar tu primera venta y
+          llevar el control de tus fiados.
         </p>
-          <Button size="lg" className="mt-8 h-12 rounded-xl px-6 text-sm font-semibold" onClick={onComplete}>
-            Entrar a mi negocio
-            <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-          </Button>
+        <Button
+          size="lg"
+          className="mt-8 h-12 rounded-xl px-6 text-sm font-semibold"
+          onClick={onComplete}
+        >
+          Entrar a mi negocio
+          <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+        </Button>
       </div>
     )
   }
 
   return (
     <div className="w-full">
-      {/* Progreso por segmentos */}
-      <div className="flex items-center gap-1.5" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={steps.length}>
+      <div
+        className="flex items-center gap-1.5"
+        role="progressbar"
+        aria-valuenow={step + 1}
+        aria-valuemin={1}
+        aria-valuemax={steps.length}
+      >
         {steps.map((item, index) => (
           <span
             key={item.id}
@@ -245,160 +319,189 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
           <HugeiconsIcon icon={current.icon} size={22} strokeWidth={1.9} aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h1 className="break-words text-2xl font-bold tracking-tight text-balance">{current.title}</h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-pretty text-muted-foreground">{current.subtitle}</p>
+          <h1 className="break-words text-2xl font-bold tracking-tight text-balance">
+            {current.title}
+          </h1>
+          <p className="mt-1.5 text-sm leading-relaxed text-pretty text-muted-foreground">
+            {current.subtitle}
+          </p>
         </div>
       </div>
 
-      <form
-        className="mt-7"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void goNext()
-        }}
-      >
-        {/* key por paso: fuerza remonte y evita arrastrar el texto de una pregunta a otra */}
-        <div key={current.id} className="min-w-0">
-          {current.id === "department" ? (
-            <SearchableSelect
-              value={answers.department}
-              options={colombiaDepartments}
-              placeholder="Busca tu departamento"
-              onChange={(value) => {
-                update("department", value)
-                // Reinicia la ciudad al cambiar de departamento.
-                setAnswers((prev) => ({ ...prev, department: value, city: "" }))
-              }}
+      <Form {...form}>
+        <form
+          className="mt-7"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void goNext()
+          }}
+        >
+          <div key={current.id} className="min-w-0">
+            <FormField
+              control={form.control}
+              name={currentId}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="sr-only">{current.title}</FormLabel>
+                  <FormControl>
+                    {current.id === "department" ? (
+                      <SearchableSelect
+                        value={field.value ?? ""}
+                        options={colombiaDepartments}
+                        placeholder="Busca tu departamento"
+                        onChange={(value) => {
+                          field.onChange(value)
+                          form.setValue("city", "")
+                        }}
+                      />
+                    ) : current.id === "city" ? (
+                      <SearchableSelect
+                        value={field.value ?? ""}
+                        options={selectedDepartment?.municipalities ?? []}
+                        placeholder={
+                          selectedDepartment
+                            ? "Busca tu ciudad o municipio"
+                            : "Elige primero un departamento"
+                        }
+                        disabled={!selectedDepartment}
+                        onChange={field.onChange}
+                      />
+                    ) : current.id === "phone" ? (
+                      <div className="group relative">
+                        <HugeiconsIcon
+                          icon={Call02Icon}
+                          size={19}
+                          strokeWidth={1.8}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+                          aria-hidden="true"
+                        />
+                        <Input
+                          aria-label="Teléfono"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          autoFocus
+                          placeholder="300 000 0000"
+                          className="h-12 w-full rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
+                          {...field}
+                        />
+                      </div>
+                    ) : (
+                      <div className="group relative">
+                        <HugeiconsIcon
+                          icon={Store01Icon}
+                          size={19}
+                          strokeWidth={1.8}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+                          aria-hidden="true"
+                        />
+                        <Input
+                          aria-label="Nombre del negocio"
+                          type="text"
+                          autoFocus
+                          placeholder="Tienda Doña Rosa"
+                          className="h-12 w-full rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
+                          {...field}
+                        />
+                      </div>
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
+          </div>
+
+          {submitError ? (
+            <p className="mt-3 text-sm text-destructive" role="alert">
+              {submitError}
+            </p>
           ) : null}
 
-          {current.id === "city" ? (
-            <SearchableSelect
-              value={answers.city}
-              options={selectedDepartment?.municipalities ?? []}
-              placeholder={selectedDepartment ? "Busca tu ciudad o municipio" : "Elige primero un departamento"}
-              disabled={!selectedDepartment}
-              onChange={(value) => update("city", value)}
-            />
-          ) : null}
+          <div className="mt-8 flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="h-12 shrink-0 rounded-xl px-3 text-sm font-medium sm:px-4"
+              disabled={step === 0 || form.formState.isSubmitting}
+              onClick={goBack}
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+              Atrás
+            </Button>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12 min-w-0 flex-1 rounded-xl text-sm font-semibold"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Guardando..." : isLast ? "Crear mi negocio" : "Continuar"}
+              {!form.formState.isSubmitting ? (
+                <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+              ) : null}
+            </Button>
+          </div>
 
           {current.id === "phone" ? (
-            <div className="group relative">
-              <HugeiconsIcon
-                icon={Call02Icon}
-                size={19}
-                strokeWidth={1.8}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
-                aria-hidden="true"
-              />
-              <input
-                aria-label="Teléfono"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                autoFocus
-                value={answers.phone}
-                placeholder="300 000 0000"
-                onChange={(event) => update("phone", event.target.value)}
-                className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={skipPhone}
+              className="mx-auto mt-4 block text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Prefiero agregarlo después
+            </button>
           ) : null}
-
-          {current.id === "businessName" ? (
-            <div className="group relative">
-              <HugeiconsIcon
-                icon={Store01Icon}
-                size={19}
-                strokeWidth={1.8}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
-                aria-hidden="true"
-              />
-              <input
-                aria-label="Nombre del negocio"
-                type="text"
-                autoFocus
-                value={answers.businessName}
-                placeholder="Tienda Doña Rosa"
-                onChange={(event) => update("businessName", event.target.value)}
-                className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
-              />
-            </div>
-          ) : null}
-        </div>
-
-        {error ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        <div className="mt-8 flex items-center gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            size="lg"
-            className="h-12 shrink-0 rounded-xl px-3 text-sm font-medium sm:px-4"
-            disabled={step === 0 || submitting}
-            onClick={goBack}
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-            Atrás
-          </Button>
-
-          <Button type="submit" size="lg" className="h-12 min-w-0 flex-1 rounded-xl text-sm font-semibold" disabled={submitting}>
-            {submitting ? "Guardando..." : isLast ? "Crear mi negocio" : "Continuar"}
-            {!submitting ? (
-              <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
-            ) : null}
-          </Button>
-        </div>
-
-        {current.id === "phone" ? (
-          <button
-            type="button"
-            onClick={() => {
-              update("phone", "")
-              setStep((value) => value + 1)
-            }}
-            className="mx-auto mt-4 block text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Prefiero agregarlo después
-          </button>
-        ) : null}
-      </form>
+        </form>
+      </Form>
     </div>
   )
 }
 
-function BusinessOnboarding({ businesses, onComplete }: { businesses: Business[]; onComplete: () => void }) {
-  const [name, setName] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+const businessFormSchema = businessOnboardingSchema.refine(
+  (values) => values.name.trim().length >= 2,
+  {
+    message: "El nombre debe tener al menos 2 caracteres.",
+    path: ["name"],
+  },
+)
+
+type BusinessFormValues = z.infer<typeof businessFormSchema>
+
+function BusinessOnboarding({
+  businesses,
+}: {
+  businesses: Business[]
+}) {
+  const router = useRouter()
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const createBusinessMutation = useCreateBusiness()
+
+  const form = useForm<BusinessFormValues>({
+    resolver: zodResolver(businessFormSchema),
+    defaultValues: { name: "" },
+    mode: "onChange",
+  })
+
+  async function onSubmit(data: BusinessFormValues) {
+    setSubmitError(null)
+    try {
+      const business = await createBusinessMutation.mutateAsync({
+        name: data.name.trim(),
+      })
+      saveActiveBusinessId(business.id)
+      router.push(`/dashboard/${business.id}`)
+    } catch (cause) {
+      setSubmitError(
+        cause instanceof Error ? cause.message : "No pudimos crear el negocio.",
+      )
+    }
+  }
 
   async function selectBusiness(id: string) {
     saveActiveBusinessId(id)
-    onComplete()
-  }
-
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmedName = name.trim()
-    if (trimmedName.length < 2) {
-      setError("El nombre debe tener al menos 2 caracteres.")
-      return
-    }
-    setSubmitting(true)
-    setError(null)
-    try {
-      const business = await createBusiness({ name: trimmedName })
-      saveActiveBusinessId(business.id)
-      onComplete()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No pudimos crear el negocio.")
-    } finally {
-      setSubmitting(false)
-    }
+    router.push(`/dashboard/${id}`)
   }
 
   return (
@@ -408,29 +511,75 @@ function BusinessOnboarding({ businesses, onComplete }: { businesses: Business[]
         {businesses.length ? "Elige tu negocio" : "Crea tu primer negocio"}
       </h1>
       <p className="mt-1.5 text-sm leading-relaxed text-pretty text-muted-foreground">
-        {businesses.length ? "Selecciona el espacio que quieres abrir." : "Aquí registrarás tus ventas, gastos y clientes."}
+        {businesses.length
+          ? "Selecciona el espacio que quieres abrir."
+          : "Aquí registrarás tus ventas, gastos y clientes."}
       </p>
       {businesses.length ? (
         <div className="mt-7 grid gap-3">
           {businesses.map((business) => (
-            <Button key={business.id} type="button" variant="outline" className="h-auto min-w-0 justify-start rounded-xl px-3 py-4 text-left whitespace-normal sm:px-4" onClick={() => void selectBusiness(business.id)}>
+            <Button
+              key={business.id}
+              type="button"
+              variant="outline"
+              className="h-auto min-w-0 justify-start rounded-xl px-3 py-4 text-left whitespace-normal sm:px-4"
+              onClick={() => void selectBusiness(business.id)}
+            >
               <HugeiconsIcon icon={Store01Icon} size={19} strokeWidth={1.8} aria-hidden="true" />
               <span className="min-w-0 break-words">{business.name}</span>
             </Button>
           ))}
         </div>
       ) : (
-        <form className="mt-7" onSubmit={(event) => void submit(event)}>
-          <div className="group relative">
-            <HugeiconsIcon icon={Store01Icon} size={19} strokeWidth={1.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input aria-label="Nombre del negocio" type="text" autoFocus value={name} placeholder="Tienda Doña Rosa" onChange={(event) => { setName(event.target.value); setError(null) }} className="h-12 w-full rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground shadow-sm outline-none transition-all placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15" />
-          </div>
-          {error ? <p className="mt-3 text-sm text-destructive" role="alert">{error}</p> : null}
-          <Button type="submit" size="lg" className="mt-8 h-12 w-full rounded-xl text-sm font-semibold" disabled={submitting}>
-            {submitting ? "Creando..." : "Crear mi negocio"}
-            {!submitting ? <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" /> : null}
-          </Button>
-        </form>
+        <Form {...form}>
+          <form className="mt-7" onSubmit={form.handleSubmit(onSubmit)}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="sr-only">Nombre del negocio</FormLabel>
+                  <FormControl>
+                    <div className="group relative">
+                      <HugeiconsIcon
+                        icon={Store01Icon}
+                        size={19}
+                        strokeWidth={1.8}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                      <Input
+                        aria-label="Nombre del negocio"
+                        type="text"
+                        autoFocus
+                        placeholder="Tienda Doña Rosa"
+                        className="h-12 w-full rounded-xl border-border bg-card pl-11 pr-4 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/15"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {submitError ? (
+              <p className="mt-3 text-sm text-destructive" role="alert">
+                {submitError}
+              </p>
+            ) : null}
+            <Button
+              type="submit"
+              size="lg"
+              className="mt-8 h-12 w-full rounded-xl text-sm font-semibold"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Creando..." : "Crear mi negocio"}
+              {!form.formState.isSubmitting ? (
+                <HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} aria-hidden="true" />
+              ) : null}
+            </Button>
+          </form>
+        </Form>
       )}
     </div>
   )
