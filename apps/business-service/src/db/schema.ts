@@ -34,6 +34,34 @@ export const businesses = pgTable(
 export type Business = typeof businesses.$inferSelect
 export type NewBusiness = typeof businesses.$inferInsert
 
+// ─── Business members ────────────────────────────────────────
+
+export const memberRoles = ['OWNER', 'MANAGER', 'OPERATOR'] as const
+export type MemberRole = (typeof memberRoles)[number]
+export const memberStatuses = ['ACTIVE', 'INVITED', 'INACTIVE'] as const
+export type MemberStatus = (typeof memberStatuses)[number]
+
+export const businessMembers = pgTable(
+  'business_members',
+  {
+    id: text('id').primaryKey(),
+    businessId: text('business_id').notNull(),
+    userId: text('user_id').notNull(),
+    role: text('role', { enum: memberRoles }).notNull().default('OPERATOR'),
+    status: text('status', { enum: memberStatuses }).notNull().default('ACTIVE'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('business_members_business_user_unique').on(table.businessId, table.userId),
+    index('business_members_user_status_idx').on(table.userId, table.status),
+    index('business_members_business_status_idx').on(table.businessId, table.status),
+  ],
+)
+
+export type BusinessMember = typeof businessMembers.$inferSelect
+export type NewBusinessMember = typeof businessMembers.$inferInsert
+
 // ─── Customers ───────────────────────────────────────────────
 
 export const customerStatuses = ['ACTIVE', 'INACTIVE'] as const

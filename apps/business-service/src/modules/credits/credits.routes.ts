@@ -42,6 +42,11 @@ creditsRoutes.post("/", async (c) => {
   return success(c, credit, 201);
 });
 
+creditsRoutes.get("/summary", async (c) => {
+  const summary = await creditsService.summary(c.get("auth").userId, c.req.param("businessId")!);
+  return success(c, summary);
+});
+
 creditsRoutes.get("/", async (c) => {
   const filters = creditFiltersSchema.safeParse(c.req.query());
   if (!filters.success) {
