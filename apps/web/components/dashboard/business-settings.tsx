@@ -13,6 +13,7 @@ import {
   type BusinessSettingsValues,
 } from "@/lib/validation/onboarding-schemas";
 import { Button } from "@/components/ui/button";
+import { CollaboratorsSettings } from "@/components/dashboard/collaborators-settings";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
 import {
   Card,
@@ -216,6 +217,7 @@ function BusinessSettingsContent() {
             </Form>
           </CardContent>
         </Card>
+        <CollaboratorsSettings businessId={businessId} />
       </div>
     </DashboardShell>
   );

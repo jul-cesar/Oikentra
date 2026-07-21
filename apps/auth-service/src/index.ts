@@ -9,6 +9,7 @@ import { getAuth } from './auth'
 import { checkDatabaseConnection } from './db/client'
 import { getConfig, validateRuntimeConfig } from './config/config'
 import { profileRoutes } from './modules/profile/profile.routes'
+import { usersRoutes } from './modules/users/users.routes'
 
 const app = new Hono<RequestLogEnv>()
 app.use('*', requestIdMiddleware())
@@ -74,6 +75,7 @@ app.get('/internal/session/validate', async (c) => {
 })
 
 app.route('/api/auth/profile', profileRoutes)
+app.route('/api/auth/users', usersRoutes)
 
 app.on(['GET', 'POST'], '/api/auth/*', (c) => {
   const headers = new Headers(c.req.raw.headers)
