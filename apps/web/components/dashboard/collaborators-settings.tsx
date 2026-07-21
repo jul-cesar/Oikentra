@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { lookupPublicUser } from "@/lib/members-api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -49,7 +50,12 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
   });
   async function submit(values: InvitationFormValues) {
     try {
-      await create.mutateAsync(values);
+      const matches = await lookupPublicUser(values.identifier);
+      if (!matches.length) {
+        form.setError("identifier", { message: "No encontramos una cuenta con ese correo o teléfono." });
+        return;
+      }
+      await create.mutateAsync({ ...values, targetUserId: matches[0].id });
       form.reset();
     } catch (cause) {
       form.setError("root.server", {

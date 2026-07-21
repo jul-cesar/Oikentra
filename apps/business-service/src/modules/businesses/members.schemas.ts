@@ -12,6 +12,7 @@ export const addMemberSchema = z.object({
 export const createInvitationSchema = z
   .object({
     identifier: z.string().trim().min(3),
+    targetUserId: z.string().trim().min(1),
     role: z.enum(memberRoles).default("OPERATOR"),
   })
   .superRefine((value, ctx) => {
@@ -22,7 +23,7 @@ export const createInvitationSchema = z
         path: ["identifier"],
         message: "Ingresa un correo válido.",
       });
-    if (!isEmail && !/^\\+?[0-9 ()-]{7,20}$/.test(value.identifier))
+    if (!isEmail && !/^\+?[0-9 ()-]{7,20}$/.test(value.identifier))
       ctx.addIssue({
         code: "custom",
         path: ["identifier"],

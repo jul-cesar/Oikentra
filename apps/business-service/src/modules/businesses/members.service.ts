@@ -89,7 +89,7 @@ export function createMembersService(
     async createInvitation(
       ownerUserId: string,
       businessId: string,
-      input: { identifier: string; role: MemberRole },
+      input: { identifier: string; targetUserId: string; role: MemberRole },
     ) {
       await this.requirePermission(
         ownerUserId,
@@ -107,6 +107,7 @@ export function createMembersService(
           id: crypto.randomUUID(),
           businessId,
           invitedByUserId: ownerUserId,
+          targetUserId: input.targetUserId,
           identifier,
           identifierType,
           role: input.role === "OWNER" ? "OPERATOR" : input.role,
@@ -126,6 +127,14 @@ export function createMembersService(
       return (await repository.listInvitations(businessId)).map(
         toInvitationResponse,
       );
+    },
+    async listMyInvitations(userId: string) {
+      return (await repository.listInvitationsByTargetUser(userId)).filter((invitation) => invitation.status === "PENDING" && invitation.expiresAt > new Date()).map(toInvitationResponse);
+    },
+    async acceptInvitation(userId: string, businessId: string, invitationId: string) {
+      const accepted = await repository.acceptInvitation(invitationId, businessId, userId);
+      if (!accepted) throw new AppError("INVITATION_NOT_FOUND", 404, "The invitation was not found or has expired.");
+      return toResponse(accepted.member);
     },
     async revokeInvitation(
       ownerUserId: string,

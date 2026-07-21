@@ -49,13 +49,16 @@ export const getPublicUsers = (ids: string[]) =>
   request<PublicUser[]>(
     `${authBaseUrl}/users?ids=${encodeURIComponent(ids.join(","))}`,
   );
+export const lookupPublicUser = (identifier: string) => request<PublicUser[]>(`${authBaseUrl}/users/lookup?identifier=${encodeURIComponent(identifier)}`);
 export const getMembers = (businessId: string) =>
   request<Member[]>(base(businessId));
+export const getMyInvitations = () => request<Invitation[]>("/api/business/invitations/mine");
+export const acceptInvitation = (businessId: string, invitationId: string) => request<Member>(`${base(businessId)}/invitations/${encodeURIComponent(invitationId)}/accept`, { method: "POST" });
 export const getInvitations = (businessId: string) =>
   request<Invitation[]>(`${base(businessId)}/invitations`);
 export const createInvitation = (
   businessId: string,
-  input: { identifier: string; role: "MANAGER" | "OPERATOR" },
+  input: { identifier: string; targetUserId: string; role: "MANAGER" | "OPERATOR" },
 ) =>
   request<Invitation>(`${base(businessId)}/invitations`, {
     method: "POST",

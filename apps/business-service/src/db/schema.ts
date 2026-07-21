@@ -102,6 +102,7 @@ export const businessInvitations = pgTable(
     id: text("id").primaryKey(),
     businessId: text("business_id").notNull(),
     invitedByUserId: text("invited_by_user_id").notNull(),
+    targetUserId: text("target_user_id"),
     identifier: text("identifier").notNull(),
     identifierType: text("identifier_type", {
       enum: invitationIdentifierTypes,
