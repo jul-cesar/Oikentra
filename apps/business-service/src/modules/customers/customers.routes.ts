@@ -73,6 +73,22 @@ customersRoutes.get('/:customerId', async (c) => {
   return success(c, customer)
 })
 
+customersRoutes.get('/:customerId/history', async (c) => {
+  const parsedParams = customerIdParamsSchema.safeParse(c.req.param())
+
+  if (!parsedParams.success) {
+    throw validationError(parsedParams.error)
+  }
+
+  const history = await customersService.getHistory(
+    c.get('auth').userId,
+    parsedParams.data.customerId,
+    parsedParams.data.businessId,
+  )
+
+  return success(c, history)
+})
+
 customersRoutes.post('/:customerId/delete', async (c) => {
   const parsedParams = customerIdParamsSchema.safeParse(c.req.param())
 
