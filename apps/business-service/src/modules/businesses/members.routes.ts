@@ -21,6 +21,24 @@ membersRoutes.get("/", async (c) =>
     await membersService.list(c.get("auth").userId, c.req.param("businessId")!),
   ),
 );
+membersRoutes.get("/invitations/mine", async (c) =>
+  success(c, await membersService.listMyInvitations(c.get("auth").userId)),
+);
+membersRoutes.post("/invitations/:invitationId/accept", async (c) => {
+  const params = invitationParamsSchema.safeParse({
+    businessId: c.req.param("businessId"),
+    invitationId: c.req.param("invitationId"),
+  });
+  if (!params.success) throw validationError(params.error);
+  return success(
+    c,
+    await membersService.acceptInvitation(
+      c.get("auth").userId,
+      params.data.businessId,
+      params.data.invitationId,
+    ),
+  );
+});
 membersRoutes.get("/invitations", async (c) =>
   success(
     c,

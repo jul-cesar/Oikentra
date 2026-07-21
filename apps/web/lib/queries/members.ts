@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  acceptInvitation,
   createInvitation,
   getInvitations,
+  getMyInvitations,
   getMembers,
   getPublicUsers,
   removeMember,
@@ -13,7 +15,10 @@ export const memberQueryKeys = {
   members: (businessId: string) => ["business-members", businessId] as const,
   invitations: (businessId: string) =>
     ["business-invitations", businessId] as const,
+  myInvitations: ["my-business-invitations"] as const,
 };
+export function useMyInvitations() { return useQuery({ queryKey: memberQueryKeys.myInvitations, queryFn: getMyInvitations }); }
+export function useAcceptInvitation() { const client = useQueryClient(); return useMutation({ mutationFn: ({ businessId, invitationId }: { businessId: string; invitationId: string }) => acceptInvitation(businessId, invitationId), onSuccess: () => { void client.invalidateQueries({ queryKey: memberQueryKeys.myInvitations }); void client.invalidateQueries({ queryKey: ["businesses"] }); } }); }
 export function useMembers(businessId: string) {
   return useQuery({
     queryKey: memberQueryKeys.members(businessId),

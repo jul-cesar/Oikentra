@@ -1,6 +1,6 @@
 {
-  "id": "36840212-2379-44b8-b8c2-efcf9e25ed6e",
-  "prevId": "0e8c8b67-354b-4239-8956-08ba94c76364",
+  "id": "9e220d39-801b-4170-a65f-5aff20bf9e64",
+  "prevId": "36840212-2379-44b8-b8c2-efcf9e25ed6e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -25,6 +25,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "target_user_id": {
+          "name": "target_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "identifier": {
           "name": "identifier",

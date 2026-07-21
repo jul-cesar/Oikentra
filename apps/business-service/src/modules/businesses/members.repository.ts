@@ -23,10 +23,16 @@ export type MemberRepository = {
   deactivate(id: string): Promise<BusinessMember | null>;
   createInvitation(input: NewBusinessInvitation): Promise<BusinessInvitation>;
   listInvitations(businessId: string): Promise<BusinessInvitation[]>;
+  listInvitationsByTargetUser(userId: string): Promise<BusinessInvitation[]>;
   revokeInvitation(
     id: string,
     businessId: string,
   ): Promise<BusinessInvitation | null>;
+  acceptInvitation(
+    id: string,
+    businessId: string,
+    userId: string,
+  ): Promise<{ invitation: BusinessInvitation; member: BusinessMember } | null>;
 };
 
 export const memberRepository: MemberRepository = {
@@ -108,6 +114,13 @@ export const memberRepository: MemberRepository = {
       .where(eq(businessInvitations.businessId, businessId))
       .orderBy(asc(businessInvitations.createdAt));
   },
+  async listInvitationsByTargetUser(userId) {
+    return getDb()
+      .select()
+      .from(businessInvitations)
+      .where(eq(businessInvitations.targetUserId, userId))
+      .orderBy(asc(businessInvitations.createdAt));
+  },
   async revokeInvitation(id, businessId) {
     const [invitation] = await getDb()
       .update(businessInvitations)
@@ -121,5 +134,50 @@ export const memberRepository: MemberRepository = {
       )
       .returning();
     return invitation ?? null;
+  },
+  async acceptInvitation(id, businessId, userId) {
+    return getDb().transaction(async (tx) => {
+      const [invitation] = await tx
+        .select()
+        .from(businessInvitations)
+        .where(
+          and(
+            eq(businessInvitations.id, id),
+            eq(businessInvitations.businessId, businessId),
+            eq(businessInvitations.targetUserId, userId),
+            eq(businessInvitations.status, "PENDING"),
+          ),
+        )
+        .limit(1);
+      if (!invitation || invitation.expiresAt < new Date()) return null;
+      const now = new Date();
+      const [member] = await tx
+        .insert(businessMembers)
+        .values({
+          id: crypto.randomUUID(),
+          businessId: invitation.businessId,
+          userId,
+          role: invitation.role,
+          status: "ACTIVE",
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: [businessMembers.businessId, businessMembers.userId],
+          set: { role: invitation.role, status: "ACTIVE", updatedAt: now },
+        })
+        .returning();
+      const [accepted] = await tx
+        .update(businessInvitations)
+        .set({ status: "ACCEPTED", updatedAt: now })
+        .where(
+          and(
+            eq(businessInvitations.id, id),
+            eq(businessInvitations.status, "PENDING"),
+          ),
+        )
+        .returning();
+      return accepted ? { invitation: accepted, member } : null;
+    });
   },
 };
