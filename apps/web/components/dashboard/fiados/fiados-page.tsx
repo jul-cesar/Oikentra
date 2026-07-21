@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Search01Icon,
   UserAdd01Icon,
@@ -187,10 +188,10 @@ export function FiadosPage({ businessId }: { businessId: string }) {
               />
               <h3 className="mt-3 font-medium">Aún no tienes clientes</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Crea el primero al registrar un fiado.
+Crea primero un cliente desde la sección Clientes.
               </p>
-              <Button className="mt-4" onClick={() => newCredit()}>
-                Crear cliente y fiado
+              <Button className="mt-4" render={<Link href={`/dashboard/${businessId}/clientes`} />}>
+                Ir a Clientes
               </Button>
             </div>
           ) : !filtered.length ? (

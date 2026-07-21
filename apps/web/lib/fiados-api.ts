@@ -85,6 +85,23 @@ export function createCustomer(
   });
 }
 
+export function updateCustomer(
+  businessId: string,
+  customerId: string,
+  input: { name?: string; phone?: string | null; notes?: string | null },
+) {
+  return request<Customer>(`${base(businessId)}/customers/${encodeURIComponent(customerId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteCustomer(businessId: string, customerId: string) {
+  return request<Customer>(`${base(businessId)}/customers/${encodeURIComponent(customerId)}/delete`, {
+    method: "POST",
+  });
+}
+
 export function getCustomer(businessId: string, customerId: string) {
   return request<Customer>(
     `${base(businessId)}/customers/${encodeURIComponent(customerId)}`,

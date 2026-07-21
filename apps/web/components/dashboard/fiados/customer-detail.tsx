@@ -29,6 +29,28 @@ const age = (date: string) =>
     ),
   );
 
+function PaymentHistory({ credit }: { credit: Credit }) {
+  if (!credit.payments.length) return null;
+  return (
+    <details className="mt-3 rounded-md bg-muted/40 px-3 py-2 text-sm">
+      <summary className="cursor-pointer font-medium">
+        Ver {credit.payments.length === 1 ? "abono" : "abonos"} ({credit.payments.length})
+      </summary>
+      <div className="mt-2 space-y-2 border-t pt-2">
+        {credit.payments.map((payment) => (
+          <div key={payment.id} className="flex items-start justify-between gap-3 text-xs">
+            <div>
+              <p>{payment.paymentDate}{payment.note ? ` · ${payment.note}` : ""}</p>
+              <p className="text-muted-foreground">Abono registrado</p>
+            </div>
+            <span className="font-medium">{money(payment.amount)}</span>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export function CustomerDetail({
   businessId,
   customer,
@@ -133,6 +155,7 @@ export function CustomerDetail({
                           Original {money(credit.originalAmount)} · Abonado{" "}
                           {money(credit.paidAmount)}
                         </p>
+                        <PaymentHistory credit={credit} />
                       </div>
                     ))}
                   </div>
@@ -147,17 +170,17 @@ export function CustomerDetail({
                 {closed.length ? (
                   <div className="space-y-2">
                     {closed.map((credit) => (
-                      <div
-                        key={credit.id}
-                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
-                      >
-                        <span>
-                          {credit.status === "PAID" ? "Pagado" : "Anulado"} ·{" "}
-                          {credit.creditDate}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {money(credit.originalAmount)}
-                        </span>
+                      <div key={credit.id} className="rounded-lg border px-3 py-2 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span>
+                            {credit.status === "PAID" ? "Pagado" : "Anulado"} ·{" "}
+                            {credit.creditDate}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {money(credit.originalAmount)}
+                          </span>
+                        </div>
+                        {credit.status === "PAID" ? <PaymentHistory credit={credit} /> : null}
                       </div>
                     ))}
                   </div>
