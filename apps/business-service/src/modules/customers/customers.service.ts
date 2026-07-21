@@ -1,6 +1,6 @@
 ﻿import type { Customer, Credit, CreditPayment } from "../../db/schema";
 import { AppError } from "../../http/errors";
-import { businessesService } from "../businesses/businesses.service";
+import { membersService, permissions } from "../businesses/members.service";
 import { customerRepository, type CustomerRepository } from "./customers.repository";
 import { creditRepository } from "../credits/credits.repository";
 import type { CustomerResponse, CreateCustomerInput, UpdateCustomerInput, CustomerHistoryResponse } from "./types/customers.types";
@@ -36,7 +36,7 @@ async function calculateCustomerDebt(
 export function createCustomersService(repository: CustomerRepository = customerRepository) {
   return {
     async create(userId: string, businessId: string, input: CreateCustomerInput) {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersCreate);
 
       const now = new Date();
       const customer = await repository.create({
@@ -55,13 +55,17 @@ export function createCustomersService(repository: CustomerRepository = customer
     },
 
     async list(userId: string, businessId: string) {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersRead);
       const records = await repository.findManyByBusiness(businessId);
-      return records.map(toCustomerResponse);
+      const debtSummaries = await creditRepository.getDebtSummariesByBusiness(businessId);
+      return records.map((customer) => ({
+        ...toCustomerResponse(customer),
+        ...(debtSummaries.get(customer.id) ?? { totalDebt: 0, activeCredits: 0, oldDebt: false }),
+      }));
     },
 
     async get(userId: string, customerId: string, businessId: string) {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersRead);
 
       const customer = await repository.findByIdAndBusiness(customerId, businessId);
       if (!customer) {
@@ -78,7 +82,7 @@ export function createCustomersService(repository: CustomerRepository = customer
     },
 
     async update(userId: string, customerId: string, businessId: string, input: UpdateCustomerInput) {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersUpdate);
 
       const customer = await repository.updateByIdAndBusiness(customerId, businessId, input);
       if (!customer) {
@@ -135,13 +139,27 @@ export function createCustomersService(repository: CustomerRepository = customer
     },
 
     async softDelete(userId: string, customerId: string, businessId: string) {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersArchive);
 
-      const customer = await repository.softDeleteByIdAndBusiness(customerId, businessId);
+      const customer = await repository.findByIdAndBusiness(customerId, businessId);
       if (!customer) {
         throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
       }
-      return toCustomerResponse(customer);
+
+      const { totalDebt } = await calculateCustomerDebt(customerId, businessId);
+      if (totalDebt > 0) {
+        throw new AppError(
+          "CUSTOMER_HAS_ACTIVE_DEBT",
+          409,
+          `The customer has an active debt of ${totalDebt}.`,
+        );
+      }
+
+      const deactivated = await repository.softDeleteByIdAndBusiness(customerId, businessId);
+      if (!deactivated) {
+        throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
+      }
+      return toCustomerResponse(deactivated);
     },
   };
 }

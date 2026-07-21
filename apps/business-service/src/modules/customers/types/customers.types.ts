@@ -16,6 +16,9 @@ export type CustomerResponse = {
   createdAt: string
   updatedAt: string
   deletedAt: string | null
+  totalDebt?: number
+  activeCredits?: number
+  oldDebt?: boolean
 }
 
 export type CustomerHistoryResponse = {

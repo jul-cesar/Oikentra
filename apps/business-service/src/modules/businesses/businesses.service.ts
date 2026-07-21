@@ -1,6 +1,7 @@
 import type { Business } from '../../db/schema'
 import { AppError } from '../../http/errors'
 import { businessRepository, type BusinessRepository } from './businesses.repository'
+import { memberRepository } from './members.repository'
 import type { BusinessResponse, CreateBusinessInput, UpdateBusinessInput } from './types/businesses.types'
 
 function toBusinessResponse(business: Business): BusinessResponse {
@@ -46,17 +47,26 @@ export function createBusinessesService(repository: BusinessRepository = busines
         updatedAt: now,
       })
 
+      if (repository === businessRepository) {
+        await memberRepository.create({ id: crypto.randomUUID(), businessId: business.id, userId: ownerUserId, role: 'OWNER', status: 'ACTIVE', createdAt: now, updatedAt: now })
+      }
+
       return toBusinessResponse(business)
     },
 
     async list(ownerUserId: string) {
-      const records = await repository.findManyByOwner(ownerUserId)
-
+      const owned = await repository.findManyByOwner(ownerUserId)
+      if (repository !== businessRepository || !repository.findById) return owned.map(toBusinessResponse)
+      const memberships = await memberRepository.listByUser(ownerUserId)
+      const memberRecords = await Promise.all(memberships.filter((member) => member.userId === ownerUserId && member.status === 'ACTIVE').map((member) => repository.findById!(member.businessId)))
+      const records = [...owned, ...memberRecords.filter((business): business is Business => Boolean(business && !owned.some((item) => item.id === business.id)))]
       return records.map(toBusinessResponse)
     },
 
     async get(ownerUserId: string, businessId: string) {
-      const business = await repository.findByIdAndOwner(businessId, ownerUserId)
+      const business = repository === businessRepository
+        ? (await memberRepository.findActiveByBusinessAndUser(businessId, ownerUserId)) && repository.findById ? await repository.findById(businessId) : null
+        : await repository.findByIdAndOwner(businessId, ownerUserId)
 
       if (!business) {
         throw new AppError('BUSINESS_NOT_FOUND', 404, 'The business was not found.')

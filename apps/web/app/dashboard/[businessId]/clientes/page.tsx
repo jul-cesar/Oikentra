@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { FiadosPage } from "@/components/dashboard/fiados/fiados-page";
+import { CustomersPage } from "@/components/dashboard/customers/customers-page";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
 import { useSession } from "@/hooks/use-session";
 import { useBusiness } from "@/lib/queries/onboarding";
@@ -11,17 +11,19 @@ import { useBusiness } from "@/lib/queries/onboarding";
 export default function Page() {
   return (
     <AuthGuard>
-      <FiadosRoute />
+      <CustomersRoute />
     </AuthGuard>
   );
 }
 
-function FiadosRoute() {
+function CustomersRoute() {
   const { user } = useSession();
   const { businessId } = useParams<{ businessId: string }>();
   const { data: business, isLoading, error } = useBusiness(businessId);
   if (isLoading || !business || !user)
-    return <OikentraLoader label="Cargando fiados" className="min-h-[60vh]" />;
+    return (
+      <OikentraLoader label="Cargando clientes" className="min-h-[60vh]" />
+    );
   if (error)
     return (
       <p className="mx-auto max-w-lg py-20 text-center text-muted-foreground">
@@ -30,7 +32,7 @@ function FiadosRoute() {
     );
   return (
     <DashboardShell business={business} user={user}>
-      <FiadosPage businessId={businessId} />
+      <CustomersPage businessId={businessId} />
     </DashboardShell>
   );
 }

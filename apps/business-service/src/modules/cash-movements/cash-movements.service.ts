@@ -1,7 +1,7 @@
 ﻿import type { CashMovement } from '../../db/schema'
 import { AppError } from '../../http/errors'
 import { cashMovementRepository, type CashMovementRepository } from './cash-movements.repository'
-import { businessesService } from '../businesses/businesses.service'
+import { membersService, permissions } from '../businesses/members.service'
 import type {
   CashMovementResponse,
   CreateCashMovementInput,
@@ -32,7 +32,7 @@ function toCashMovementResponse(movement: CashMovement): CashMovementResponse {
 export function createCashMovementsService(repository: CashMovementRepository = cashMovementRepository) {
   return {
     async createSale(userId: string, businessId: string, input: CreateCashMovementInput) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.cashCreate)
 
       const now = new Date()
       const movement = await repository.create({
@@ -54,7 +54,7 @@ export function createCashMovementsService(repository: CashMovementRepository = 
     },
 
     async createExpense(userId: string, businessId: string, input: CreateCashMovementInput) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.cashCreate)
 
       const now = new Date()
       const movement = await repository.create({
@@ -76,14 +76,14 @@ export function createCashMovementsService(repository: CashMovementRepository = 
     },
 
     async list(userId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.cashRead)
 
       const records = await repository.findManyByBusiness(businessId)
       return records.map(toCashMovementResponse)
     },
 
     async cancel(userId: string, movementId: string, businessId: string, input: CancelCashMovementInput) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.cashCancel)
 
       const movement = await repository.cancelByIdAndBusiness(movementId, businessId, input)
 

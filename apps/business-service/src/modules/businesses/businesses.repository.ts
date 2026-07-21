@@ -7,6 +7,7 @@ import type { UpdateBusinessInput } from './types/businesses.types'
 export type BusinessRepository = {
   create(input: NewBusiness): Promise<Business>
   findManyByOwner(ownerUserId: string): Promise<Business[]>
+  findById?(businessId: string): Promise<Business | null>
   findByIdAndOwner(businessId: string, ownerUserId: string): Promise<Business | null>
   findByNameAndOwner(name: string, ownerUserId: string, excludeId?: string): Promise<Business | null>
   updateByIdAndOwner(
@@ -32,6 +33,11 @@ export const businessRepository: BusinessRepository = {
       .from(businesses)
       .where(and(eq(businesses.ownerUserId, ownerUserId), isNull(businesses.deletedAt)))
       .orderBy(desc(businesses.createdAt))
+  },
+
+  async findById(businessId) {
+    const [business] = await getDb().select().from(businesses).where(and(eq(businesses.id, businessId), isNull(businesses.deletedAt))).limit(1)
+    return business ?? null
   },
 
   async findByIdAndOwner(businessId, ownerUserId) {

@@ -1,0 +1,1 @@
+ALTER TABLE "business_invitations" ADD COLUMN "target_user_id" text;

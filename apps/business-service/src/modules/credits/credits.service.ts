@@ -1,7 +1,7 @@
 ﻿import type { CreditStatus } from '../../db/schema'
 import { AppError } from '../../http/errors'
 import { creditRepository, type CreditRepository } from './credits.repository'
-import { businessesService } from '../businesses/businesses.service'
+import { membersService, permissions } from '../businesses/members.service'
 import { customerRepository } from '../customers/customers.repository'
 import {
   type CreditResponse,
@@ -39,7 +39,7 @@ function toPaymentResponse(payment: {
 export function createCreditsService(repository: CreditRepository = creditRepository) {
   return {
     async create(userId: string, businessId: string, input: CreateCreditInput) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.creditsCreate)
 
       const customer = await customerRepository.findByIdAndBusiness(input.customerId, businessId)
       if (!customer) {
@@ -64,12 +64,17 @@ export function createCreditsService(repository: CreditRepository = creditReposi
       return toCreditResponse(credit, [], 0)
     },
 
+    async summary(userId: string, businessId: string) {
+      await membersService.requirePermission(userId, businessId, permissions.creditsRead)
+      return repository.getBusinessDebtSummary(businessId)
+    },
+
     async list(
       userId: string,
       businessId: string,
       filters?: { customerId?: string; status?: CreditStatus; from?: string; to?: string; limit?: number; cursor?: string },
     ) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.creditsRead)
 
       const creditRecords = await repository.findCreditsByBusiness(businessId, filters)
 
@@ -83,7 +88,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
     },
 
     async getById(userId: string, creditId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.creditsRead)
 
       const credit = await repository.findCreditById(creditId)
       if (!credit) {
@@ -104,7 +109,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
       creditId: string,
       input: CreateCreditPaymentInput,
     ) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.paymentsCreate)
 
       const credit = await repository.findCreditById(creditId)
       if (!credit) {
@@ -125,8 +130,10 @@ export function createCreditsService(repository: CreditRepository = creditReposi
       }
 
       const now = new Date()
+      const paymentId = crypto.randomUUID()
       await repository.createPayment(
         {
+          id: paymentId,
           userId,
           businessId,
           creditId,
@@ -147,8 +154,8 @@ export function createCreditsService(repository: CreditRepository = creditReposi
           businessDate: input.paymentDate,
           occurredAt: now,
           status: 'ACTIVE',
-          sourceType: 'CREDIT',
-          sourceId: creditId,
+          sourceType: 'CREDIT_PAYMENT',
+          sourceId: paymentId,
           version: 1,
           createdAt: now,
           updatedAt: now,
@@ -166,7 +173,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
     },
 
     async listPayments(userId: string, creditId: string, businessId: string) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.creditsRead)
 
       const credit = await repository.findCreditById(creditId)
       if (!credit) {
@@ -187,7 +194,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
       businessId: string,
       input: CancelPaymentInput,
     ) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.paymentsCancel)
 
       const credit = await repository.findCreditById(creditId)
       if (!credit) {
@@ -218,7 +225,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
     },
 
     async cancel(userId: string, creditId: string, businessId: string, input: CancelCreditInput) {
-      await businessesService.get(userId, businessId)
+      await membersService.requirePermission(userId, businessId, permissions.creditsCancel)
 
       const credit = await repository.findCreditById(creditId)
       if (!credit) {
