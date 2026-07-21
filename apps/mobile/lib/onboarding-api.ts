@@ -18,7 +18,7 @@ export type Business = {
   status?: string;
 };
 
-const businessBaseUrl = (
+export const businessBaseUrl = (
   process.env.EXPO_PUBLIC_BUSINESS_BASE_URL?.trim() ||
   authBaseUrl.replace(/\/api\/auth$/, '/api/business')
 ).replace(/\/$/, '');

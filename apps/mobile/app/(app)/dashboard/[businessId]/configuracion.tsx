@@ -1,4 +1,5 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-shell';
+import { CollaboratorsSettings } from '@/components/dashboard/collaborators-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -167,6 +168,7 @@ export default function BusinessSettingsScreen() {
           </Button>
         </CardContent>
       </Card>
+      <CollaboratorsSettings businessId={business.id} />
     </View>
   );
 }
