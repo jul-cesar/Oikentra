@@ -43,9 +43,11 @@ export type CreditRepository = {
     reason: string,
   ): Promise<{ payment: CreditPayment | null; cashMovement: CashMovement | null }>
   getActiveCreditsByCustomer(customerId: string, businessId: string): Promise<Credit[]>
+  getDebtSummariesByBusiness(businessId: string): Promise<Map<string, { totalDebt: number; activeCredits: number; oldDebt: boolean }>>
+  getBusinessDebtSummary(businessId: string): Promise<{ totalDebt: number; customersWithDebt: number; oldDebts: number }>
 }
 
-type NewCreditPaymentInput = Omit<NewCreditPayment, 'id' | 'createdAt' | 'updatedAt' | 'cashMovementId'>;
+type NewCreditPaymentInput = Omit<NewCreditPayment, 'createdAt' | 'updatedAt' | 'cashMovementId'>;
 
 export const creditRepository: CreditRepository = {
   async createCredit(input) {
@@ -65,7 +67,6 @@ export const creditRepository: CreditRepository = {
         .insert(creditPayments)
         .values({
           ...paymentInput,
-          id: crypto.randomUUID(),
           cashMovementId: cashMovement.id,
           createdAt: now,
           updatedAt: now,
@@ -236,5 +237,54 @@ export const creditRepository: CreditRepository = {
           eq(credits.status, 'PENDING'),
         ),
       )
+  },
+
+  async getDebtSummariesByBusiness(businessId) {
+    const db = getDb()
+    const pending = await db.select().from(credits).where(and(eq(credits.businessId, businessId), eq(credits.status, 'PENDING')))
+    const result = new Map<string, { totalDebt: number; activeCredits: number; oldDebt: boolean }>()
+    if (!pending.length) return result
+
+    const payments = await db
+      .select({ creditId: creditPayments.creditId, amount: creditPayments.amount })
+      .from(creditPayments)
+      .where(and(inArray(creditPayments.creditId, pending.map((credit) => credit.id)), eq(creditPayments.status, 'ACTIVE')))
+    const paid = new Map<string, number>()
+    for (const payment of payments) paid.set(payment.creditId, (paid.get(payment.creditId) ?? 0) + payment.amount)
+    for (const credit of pending) {
+      const remaining = Math.max(0, credit.originalAmount - (paid.get(credit.id) ?? 0))
+      const current = result.get(credit.customerId) ?? { totalDebt: 0, activeCredits: 0, oldDebt: false }
+      current.totalDebt += remaining
+      if (remaining > 0) current.activeCredits += 1
+      const age = Math.floor((Date.now() - new Date(`${credit.creditDate}T00:00:00Z`).getTime()) / 86400000)
+      if (remaining > 0 && age > 15) current.oldDebt = true
+      result.set(credit.customerId, current)
+    }
+    return result
+  },
+
+  async getBusinessDebtSummary(businessId) {
+    const db = getDb()
+    const pending = await db.select().from(credits).where(and(eq(credits.businessId, businessId), eq(credits.status, 'PENDING')))
+    if (!pending.length) return { totalDebt: 0, customersWithDebt: 0, oldDebts: 0 }
+    const payments = await db
+      .select({ creditId: creditPayments.creditId, amount: creditPayments.amount })
+      .from(creditPayments)
+      .where(and(inArray(creditPayments.creditId, pending.map((credit) => credit.id)), eq(creditPayments.status, 'ACTIVE')))
+    const paid = new Map<string, number>()
+    for (const payment of payments) paid.set(payment.creditId, (paid.get(payment.creditId) ?? 0) + payment.amount)
+    const customers = new Set<string>()
+    let totalDebt = 0
+    let oldDebts = 0
+    const today = new Date()
+    for (const credit of pending) {
+      const remaining = Math.max(0, credit.originalAmount - (paid.get(credit.id) ?? 0))
+      if (!remaining) continue
+      totalDebt += remaining
+      customers.add(credit.customerId)
+      const age = Math.floor((today.getTime() - new Date(`${credit.creditDate}T00:00:00Z`).getTime()) / 86400000)
+      if (age > 15) oldDebts += 1
+    }
+    return { totalDebt, customersWithDebt: customers.size, oldDebts }
   },
 }

@@ -6,6 +6,7 @@ import { AppError } from './http/errors'
 import type { AppBindings } from './http/request-context'
 import { success } from './http/response'
 import { businessesRoutes } from './modules/businesses/businesses.routes'
+import { membersRoutes } from './modules/businesses/members.routes'
 import { customersRoutes } from './modules/customers/customers.routes'
 import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.routes'
 import { creditsRoutes } from './modules/credits/credits.routes'
@@ -30,6 +31,7 @@ app.get('/api/business/health/ready', async (c) => {
 })
 
 app.route('/api/business/businesses', businessesRoutes)
+app.route('/api/business/businesses/:businessId/members', membersRoutes)
 app.route('/api/business/businesses/:businessId/customers', customersRoutes)
 app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRoutes)
 app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
