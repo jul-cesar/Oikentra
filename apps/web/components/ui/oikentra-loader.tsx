@@ -11,7 +11,7 @@ const logoSize = { sm: "sm", md: "md", lg: "lg" } as const
 
 export function OikentraLoader({ label = "Preparando tu espacio", className, size = "md" }: OikentraLoaderProps) {
   return (
-    <div className={cn("flex min-h-48 flex-col items-center justify-center gap-5 text-center", className)} role="status" aria-live="polite">
+    <div className={cn(className, "fixed inset-0 z-50 flex min-h-svh w-full flex-col items-center justify-center gap-5 bg-background/80 text-center backdrop-blur-sm")} role="status" aria-live="polite">
       <div className="relative grid place-items-center">
         <span className="absolute size-20 animate-[spin_4s_linear_infinite] rounded-full border border-primary/15 border-t-primary/80" aria-hidden="true" />
         <span className="absolute size-14 animate-[spin_2.4s_linear_infinite_reverse] rounded-full border border-primary/10 border-b-primary/50" aria-hidden="true" />

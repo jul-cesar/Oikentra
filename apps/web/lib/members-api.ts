@@ -22,6 +22,8 @@ export type PublicUser = {
 export type Invitation = {
   id: string;
   businessId: string;
+  businessName: string | null;
+  invitedByUserId: string;
   identifier: string;
   identifierType: "EMAIL" | "PHONE";
   role: "MANAGER" | "OPERATOR";

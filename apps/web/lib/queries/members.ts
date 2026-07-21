@@ -9,6 +9,7 @@ import {
   removeMember,
   revokeInvitation,
   updateMemberRole,
+  type Member,
 } from "@/lib/members-api";
 
 export const memberQueryKeys = {
@@ -77,13 +78,23 @@ export function useUpdateMemberRole(businessId: string) {
       memberId: string;
       role: "MANAGER" | "OPERATOR";
     }) => updateMemberRole(businessId, memberId, role),
-    onSuccess: () => invalidate(client, businessId),
+    onSuccess: (updated) => {
+      client.setQueryData<Member[]>(memberQueryKeys.members(businessId), (current) =>
+        current?.map((member) => member.id === updated.id ? updated : member),
+      );
+      invalidate(client, businessId);
+    },
   });
 }
 export function useRemoveMember(businessId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (memberId: string) => removeMember(businessId, memberId),
-    onSuccess: () => invalidate(client, businessId),
+    onSuccess: (removed) => {
+      client.setQueryData<Member[]>(memberQueryKeys.members(businessId), (current) =>
+        current?.filter((member) => member.id !== removed.id),
+      );
+      invalidate(client, businessId);
+    },
   });
 }

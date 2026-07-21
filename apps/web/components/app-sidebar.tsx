@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
+  UserGroupIcon,
   Settings01Icon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons";
@@ -39,6 +40,7 @@ export function AppSidebar({
   const base = `/dashboard/${business.id}`;
   const items = [
     { title: "Resumen", url: base, icon: DashboardSquare01Icon },
+    { title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
     { title: "Fiados", url: `${base}/fiados`, icon: Wallet01Icon },
   ];
   return (

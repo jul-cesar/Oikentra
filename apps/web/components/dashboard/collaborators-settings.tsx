@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import {
 } from "@/lib/validation/members-schemas";
 
 export function CollaboratorsSettings({ businessId }: { businessId: string }) {
+  const [message, setMessage] = useState<string | null>(null);
   const members = useMembers(businessId);
   const memberIds = (members.data ?? []).map((member) => member.userId);
   const profiles = usePublicUsers(memberIds);
@@ -57,6 +59,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
       }
       await create.mutateAsync({ ...values, targetUserId: matches[0].id });
       form.reset();
+      setMessage("Invitación creada correctamente.");
     } catch (cause) {
       form.setError("root.server", {
         message:
@@ -76,6 +79,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {message ? <p className="text-sm text-primary" role="status">{message}</p> : null}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(submit)}
@@ -156,12 +160,12 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
                       <select
                         aria-label={`Rol de ${member.userId}`}
                         value={member.role}
-                        onChange={(event) =>
+                        onChange={(event) => {
                           void updateRole.mutateAsync({
                             memberId: member.id,
                             role: event.target.value as "MANAGER" | "OPERATOR",
-                          })
-                        }
+                          }).then(() => setMessage("Rol del miembro actualizado correctamente."));
+                        }}
                         className="h-8 rounded-md border bg-background px-2 text-xs"
                       >
                         <option value="OPERATOR">Operador</option>
@@ -170,7 +174,9 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => void remove.mutateAsync(member.id)}
+                        onClick={() => {
+                          void remove.mutateAsync(member.id).then(() => setMessage("Miembro retirado correctamente."));
+                        }}
                       >
                         Retirar
                       </Button>

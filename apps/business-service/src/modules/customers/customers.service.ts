@@ -94,11 +94,25 @@ export function createCustomersService(repository: CustomerRepository = customer
     async softDelete(userId: string, customerId: string, businessId: string) {
       await membersService.requirePermission(userId, businessId, permissions.customersArchive);
 
-      const customer = await repository.softDeleteByIdAndBusiness(customerId, businessId);
+      const customer = await repository.findByIdAndBusiness(customerId, businessId);
       if (!customer) {
         throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
       }
-      return toCustomerResponse(customer);
+
+      const { totalDebt } = await calculateCustomerDebt(customerId, businessId);
+      if (totalDebt > 0) {
+        throw new AppError(
+          "CUSTOMER_HAS_ACTIVE_DEBT",
+          409,
+          `The customer has an active debt of ${totalDebt}.`,
+        );
+      }
+
+      const deactivated = await repository.softDeleteByIdAndBusiness(customerId, businessId);
+      if (!deactivated) {
+        throw new AppError("CUSTOMER_NOT_FOUND", 404, "The customer was not found.");
+      }
+      return toCustomerResponse(deactivated);
     },
   };
 }

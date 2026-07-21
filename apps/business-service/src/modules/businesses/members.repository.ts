@@ -69,7 +69,12 @@ export const memberRepository: MemberRepository = {
     return getDb()
       .select()
       .from(businessMembers)
-      .where(eq(businessMembers.businessId, businessId))
+      .where(
+        and(
+          eq(businessMembers.businessId, businessId),
+          eq(businessMembers.status, "ACTIVE"),
+        ),
+      )
       .orderBy(asc(businessMembers.createdAt));
   },
   async listByUser(userId) {

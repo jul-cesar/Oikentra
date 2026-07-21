@@ -10,6 +10,8 @@ import {
   getCredits,
   getCustomer,
   getCustomers,
+  updateCustomer,
+  deleteCustomer,
   getPayments,
   type Credit,
 } from "@/lib/fiados-api";
@@ -89,6 +91,20 @@ export function useCreateCustomer(businessId: string) {
   return useMutation({
     mutationFn: (input: Parameters<typeof createCustomer>[1]) =>
       createCustomer(businessId, input),
+    onSuccess: () => invalidateAll(queryClient, businessId),
+  });
+}
+export function useUpdateCustomer(businessId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ customerId, input }: { customerId: string; input: Parameters<typeof updateCustomer>[2] }) => updateCustomer(businessId, customerId, input),
+    onSuccess: () => invalidateAll(queryClient, businessId),
+  });
+}
+export function useDeleteCustomer(businessId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (customerId: string) => deleteCustomer(businessId, customerId),
     onSuccess: () => invalidateAll(queryClient, businessId),
   });
 }

@@ -1,6 +1,7 @@
 import { AppError } from "../../http/errors";
 import { memberRepository, type MemberRepository } from "./members.repository";
 import type { InvitationIdentifierType, MemberRole } from "../../db/schema";
+import { businessRepository } from "./businesses.repository";
 
 export const permissions = {
   customersRead: "customers.read",
@@ -124,12 +125,20 @@ export function createMembersService(
         businessId,
         permissions.membersManage,
       );
-      return (await repository.listInvitations(businessId)).map(
-        toInvitationResponse,
+      return (await repository.listInvitations(businessId)).map((invitation) =>
+        toInvitationResponse(invitation),
       );
     },
     async listMyInvitations(userId: string) {
-      return (await repository.listInvitationsByTargetUser(userId)).filter((invitation) => invitation.status === "PENDING" && invitation.expiresAt > new Date()).map(toInvitationResponse);
+      const invitations = (await repository.listInvitationsByTargetUser(userId)).filter(
+        (invitation) => invitation.status === "PENDING" && invitation.expiresAt > new Date(),
+      );
+      return Promise.all(
+        invitations.map(async (invitation) => {
+          const business = await businessRepository.findById?.(invitation.businessId);
+          return toInvitationResponse(invitation, business?.name ?? null);
+        }),
+      );
     },
     async acceptInvitation(userId: string, businessId: string, invitationId: string) {
       const accepted = await repository.acceptInvitation(invitationId, businessId, userId);
@@ -261,10 +270,13 @@ function toInvitationResponse(invitation: {
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
-}) {
+  invitedByUserId: string;
+}, businessName: string | null = null) {
   return {
     id: invitation.id,
     businessId: invitation.businessId,
+    businessName,
+    invitedByUserId: invitation.invitedByUserId,
     identifier: invitation.identifier,
     identifierType: invitation.identifierType,
     role: invitation.role,
