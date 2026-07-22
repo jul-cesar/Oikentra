@@ -97,7 +97,10 @@ export default function BusinessSettingsScreen() {
               name="businessType"
               render={({ field: { onChange, value } }) => (
                 <Select
-                  value={{ value, label: value }}
+                  value={{
+                    value,
+                    label: BUSINESS_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? value,
+                  }}
                   onValueChange={(option) => onChange(option?.value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un tipo" />

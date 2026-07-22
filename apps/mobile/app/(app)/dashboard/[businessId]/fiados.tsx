@@ -8,8 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { useBusinessContext } from '@/app/(app)/dashboard/[businessId]/_layout';
 import {
@@ -43,6 +45,8 @@ export default function FiadosScreen() {
   const [selectedCredit, setSelectedCredit] = React.useState<Credit | null>(null);
   const [amount, setAmount] = React.useState('');
   const [description, setDescription] = React.useState('');
+  const [creditDate, setCreditDate] = React.useState(new Date());
+  const [paymentDate, setPaymentDate] = React.useState(new Date());
   const list = (customers.data ?? [])
     .filter((c) => c.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
     .filter(
@@ -57,6 +61,7 @@ export default function FiadosScreen() {
     setSelected(c ?? null);
     setAmount('');
     setDescription('');
+    setCreditDate(new Date());
     setCreditOpen(true);
   }
   async function saveCredit() {
@@ -65,7 +70,7 @@ export default function FiadosScreen() {
       customerId: selected.id,
       originalAmount: Number(amount),
       description: description || undefined,
-      creditDate: new Date().toISOString(),
+      creditDate: creditDate.toISOString(),
     });
     setCreditOpen(false);
   }
@@ -77,13 +82,14 @@ export default function FiadosScreen() {
     setSelected(c);
     setSelectedCredit(credit);
     setAmount(String(credit.remainingAmount));
+    setPaymentDate(new Date());
     setPaymentOpen(true);
   }
   async function savePayment() {
     if (!selectedCredit || Number(amount) <= 0) return;
     await pay.mutateAsync({
       creditId: selectedCredit.id,
-      input: { amount: Number(amount), paymentDate: new Date().toISOString() },
+      input: { amount: Number(amount), paymentDate: paymentDate.toISOString() },
     });
     setPaymentOpen(false);
   }
@@ -170,17 +176,23 @@ export default function FiadosScreen() {
           </DialogHeader>
           <View className="gap-4">
             <Label>Cliente</Label>
-            <View className="flex-row flex-wrap gap-2">
-              {(customers.data ?? []).map((c) => (
-                <Button
-                  key={c.id}
-                  size="sm"
-                  variant={selected?.id === c.id ? 'default' : 'outline'}
-                  onPress={() => setSelected(c)}>
-                  <Text>{c.name}</Text>
-                </Button>
-              ))}
-            </View>
+            <Select
+              value={selected ? { value: selected.id, label: selected.name } : undefined}
+              onValueChange={(option) => {
+                const customer = (customers.data ?? []).find((item) => item.id === option?.value);
+                setSelected(customer ?? null);
+              }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona un cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                {(customers.data ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id} label={c.name} />
+                ))}
+              </SelectContent>
+            </Select>
+            <Label>Fecha del fiado</Label>
+            <DatePicker value={creditDate} onChange={setCreditDate} />
             <Label>Monto</Label>
             <Input value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0" />
             <Label>Descripción</Label>
@@ -201,6 +213,8 @@ export default function FiadosScreen() {
           <Text className="text-muted-foreground">
             Saldo pendiente: {selectedCredit ? money(selectedCredit.remainingAmount) : ''}
           </Text>
+          <Label>Fecha del abono</Label>
+          <DatePicker value={paymentDate} onChange={setPaymentDate} />
           <Label>Monto del abono</Label>
           <Input value={amount} onChangeText={setAmount} keyboardType="numeric" />
           <DialogFooter>
