@@ -21,4 +21,27 @@ export type CustomerResponse = {
   oldDebt?: boolean
 }
 
+export type CustomerHistoryResponse = {
+  customerId: string
+  totalCredits: number
+  totalDebt: number
+  totalPaid: number
+  credits: {
+    id: string
+    originalAmount: number
+    paidAmount: number
+    remainingAmount: number
+    description: string | null
+    creditDate: string
+    status: string
+    payments: {
+      id: string
+      amount: number
+      paymentDate: string
+      note: string | null
+      status: string
+    }[]
+  }[]
+}
+
 export type CustomerRecord = Customer
