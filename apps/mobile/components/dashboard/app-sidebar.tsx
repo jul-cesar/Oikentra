@@ -30,6 +30,7 @@ import {
   Moon,
   Settings,
   Store,
+  Users,
   Sun,
   SunMoon,
   User,
@@ -96,6 +97,7 @@ function SidebarContent({
 
   const navItems = [
     { label: 'Resumen', href: base, icon: LayoutDashboard },
+    { label: 'Clientes', href: `${base}/clientes`, icon: Users },
     { label: 'Fiados', href: `${base}/fiados`, icon: Wallet },
     { label: 'Configurar negocio', href: `${base}/configuracion`, icon: Settings },
   ];
