@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   Settings01Icon,
   Wallet01Icon,
+  Money01Icon,
 } from "@hugeicons/core-free-icons";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -40,6 +41,7 @@ export function AppSidebar({
   const base = `/dashboard/${business.id}`;
   const items = [
     { title: "Resumen", url: base, icon: DashboardSquare01Icon },
+    { title: "Movimientos", url: `${base}/ventas`, icon: Money01Icon },
     { title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
     { title: "Fiados", url: `${base}/fiados`, icon: Wallet01Icon },
   ];

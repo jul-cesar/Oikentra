@@ -6,6 +6,7 @@
     { "idx": 1, "version": "7", "when": 1784576042649, "tag": "0001_medical_strong_guy", "breakpoints": true },
     { "idx": 2, "version": "7", "when": 1784592359205, "tag": "0003_salty_captain_america", "breakpoints": true },
     { "idx": 3, "version": "7", "when": 1784592787991, "tag": "0004_business_invitations", "breakpoints": true },
-    { "idx": 4, "version": "7", "when": 1784595123183, "tag": "0005_invitation_target", "breakpoints": true }
+    { "idx": 4, "version": "7", "when": 1784595123183, "tag": "0005_invitation_target", "breakpoints": true },
+    { "idx": 5, "version": "7", "when": 1784595500000, "tag": "0006_cash_movement_categories", "breakpoints": true }
   ]
 }
