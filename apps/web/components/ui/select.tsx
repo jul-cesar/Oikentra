@@ -16,13 +16,16 @@ const SelectContext = React.createContext<{
 
 function Select({ value, onValueChange, children }: { value?: string; onValueChange?: (value: string) => void; children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
-  const labelsRef = React.useRef(new Map<string, React.ReactNode>());
-  const [, forceRender] = React.useReducer((x) => x + 1, 0);
+  const [labels, setLabels] = React.useState(() => new Map<string, React.ReactNode>());
   const registerLabel = React.useCallback((itemValue: string, label: React.ReactNode) => {
-    labelsRef.current.set(itemValue, label);
-    forceRender();
+    setLabels((current) => {
+      if (current.get(itemValue) === label) return current;
+      const next = new Map(current);
+      next.set(itemValue, label);
+      return next;
+    });
   }, []);
-  const contextValue = React.useMemo(() => ({ value, onValueChange, open, setOpen, labels: labelsRef.current, registerLabel }), [value, onValueChange, open, registerLabel]);
+  const contextValue = React.useMemo(() => ({ value, onValueChange, open, setOpen, labels, registerLabel }), [value, onValueChange, open, labels, registerLabel]);
   return (
     <SelectContext.Provider value={contextValue}>
       <div data-oikentra-select className="relative">{children}</div>

@@ -46,10 +46,6 @@ function DatePicker({ value, onChange, placeholder = "Selecciona una fecha", cla
   });
 
   React.useEffect(() => {
-    if (selected) setMonth(selected);
-  }, [value]);
-
-  React.useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
     const onPointer = (event: PointerEvent) => {
@@ -66,7 +62,10 @@ function DatePicker({ value, onChange, placeholder = "Selecciona una fecha", cla
 
   return (
     <div data-oikentra-date-picker className={cn("relative", className)}>
-      <Button type="button" variant="outline" className="w-full justify-start text-left font-normal" onClick={() => setOpen((current) => !current)}>
+      <Button type="button" variant="outline" className="w-full justify-start text-left font-normal" onClick={() => {
+        if (!open) setMonth(selected ?? new Date());
+        setOpen((current) => !current);
+      }}>
         <HugeiconsIcon icon={Calendar03Icon} size={16} />
         <span className={cn(!selected && "text-muted-foreground")}>{selected ? formatter.format(selected) : placeholder}</span>
       </Button>
