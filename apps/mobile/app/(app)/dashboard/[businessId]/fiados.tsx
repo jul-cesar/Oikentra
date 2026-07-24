@@ -30,6 +30,9 @@ const money = (n: number) =>
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(n);
+const toDateOnly = (date: Date) => date.toISOString().slice(0, 10);
+const formatDateTime = (value: string) =>
+  new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 export default function FiadosScreen() {
   const business = useBusinessContext();
   const customers = useCustomers(business.id);
@@ -70,7 +73,7 @@ export default function FiadosScreen() {
       customerId: selected.id,
       originalAmount: Number(amount),
       description: description || undefined,
-      creditDate: creditDate.toISOString(),
+      creditDate: toDateOnly(creditDate),
     });
     setCreditOpen(false);
   }
@@ -89,7 +92,7 @@ export default function FiadosScreen() {
     if (!selectedCredit || Number(amount) <= 0) return;
     await pay.mutateAsync({
       creditId: selectedCredit.id,
-      input: { amount: Number(amount), paymentDate: paymentDate.toISOString() },
+      input: { amount: Number(amount), paymentDate: toDateOnly(paymentDate) },
     });
     setPaymentOpen(false);
   }
@@ -213,6 +216,11 @@ export default function FiadosScreen() {
           <Text className="text-muted-foreground">
             Saldo pendiente: {selectedCredit ? money(selectedCredit.remainingAmount) : ''}
           </Text>
+          {selectedCredit ? (
+            <Text className="text-muted-foreground text-xs">
+              Fiado creado {formatDateTime(selectedCredit.createdAt)} · por {selectedCredit.userId}
+            </Text>
+          ) : null}
           <Label>Fecha del abono</Label>
           <DatePicker value={paymentDate} onChange={setPaymentDate} />
           <Label>Monto del abono</Label>

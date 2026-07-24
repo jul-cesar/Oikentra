@@ -14,6 +14,7 @@ export type CancelPaymentInput = z.infer<typeof cancelPaymentSchema>
 
 export type CreditResponse = {
   id: string
+  userId: string
   customerId: string
   originalAmount: number
   paidAmount: number
@@ -31,6 +32,7 @@ export type CreditResponse = {
 
 export type CreditPaymentResponse = {
   id: string
+  userId: string
   creditId: string
   cashMovementId: string
   amount: number
@@ -39,5 +41,7 @@ export type CreditPaymentResponse = {
   status: string
   cancellationReason: string | null
   cancelledAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 

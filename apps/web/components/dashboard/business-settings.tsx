@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -149,14 +150,14 @@ function BusinessSettingsContent() {
                     <FormItem>
                       <FormLabel>Tipo de negocio</FormLabel>
                       <FormControl>
-                        <select
-                          {...field}
-                          className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
-                        >
-                          <option value="STORE">Tienda</option>
-                          <option value="RESTAURANT">Restaurante</option>
-                          <option value="OTHER">Otro</option>
-                        </select>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger><SelectValue placeholder="Tipo de negocio" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="STORE">Tienda</SelectItem>
+                            <SelectItem value="RESTAURANT">Restaurante</SelectItem>
+                            <SelectItem value="OTHER">Otro</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -37,7 +37,10 @@ export default function BusinessDashboardScreen() {
             <CardDescription>Elige una acción para poner tu negocio en marcha.</CardDescription>
           </CardHeader>
           <CardContent className="flex-col gap-3 sm:flex-row">
-            <Button onPress={() => router.push(`/dashboard/${business.id}/fiados` as Href)}>
+            <Button onPress={() => router.push(`/dashboard/${business.id}/ventas` as Href)}>
+              <Text>Registrar una venta</Text>
+            </Button>
+            <Button variant="outline" onPress={() => router.push(`/dashboard/${business.id}/fiados` as Href)}>
               <Text>Registrar un fiado</Text>
             </Button>
             <Button

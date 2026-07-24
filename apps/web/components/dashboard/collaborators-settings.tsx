@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -108,13 +109,13 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
                 <FormItem>
                   <FormLabel>Rol</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm"
-                    >
-                      <option value="OPERATOR">Operador</option>
-                      <option value="MANAGER">Administrador</option>
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger><SelectValue placeholder="Rol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OPERATOR">Operador</SelectItem>
+                        <SelectItem value="MANAGER">Administrador</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,20 +158,18 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
                   </div>
                   {member.role !== "OWNER" ? (
                     <div className="flex gap-2">
-                      <select
-                        aria-label={`Rol de ${member.userId}`}
-                        value={member.role}
-                        onChange={(event) => {
-                          void updateRole.mutateAsync({
-                            memberId: member.id,
-                            role: event.target.value as "MANAGER" | "OPERATOR",
-                          }).then(() => setMessage("Rol del miembro actualizado correctamente."));
-                        }}
-                        className="h-8 rounded-md border bg-background px-2 text-xs"
-                      >
-                        <option value="OPERATOR">Operador</option>
-                        <option value="MANAGER">Administrador</option>
-                      </select>
+                      <Select value={member.role} onValueChange={(value) => {
+                        void updateRole.mutateAsync({
+                          memberId: member.id,
+                          role: value as "MANAGER" | "OPERATOR",
+                        }).then(() => setMessage("Rol del miembro actualizado correctamente."));
+                      }}>
+                        <SelectTrigger aria-label={`Rol de ${member.userId}`} className="h-8 w-[138px] text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="OPERATOR">Operador</SelectItem>
+                          <SelectItem value="MANAGER">Administrador</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button
                         size="sm"
                         variant="outline"

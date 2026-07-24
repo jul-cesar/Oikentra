@@ -90,6 +90,12 @@ function BusinessDashboardContent() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button
+              onClick={() => router.push(`/dashboard/${business.id}/ventas`)}
+            >
+              Registrar una venta
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => router.push(`/dashboard/${business.id}/fiados`)}
             >
               Registrar un fiado

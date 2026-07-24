@@ -12,6 +12,7 @@ function toCashMovementResponse(movement: CashMovement): CashMovementResponse {
   return {
     id: movement.id,
     businessId: movement.businessId,
+    userId: movement.userId,
     type: movement.type,
     amount: movement.amount,
     category: movement.category,

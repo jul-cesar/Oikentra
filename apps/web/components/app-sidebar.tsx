@@ -9,7 +9,7 @@ import {
   UserGroupIcon,
   Settings01Icon,
   Wallet01Icon,
-  Money01Icon,
+  Dollar01Icon,
 } from "@hugeicons/core-free-icons";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -43,6 +43,7 @@ export function AppSidebar({
     { title: "Resumen", url: base, icon: DashboardSquare01Icon },
     { title: "Movimientos", url: `${base}/ventas`, icon: Money01Icon },
     { title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
+    { title: "Ventas", url: `${base}/ventas`, icon: Dollar01Icon },
     { title: "Fiados", url: `${base}/fiados`, icon: Wallet01Icon },
   ];
   return (
