@@ -9,6 +9,7 @@
     "dev:business": "pnpm --filter @oikentra/business-service dev",
     "dev:sync": "pnpm --filter @oikentra/sync-service dev",
     "dev:reports": "pnpm --filter @oikentra/reports-service dev",
+    "dev:employees": "pnpm --filter @oikentra/employees-service dev",
     "lint": "pnpm -r --if-present run lint",
     "test": "pnpm -r --if-present run test",
     "typecheck": "pnpm -r --if-present run typecheck"
