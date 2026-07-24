@@ -92,7 +92,7 @@ export function createCustomersService(repository: CustomerRepository = customer
     },
 
     async getHistory(userId: string, customerId: string, businessId: string): Promise<CustomerHistoryResponse> {
-      await businessesService.get(userId, businessId);
+      await membersService.requirePermission(userId, businessId, permissions.customersRead);
 
       const customer = await repository.findByIdAndBusiness(customerId, businessId);
       if (!customer) {

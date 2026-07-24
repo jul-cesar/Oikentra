@@ -16,6 +16,7 @@ export type Customer = {
 };
 export type CreditPayment = {
   id: string;
+  userId: string;
   creditId: string;
   cashMovementId: string;
   amount: number;
@@ -24,9 +25,12 @@ export type CreditPayment = {
   status: 'ACTIVE' | 'CANCELLED';
   cancellationReason: string | null;
   cancelledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 export type Credit = {
   id: string;
+  userId: string;
   customerId: string;
   originalAmount: number;
   paidAmount: number;

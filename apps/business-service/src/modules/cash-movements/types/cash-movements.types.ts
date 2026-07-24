@@ -8,6 +8,7 @@ export type CancelCashMovementInput = z.infer<typeof cancelCashMovementSchema>
 export type CashMovementResponse = {
   id: string
   businessId: string
+  userId: string
   type: CashMovementType
   amount: number
   category: string | null
