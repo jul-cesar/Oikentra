@@ -35,6 +35,7 @@ import {
   SunMoon,
   User,
   Wallet,
+  DollarSign,
 } from 'lucide-react-native';
 import { Href, usePathname, useRouter } from 'expo-router';
 import * as React from 'react';
@@ -98,6 +99,7 @@ function SidebarContent({
   const navItems = [
     { label: 'Resumen', href: base, icon: LayoutDashboard },
     { label: 'Clientes', href: `${base}/clientes`, icon: Users },
+    { label: 'Ventas', href: `${base}/ventas`, icon: DollarSign },
     { label: 'Fiados', href: `${base}/fiados`, icon: Wallet },
     { label: 'Configurar negocio', href: `${base}/configuracion`, icon: Settings },
   ];

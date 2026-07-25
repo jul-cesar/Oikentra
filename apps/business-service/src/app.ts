@@ -10,6 +10,7 @@ import { membersRoutes } from './modules/businesses/members.routes'
 import { invitationsRoutes } from './modules/businesses/invitations.routes'
 import { customersRoutes } from './modules/customers/customers.routes'
 import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.routes'
+import { cashMovementCategoriesRoutes } from './modules/cash-movements/cash-movement-categories.routes'
 import { creditsRoutes } from './modules/credits/credits.routes'
 
 export const app = new Hono<AppBindings>()
@@ -36,6 +37,7 @@ app.route('/api/business/invitations', invitationsRoutes)
 app.route('/api/business/businesses/:businessId/members', membersRoutes)
 app.route('/api/business/businesses/:businessId/customers', customersRoutes)
 app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRoutes)
+app.route('/api/business/businesses/:businessId/cash-movement-categories', cashMovementCategoriesRoutes)
 app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
 
 app.onError((error, c) => {

@@ -224,6 +224,40 @@ export const cashMovements = pgTable(
 export type CashMovement = typeof cashMovements.$inferSelect;
 export type NewCashMovement = typeof cashMovements.$inferInsert;
 
+// ─── Cash Movement Categories ────────────────────────────────
+
+export const cashMovementCategoryStatuses = ["ACTIVE", "INACTIVE"] as const;
+
+export type CashMovementCategoryStatus = (typeof cashMovementCategoryStatuses)[number];
+
+export const cashMovementCategories = pgTable(
+  "cash_movement_categories",
+  {
+    id: text("id").primaryKey(),
+    businessId: text("business_id").notNull(),
+    name: text("name").notNull(),
+    status: text("status", { enum: cashMovementCategoryStatuses })
+      .notNull()
+      .default("ACTIVE"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("cash_movement_categories_business_id_idx").on(table.businessId),
+    index("cash_movement_categories_business_status_idx").on(
+      table.businessId,
+      table.status,
+    ),
+    uniqueIndex("cash_movement_categories_business_name_unique").on(
+      table.businessId,
+      table.name,
+    ),
+  ],
+);
+
+export type CashMovementCategory = typeof cashMovementCategories.$inferSelect;
+export type NewCashMovementCategory = typeof cashMovementCategories.$inferInsert;
+
 // ─── Credits ─────────────────────────────────────────────────
 
 export const creditStatuses = ["PENDING", "PAID", "CANCELLED"] as const;

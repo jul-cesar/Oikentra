@@ -14,6 +14,7 @@ import {
 
 function toPaymentResponse(payment: {
   id: string
+  userId: string
   creditId: string
   cashMovementId: string
   amount: number
@@ -22,9 +23,12 @@ function toPaymentResponse(payment: {
   status: string
   cancellationReason: string | null
   cancelledAt: Date | null
+  createdAt: Date
+  updatedAt: Date
 }): CreditPaymentResponse {
   return {
     id: payment.id,
+    userId: payment.userId,
     creditId: payment.creditId,
     cashMovementId: payment.cashMovementId,
     amount: payment.amount,
@@ -33,6 +37,8 @@ function toPaymentResponse(payment: {
     status: payment.status,
     cancellationReason: payment.cancellationReason,
     cancelledAt: payment.cancelledAt?.toISOString() ?? null,
+    createdAt: payment.createdAt.toISOString(),
+    updatedAt: payment.updatedAt.toISOString(),
   }
 }
 
@@ -259,6 +265,7 @@ export function createCreditsService(repository: CreditRepository = creditReposi
 function toCreditResponse(
   credit: {
     id: string
+    userId: string
     customerId: string
     originalAmount: number
     description: string | null
@@ -272,6 +279,7 @@ function toCreditResponse(
   },
   payments: {
     id: string
+    userId: string
     creditId: string
     cashMovementId: string
     amount: number
@@ -280,11 +288,14 @@ function toCreditResponse(
     status: string
     cancellationReason: string | null
     cancelledAt: Date | null
+    createdAt: Date
+    updatedAt: Date
   }[],
   totalPaid: number,
 ): CreditResponse {
   return {
     id: credit.id,
+    userId: credit.userId,
     customerId: credit.customerId,
     originalAmount: credit.originalAmount,
     paidAmount: totalPaid,

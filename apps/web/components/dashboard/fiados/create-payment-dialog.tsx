@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Form,
   FormControl,
@@ -140,7 +141,7 @@ export function CreatePaymentDialog({
                   <FormItem>
                     <FormLabel>Fecha</FormLabel>
                     <FormControl>
-                      <Input {...field} type="date" />
+                      <DatePicker value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

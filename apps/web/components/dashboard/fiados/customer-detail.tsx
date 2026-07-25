@@ -21,6 +21,8 @@ const money = (value: number) =>
     currency: "COP",
     maximumFractionDigits: 0,
   }).format(value);
+const formatDateTime = (value: string) =>
+  new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 const age = (date: string) =>
   Math.max(
     0,
@@ -41,7 +43,7 @@ function PaymentHistory({ credit }: { credit: Credit }) {
           <div key={payment.id} className="flex items-start justify-between gap-3 text-xs">
             <div>
               <p>{payment.paymentDate}{payment.note ? ` · ${payment.note}` : ""}</p>
-              <p className="text-muted-foreground">Abono registrado</p>
+              <p className="text-muted-foreground">Abono registrado {formatDateTime(payment.createdAt)} · por {payment.userId}</p>
             </div>
             <span className="font-medium">{money(payment.amount)}</span>
           </div>
@@ -132,7 +134,7 @@ export function CustomerDetail({
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {credit.description || "Sin nota"} · hace{" "}
-                              {age(credit.creditDate)} días
+                              {age(credit.creditDate)} días · creado {formatDateTime(credit.createdAt)} · por {credit.userId}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -174,7 +176,7 @@ export function CustomerDetail({
                         <div className="flex items-center justify-between gap-3">
                           <span>
                             {credit.status === "PAID" ? "Pagado" : "Anulado"} ·{" "}
-                            {credit.creditDate}
+                            {credit.creditDate} · {formatDateTime(credit.createdAt)}
                           </span>
                           <span className="text-muted-foreground">
                             {money(credit.originalAmount)}
