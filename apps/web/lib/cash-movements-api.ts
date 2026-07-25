@@ -1,9 +1,9 @@
 export type CashMovementType = "SALE" | "EXPENSE" | "CREDIT_PAYMENT";
-
 export type CashMovementStatus = "ACTIVE" | "CANCELLED";
 
 export type CashMovement = {
 	id: string;
+	userId: string;
 	businessId: string;
 	type: CashMovementType;
 	amount: number;
@@ -14,6 +14,10 @@ export type CashMovement = {
 	status: CashMovementStatus;
 	sourceType: string | null;
 	sourceId: string | null;
+	sourceCustomer: {
+		id: string;
+		name: string;
+	} | null;
 	cancellationReason: string | null;
 	cancelledAt: string | null;
 	version: number;
@@ -46,7 +50,7 @@ const base = (businessId: string) =>
 	`/api/business/businesses/${encodeURIComponent(businessId)}/cash-movements`;
 
 export function getCashMovements(businessId: string) {
-	return request<CashMovement[]>(`${base(businessId)}/`);
+	return request<CashMovement[]>(base(businessId));
 }
 
 export function createSale(

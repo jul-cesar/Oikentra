@@ -1,6 +1,5 @@
 ﻿import type { Customer } from "../../db/schema";
 import { AppError } from "../../http/errors";
-import { businessesService } from "../businesses/businesses.service";
 import { membersService, permissions } from "../businesses/members.service";
 import {
 	customerRepository,
@@ -153,8 +152,16 @@ export function createCustomersService(
 			return toCustomerResponse(customer);
 		},
 
-    async getHistory(userId: string, customerId: string, businessId: string): Promise<CustomerHistoryResponse> {
-      await membersService.requirePermission(userId, businessId, permissions.customersRead);
+		async getHistory(
+			userId: string,
+			customerId: string,
+			businessId: string,
+		): Promise<CustomerHistoryResponse> {
+			await membersService.requirePermission(
+				userId,
+				businessId,
+				permissions.customersRead,
+			);
 
 			const customer = await repository.findByIdAndBusiness(
 				customerId,
@@ -182,7 +189,9 @@ export function createCustomersService(
 				);
 				const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
 				const remaining = credit.originalAmount - paidAmount;
-				if (credit.status === "PENDING") totalDebt += remaining;
+				if (credit.status === "PENDING") {
+					totalDebt += remaining;
+				}
 				totalPaid += paidAmount;
 
 				creditsData.push({
