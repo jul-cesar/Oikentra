@@ -189,7 +189,9 @@ export function createCustomersService(
 				);
 				const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
 				const remaining = credit.originalAmount - paidAmount;
-				if (credit.status === "PENDING") totalDebt += remaining;
+				if (credit.status === "PENDING") {
+					totalDebt += remaining;
+				}
 				totalPaid += paidAmount;
 
 				creditsData.push({
