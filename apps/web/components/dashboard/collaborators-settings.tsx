@@ -43,6 +43,12 @@ const invitationStatusLabel: Record<string, string> = {
 	EXPIRED: "Expirada",
 };
 
+const memberStatusLabel: Record<string, string> = {
+	ACTIVE: "Activo",
+	INVITED: "Invitado",
+	INACTIVE: "Inactivo",
+};
+
 export function CollaboratorsSettings({ businessId }: { businessId: string }) {
 	const [message, setMessage] = useState<string | null>(null);
 	const members = useMembers(businessId);
@@ -191,7 +197,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
 												return (
 													<>
 														<p className="text-xs text-muted-foreground">
-															{profile?.email ?? member.status}
+															{profile?.email ?? memberStatusLabel[member.status] ?? member.status}
 														</p>
 														{profile?.phone ? (
 															<p className="text-xs text-muted-foreground">
