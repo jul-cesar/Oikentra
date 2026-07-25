@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import {
 	cancelCashMovement,
-	createSale,
 	createExpense,
+	createSale,
 	getCashMovements,
-	type CashMovement,
 } from "@/lib/cash-movements-api";
 
 export const cashMovementQueryKeys = {
 	movements: (businessId: string) => ["cash-movements", businessId] as const,
 };
+
+export const cashMovementsQueryKeys = cashMovementQueryKeys;
 
 export function useCashMovements(businessId: string) {
 	return useQuery({
