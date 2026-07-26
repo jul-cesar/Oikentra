@@ -8,6 +8,7 @@ import {
   CashierIcon,
   ChartDecreaseIcon,
   ChartIncreaseIcon,
+  Download01Icon,
   HandCoinsIcon,
   PlusSignIcon,
   ReceiptTextIcon,
@@ -26,6 +27,7 @@ import type { CashMovement } from "@/lib/cash-movements-api";
 import { CreateSaleDialog } from "./create-sale-dialog";
 import { CreateExpenseDialog } from "./create-expense-dialog";
 import { CancelMovementDialog } from "./cancel-movement-dialog";
+import { ExportReportDialog } from "./export-report-dialog";
 
 type FilterType = "ALL" | "SALE" | "EXPENSE";
 
@@ -101,6 +103,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
   const [createSaleOpen, setCreateSaleOpen] = useState(false);
   const [createExpenseOpen, setCreateExpenseOpen] = useState(false);
   const [cancelTarget, setCancelTarget] = useState<CashMovement | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const movements = useMemo(
     () => movementsQuery.data ?? [],
@@ -200,6 +203,14 @@ export function VentasPage({ businessId }: { businessId: string }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExportOpen(true)}
+          >
+            <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
+            Exportar
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -402,6 +413,11 @@ export function VentasPage({ businessId }: { businessId: string }) {
         onOpenChange={(value) => {
           if (!value) setCancelTarget(null);
         }}
+      />
+      <ExportReportDialog
+        businessId={businessId}
+        open={exportOpen}
+        onOpenChange={setExportOpen}
       />
     </div>
   );

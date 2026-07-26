@@ -1,11 +1,17 @@
 import PdfPrinter from 'pdfmake'
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces.js'
+import path from 'path'
 
 import type { ReportDataResponse } from '../data-client'
 
+const fontsDir = path.resolve(import.meta.dir, '../../../fonts')
+
 const fonts = {
   Roboto: {
-    normal: 'node_modules/pdfmake/build/vfs_fonts.js',
+    normal: path.join(fontsDir, 'Roboto-Regular.ttf'),
+    bold: path.join(fontsDir, 'Roboto-Medium.ttf'),
+    italics: path.join(fontsDir, 'Roboto-Italic.ttf'),
+    bolditalics: path.join(fontsDir, 'Roboto-MediumItalic.ttf'),
   },
 }
 
