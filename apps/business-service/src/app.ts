@@ -14,6 +14,7 @@ import { membersRoutes } from "./modules/businesses/members.routes";
 import { invitationsRoutes } from "./modules/businesses/invitations.routes";
 import { paymentMethodsRoutes } from "./modules/businesses/payment-methods.routes";
 import { customersRoutes } from "./modules/customers/customers.routes";
+import { dashboardSummaryRoutes } from "./modules/dashboard/dashboard-summary.routes";
 import { cashMovementsRoutes } from "./modules/cash-movements/cash-movements.routes";
 import { cashMovementCategoriesRoutes } from "./modules/cash-movements/cash-movement-categories.routes";
 import { creditsRoutes } from "./modules/credits/credits.routes";
@@ -49,6 +50,10 @@ app.route(
 	paymentMethodsRoutes,
 );
 app.route("/api/business/businesses/:businessId/customers", customersRoutes);
+app.route(
+	"/api/business/businesses/:businessId/dashboard-summary",
+	dashboardSummaryRoutes,
+);
 app.route(
 	"/api/business/businesses/:businessId/cash-movements",
 	cashMovementsRoutes,
