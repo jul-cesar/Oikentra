@@ -13,6 +13,18 @@ export const cashMovementQueryKeys = {
 
 export const cashMovementsQueryKeys = cashMovementQueryKeys;
 
+function invalidateCashData(
+	queryClient: ReturnType<typeof useQueryClient>,
+	businessId: string,
+) {
+	void queryClient.invalidateQueries({
+		queryKey: cashMovementQueryKeys.movements(businessId),
+	});
+	void queryClient.invalidateQueries({
+		queryKey: ["dashboard-summary", businessId],
+	});
+}
+
 export function useCashMovements(businessId: string) {
 	return useQuery({
 		queryKey: cashMovementQueryKeys.movements(businessId),
@@ -26,11 +38,7 @@ export function useCreateSale(businessId: string) {
 	return useMutation({
 		mutationFn: (input: Parameters<typeof createSale>[1]) =>
 			createSale(businessId, input),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: cashMovementQueryKeys.movements(businessId),
-			});
-		},
+		onSuccess: () => invalidateCashData(queryClient, businessId),
 	});
 }
 
@@ -39,11 +47,7 @@ export function useCreateExpense(businessId: string) {
 	return useMutation({
 		mutationFn: (input: Parameters<typeof createExpense>[1]) =>
 			createExpense(businessId, input),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: cashMovementQueryKeys.movements(businessId),
-			});
-		},
+		onSuccess: () => invalidateCashData(queryClient, businessId),
 	});
 }
 
@@ -57,10 +61,6 @@ export function useCancelCashMovement(businessId: string) {
 			movementId: string;
 			reason: string;
 		}) => cancelCashMovement(businessId, movementId, reason),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({
-				queryKey: cashMovementQueryKeys.movements(businessId),
-			});
-		},
+		onSuccess: () => invalidateCashData(queryClient, businessId),
 	});
 }
