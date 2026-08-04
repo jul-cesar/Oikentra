@@ -11,7 +11,15 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Form,
 	FormControl,
@@ -20,8 +28,10 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/toast";
 import { useCreateSale } from "@/lib/queries/cash-movements";
 import { useCategories } from "@/lib/queries/categories";
+import { usePaymentMethods } from "@/lib/queries/payment-methods";
 import {
 	createSaleFormSchema,
 	type CreateSaleFormValues,
@@ -50,12 +60,15 @@ export function CreateSaleDialog({
 }) {
 	const mutation = useCreateSale(businessId);
 	const categoriesQuery = useCategories(businessId);
+	const paymentMethodsQuery = usePaymentMethods(businessId);
 	const categories = categoriesQuery.data ?? [];
+	const paymentMethods = paymentMethodsQuery.data ?? [];
 	const form = useForm<CreateSaleFormValues>({
 		resolver: zodResolver(createSaleFormSchema),
 		defaultValues: {
 			amount: "",
 			category: "",
+			paymentMethod: "",
 			note: "",
 			businessDate: today(),
 		},
@@ -68,16 +81,29 @@ export function CreateSaleDialog({
 				businessDate: values.businessDate,
 				occurredAt: localIsoNow(),
 				...(values.category ? { category: values.category } : {}),
+				...(values.paymentMethod
+					? { paymentMethod: values.paymentMethod }
+					: {}),
 				...(values.note ? { note: values.note } : {}),
 			});
 			form.reset();
 			onOpenChange(false);
+			toast.add({
+				type: "success",
+				title: "Venta registrada",
+				description: "La venta se agregó a los movimientos de caja.",
+			});
 		} catch (cause) {
-			form.setError("root.server", {
-				message:
-					cause instanceof Error
-						? cause.message
-						: "No pudimos registrar la venta.",
+			const message =
+				cause instanceof Error
+					? cause.message
+					: "No pudimos registrar la venta.";
+			form.setError("root.server", { message });
+			toast.add({
+				type: "error",
+				title: "No pudimos registrar la venta",
+				description: message,
+				priority: "high",
 			});
 		}
 	}
@@ -121,17 +147,43 @@ export function CreateSaleDialog({
 								<FormItem>
 									<FormLabel>Categoría</FormLabel>
 									<FormControl>
-										<select
-											{...field}
-											className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-										>
-											<option value="">Sin categoría</option>
-											{categories.map((cat) => (
-												<option key={cat.id} value={cat.name}>
-													{cat.name}
-												</option>
-											))}
-										</select>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger>
+												<SelectValue placeholder="Sin categoría" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="">Sin categoría</SelectItem>
+												{categories.map((cat) => (
+													<SelectItem key={cat.id} value={cat.name}>
+														{cat.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="paymentMethod"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Medio de pago</FormLabel>
+									<FormControl>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger>
+												<SelectValue placeholder="Selecciona el medio de pago" />
+											</SelectTrigger>
+											<SelectContent>
+												{paymentMethods.map((method) => (
+													<SelectItem key={method.id} value={method.name}>
+														{method.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -144,7 +196,7 @@ export function CreateSaleDialog({
 								<FormItem>
 									<FormLabel>Fecha</FormLabel>
 									<FormControl>
-										<Input {...field} type="date" />
+										<DatePicker value={field.value} onChange={field.onChange} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

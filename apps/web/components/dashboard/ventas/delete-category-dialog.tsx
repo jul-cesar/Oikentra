@@ -9,6 +9,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/toast";
 import { useDeactivateCategory } from "@/lib/queries/categories";
 import type { CashMovementCategory } from "@/lib/categories-api";
 
@@ -30,8 +31,21 @@ export function DeactivateCategoryDialog({
 		try {
 			await mutation.mutateAsync(category.id);
 			onOpenChange(false);
-		} catch {
-			// el error se maneja silenciosamente, la lista se refresca
+			toast.add({
+				type: "success",
+				title: "Categoría desactivada",
+				description: `${category.name} ya no aparecerá en los selectores.`,
+			});
+		} catch (cause) {
+			toast.add({
+				type: "error",
+				title: "No pudimos desactivar la categoría",
+				description:
+					cause instanceof Error
+						? cause.message
+						: "Inténtalo nuevamente en unos segundos.",
+				priority: "high",
+			});
 		}
 	}
 

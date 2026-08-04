@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/toast";
 import { useCancelCashMovement } from "@/lib/queries/cash-movements";
 import {
   cancelMovementFormSchema,
@@ -60,12 +61,22 @@ export function CancelMovementDialog({
       });
       form.reset();
       onOpenChange(false);
+      toast.add({
+        type: "success",
+        title: "Movimiento anulado",
+        description: "El movimiento dejó de afectar los saldos de caja.",
+      });
     } catch (cause) {
-      form.setError("root.server", {
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "No pudimos anular el movimiento.",
+      const message =
+        cause instanceof Error
+          ? cause.message
+          : "No pudimos anular el movimiento.";
+      form.setError("root.server", { message });
+      toast.add({
+        type: "error",
+        title: "No pudimos anular el movimiento",
+        description: message,
+        priority: "high",
       });
     }
   }
@@ -101,10 +112,7 @@ export function CancelMovementDialog({
           </div>
         ) : null}
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="reason"
@@ -140,9 +148,7 @@ export function CancelMovementDialog({
                 variant="destructive"
                 disabled={mutation.isPending}
               >
-                {mutation.isPending
-                  ? "Anulando…"
-                  : "Confirmar anulación"}
+                {mutation.isPending ? "Anulando…" : "Confirmar anulación"}
               </Button>
             </DialogFooter>
           </form>

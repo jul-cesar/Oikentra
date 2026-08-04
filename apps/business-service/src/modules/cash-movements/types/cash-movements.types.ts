@@ -19,6 +19,7 @@ export type CashMovementResponse = {
 	type: CashMovementType;
 	amount: number;
 	category: string | null;
+	paymentMethod: string | null;
 	note: string | null;
 	businessDate: string;
 	occurredAt: string;
