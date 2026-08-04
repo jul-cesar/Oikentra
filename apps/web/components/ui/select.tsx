@@ -14,21 +14,39 @@ const SelectContext = React.createContext<{
   registerLabel: (value: string, label: React.ReactNode) => void;
 } | null>(null);
 
-function Select({ value, onValueChange, children }: { value?: string; onValueChange?: (value: string) => void; children: React.ReactNode }) {
+function Select({
+  value,
+  onValueChange,
+  children,
+}: {
+  value?: string;
+  onValueChange?: (value: string) => void;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = React.useState(false);
-  const [labels, setLabels] = React.useState(() => new Map<string, React.ReactNode>());
-  const registerLabel = React.useCallback((itemValue: string, label: React.ReactNode) => {
-    setLabels((current) => {
-      if (current.get(itemValue) === label) return current;
-      const next = new Map(current);
-      next.set(itemValue, label);
-      return next;
-    });
-  }, []);
-  const contextValue = React.useMemo(() => ({ value, onValueChange, open, setOpen, labels, registerLabel }), [value, onValueChange, open, labels, registerLabel]);
+  const [labels, setLabels] = React.useState(
+    () => new Map<string, React.ReactNode>(),
+  );
+  const registerLabel = React.useCallback(
+    (itemValue: string, label: React.ReactNode) => {
+      setLabels((current) => {
+        if (current.get(itemValue) === label) return current;
+        const next = new Map(current);
+        next.set(itemValue, label);
+        return next;
+      });
+    },
+    [],
+  );
+  const contextValue = React.useMemo(
+    () => ({ value, onValueChange, open, setOpen, labels, registerLabel }),
+    [value, onValueChange, open, labels, registerLabel],
+  );
   return (
     <SelectContext.Provider value={contextValue}>
-      <div data-oikentra-select className="relative">{children}</div>
+      <div data-oikentra-select className="relative">
+        {children}
+      </div>
     </SelectContext.Provider>
   );
 }
@@ -39,7 +57,11 @@ function useSelect() {
   return ctx;
 }
 
-function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function SelectTrigger({
+  className,
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const { open, setOpen } = useSelect();
   return (
     <button
@@ -54,21 +76,39 @@ function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttrib
       {...props}
     >
       {children}
-      <HugeiconsIcon icon={ChevronDownIcon} size={16} className="shrink-0 opacity-60" />
+      <HugeiconsIcon
+        icon={ChevronDownIcon}
+        size={16}
+        className="shrink-0 opacity-60"
+      />
     </button>
   );
 }
 
 function SelectValue({ placeholder }: { placeholder?: string }) {
   const { value, labels } = useSelect();
-  return <span className={cn("truncate", !value && "text-muted-foreground")}>{value ? labels.get(value) ?? value : placeholder}</span>;
+  const label = value ? labels.get(value) : undefined;
+  return (
+    <span
+      className={cn("truncate", (!value || !label) && "text-muted-foreground")}
+    >
+      {value ? (label ?? placeholder) : placeholder}
+    </span>
+  );
 }
 
-function SelectContent({ className, children }: { className?: string; children: React.ReactNode }) {
+function SelectContent({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   const { open, setOpen } = useSelect();
   React.useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
+    const onKey = (event: KeyboardEvent) =>
+      event.key === "Escape" && setOpen(false);
     const onPointer = (event: PointerEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest("[data-oikentra-select]")) setOpen(false);
@@ -80,24 +120,51 @@ function SelectContent({ className, children }: { className?: string; children: 
       document.removeEventListener("pointerdown", onPointer);
     };
   }, [open, setOpen]);
-  if (!open) return null;
+  if (!open) return <div className="hidden">{children}</div>;
   return (
-    <div data-oikentra-select className={cn("bg-popover text-popover-foreground absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-md border p-1 shadow-md", className)} role="listbox">
+    <div
+      data-oikentra-select
+      className={cn(
+        "bg-popover text-popover-foreground absolute z-50 mt-1 max-h-72 w-full overflow-auto rounded-md border p-1 shadow-md",
+        className,
+      )}
+      role="listbox"
+    >
       {children}
     </div>
   );
 }
 
-function SelectItem({ value, children, className }: { value: string; children: React.ReactNode; className?: string }) {
-  const { value: selected, onValueChange, setOpen, registerLabel } = useSelect();
-  React.useEffect(() => registerLabel(value, children), [value, children, registerLabel]);
+function SelectItem({
+  value,
+  children,
+  className,
+}: {
+  value: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const {
+    value: selected,
+    onValueChange,
+    setOpen,
+    registerLabel,
+  } = useSelect();
+  React.useEffect(
+    () => registerLabel(value, children),
+    [value, children, registerLabel],
+  );
   const active = selected === value;
   return (
     <button
       type="button"
       role="option"
       aria-selected={active}
-      className={cn("hover:bg-accent hover:text-accent-foreground flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none", active && "bg-accent text-accent-foreground", className)}
+      className={cn(
+        "hover:bg-accent hover:text-accent-foreground flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none",
+        active && "bg-accent text-accent-foreground",
+        className,
+      )}
       onClick={() => {
         onValueChange?.(value);
         setOpen(false);

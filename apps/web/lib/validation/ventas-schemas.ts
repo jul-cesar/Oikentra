@@ -18,6 +18,10 @@ export const createSaleFormSchema = z.object({
 		.string()
 		.trim()
 		.max(80, "La categoría no puede superar 80 caracteres."),
+	paymentMethod: z
+		.string()
+		.trim()
+		.max(80, "El medio de pago no puede superar 80 caracteres."),
 	note: z.string().trim().max(500, "La nota no puede superar 500 caracteres."),
 	businessDate,
 });

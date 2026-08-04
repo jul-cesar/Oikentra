@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/toast";
 import type { Credit } from "@/lib/fiados-api";
 import { useCreatePayment } from "@/lib/queries/fiados";
 import {
@@ -55,10 +56,15 @@ export function CreatePaymentDialog({
   const amount = Number(useWatch({ control: form.control, name: "amount" }));
   async function onSubmit(values: CreatePaymentFormValues) {
     if (!credit) return;
-    if (Number(values.amount) > credit.remainingAmount)
-      return form.setError("amount", {
-        message: "El abono no puede ser mayor a lo que debe el cliente.",
+    if (Number(values.amount) > credit.remainingAmount) {
+      const message = "El abono no puede ser mayor a lo que debe el cliente.";
+      toast.add({
+        type: "warning",
+        title: "Revisa el monto",
+        description: message,
       });
+      return form.setError("amount", { message });
+    }
     try {
       await mutation.mutateAsync({
         creditId: credit.id,
@@ -70,12 +76,22 @@ export function CreatePaymentDialog({
       });
       form.reset();
       onOpenChange(false);
+      toast.add({
+        type: "success",
+        title: "Abono registrado",
+        description: "El pago se agregó a la caja y al saldo del cliente.",
+      });
     } catch (cause) {
-      form.setError("root.server", {
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "No pudimos registrar el abono.",
+      const message =
+        cause instanceof Error
+          ? cause.message
+          : "No pudimos registrar el abono.";
+      form.setError("root.server", { message });
+      toast.add({
+        type: "error",
+        title: "No pudimos registrar el abono",
+        description: message,
+        priority: "high",
       });
     }
   }
@@ -141,7 +157,10 @@ export function CreatePaymentDialog({
                   <FormItem>
                     <FormLabel>Fecha</FormLabel>
                     <FormControl>
-                      <DatePicker value={field.value} onChange={field.onChange} />
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -21,6 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { toast } from "@/components/ui/toast";
 import { useCreateCategory, useUpdateCategory } from "@/lib/queries/categories";
 import {
 	categoryFormSchema,
@@ -65,12 +66,24 @@ export function CreateCategoryDialog({
 			}
 			form.reset();
 			onOpenChange(false);
+			toast.add({
+				type: "success",
+				title: isEditing ? "Categoría actualizada" : "Categoría creada",
+				description: isEditing
+					? "El nombre de la categoría se actualizó correctamente."
+					: "La categoría ya está disponible para ventas y gastos.",
+			});
 		} catch (cause) {
-			form.setError("root.server", {
-				message:
-					cause instanceof Error
-						? cause.message
-						: "No pudimos guardar la categoría.",
+			const message =
+				cause instanceof Error
+					? cause.message
+					: "No pudimos guardar la categoría.";
+			form.setError("root.server", { message });
+			toast.add({
+				type: "error",
+				title: "No pudimos guardar la categoría",
+				description: message,
+				priority: "high",
 			});
 		}
 	}
