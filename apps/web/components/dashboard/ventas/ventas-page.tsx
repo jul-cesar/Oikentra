@@ -215,7 +215,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 		);
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+		<div className="mx-auto max-w-5xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-4 sm:py-8">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
 					<p className="text-sm font-medium text-primary">Control de caja</p>
@@ -226,7 +226,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						Ingresos, gastos y flujo de tu caja al día.
 					</p>
 				</div>
-				<div className="flex flex-wrap gap-2">
+				<div className="flex flex-wrap gap-2 sm:justify-end">
 					<Button
 						variant="outline"
 						size="sm"
@@ -327,7 +327,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 							type="button"
 							onClick={() => setTypeFilter(value)}
 							className={cn(
-								"rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+								"flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-4 sm:text-sm",
 								typeFilter === value
 									? "bg-background text-foreground shadow-sm"
 									: "text-muted-foreground hover:text-foreground",
@@ -339,7 +339,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 				</div>
 				<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
 					<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-						<SelectTrigger className="rounded-full sm:w-56">
+						<SelectTrigger className="w-full min-w-0 rounded-full sm:w-56">
 							<SelectValue placeholder="Todas las categorías" />
 						</SelectTrigger>
 						<SelectContent>
@@ -491,13 +491,13 @@ function MovementRow({
 	return (
 		<div
 			className={cn(
-				"group flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-border hover:bg-muted/40",
+				"group flex items-start gap-2 rounded-xl border border-transparent px-2 py-3 transition-colors hover:border-border hover:bg-muted/40 sm:gap-3 sm:px-3",
 				cancelled && "opacity-55",
 			)}
 		>
 			<span
 				className={cn(
-					"grid size-10 shrink-0 place-items-center rounded-full",
+					"mt-0.5 grid size-9 shrink-0 place-items-center rounded-full sm:size-10",
 					config.ring,
 				)}
 			>
@@ -505,15 +505,8 @@ function MovementRow({
 			</span>
 
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-2">
-					<p className="truncate text-sm font-medium text-foreground">
-						{config.label}
-					</p>
-					{movement.category ? (
-						<span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-							{movement.category}
-						</span>
-					) : null}
+				<div className="flex min-w-0 items-center gap-2">
+					<p className="text-sm font-medium text-foreground">{config.label}</p>
 					{movement.paymentMethod ? (
 						<span className="hidden shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary sm:inline-flex">
 							{movement.paymentMethod}
@@ -525,6 +518,11 @@ function MovementRow({
 						</span>
 					) : null}
 				</div>
+				{movement.category ? (
+					<p className="mt-1 max-w-full break-words text-xs font-medium text-muted-foreground">
+						{movement.category}
+					</p>
+				) : null}
 				<p className="mt-0.5 truncate text-xs text-muted-foreground">
 					{movement.note ? `${movement.note} · ` : ""}
 					{formatTime(movement.occurredAt)}
@@ -534,7 +532,7 @@ function MovementRow({
 			<div className="flex shrink-0 flex-col items-end gap-1">
 				<p
 					className={cn(
-						"text-base font-semibold tabular-nums",
+						"text-sm font-semibold tabular-nums sm:text-base",
 						cancelled ? "text-muted-foreground line-through" : config.amount,
 					)}
 				>
