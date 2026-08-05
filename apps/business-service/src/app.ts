@@ -5,20 +5,6 @@ import {
 	requestLoggerMiddleware,
 } from "@oikentra/http-logging";
 
-<<<<<<< HEAD
-import { checkDatabaseConnection } from './db/health'
-import { AppError } from './http/errors'
-import type { AppBindings } from './http/request-context'
-import { success } from './http/response'
-import { businessesRoutes } from './modules/businesses/businesses.routes'
-import { membersRoutes } from './modules/businesses/members.routes'
-import { invitationsRoutes } from './modules/businesses/invitations.routes'
-import { customersRoutes } from './modules/customers/customers.routes'
-import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.routes'
-import { cashMovementCategoriesRoutes } from './modules/cash-movements/cash-movement-categories.routes'
-import { creditsRoutes } from './modules/credits/credits.routes'
-import { internalReportsRoutes } from './modules/reports/internal-reports.routes'
-=======
 import { checkDatabaseConnection } from "./db/health";
 import { AppError } from "./http/errors";
 import type { AppBindings } from "./http/request-context";
@@ -32,7 +18,6 @@ import { dashboardSummaryRoutes } from "./modules/dashboard/dashboard-summary.ro
 import { cashMovementsRoutes } from "./modules/cash-movements/cash-movements.routes";
 import { cashMovementCategoriesRoutes } from "./modules/cash-movements/cash-movement-categories.routes";
 import { creditsRoutes } from "./modules/credits/credits.routes";
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
 export const app = new Hono<AppBindings>();
 
@@ -57,16 +42,6 @@ app.get("/api/business/health/ready", async (c) => {
 	return success(c, { status: "ready", service: "business-service" });
 });
 
-<<<<<<< HEAD
-app.route('/api/business/businesses', businessesRoutes)
-app.route('/api/business/invitations', invitationsRoutes)
-app.route('/api/business/businesses/:businessId/members', membersRoutes)
-app.route('/api/business/businesses/:businessId/customers', customersRoutes)
-app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRoutes)
-app.route('/api/business/businesses/:businessId/cash-movement-categories', cashMovementCategoriesRoutes)
-app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
-app.route('/internal/reports', internalReportsRoutes)
-=======
 app.route("/api/business/businesses", businessesRoutes);
 app.route("/api/business/invitations", invitationsRoutes);
 app.route("/api/business/businesses/:businessId/members", membersRoutes);
@@ -88,7 +63,6 @@ app.route(
 	cashMovementCategoriesRoutes,
 );
 app.route("/api/business/businesses/:businessId/credits", creditsRoutes);
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
 app.onError((error, c) => {
 	const requestId = c.get("requestId") ?? crypto.randomUUID();
