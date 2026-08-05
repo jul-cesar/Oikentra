@@ -3,20 +3,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
-<<<<<<< HEAD
-  ArrowDownLeft01Icon,
-  ArrowUpRight01Icon,
-  CashierIcon,
-  ChartDecreaseIcon,
-  ChartIncreaseIcon,
-  Download01Icon,
-  HandCoinsIcon,
-  PlusSignIcon,
-  ReceiptTextIcon,
-  Search01Icon,
-  Tag01Icon,
-  Wallet01Icon,
-=======
 	ArrowDownLeft01Icon,
 	ArrowUpRight01Icon,
 	CashierIcon,
@@ -28,7 +14,6 @@ import {
 	Search01Icon,
 	Tag01Icon,
 	Wallet01Icon,
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -121,15 +106,6 @@ function formatTime(iso: string) {
 }
 
 export function VentasPage({ businessId }: { businessId: string }) {
-<<<<<<< HEAD
-  const movementsQuery = useCashMovements(businessId);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<FilterType>("ALL");
-  const [createSaleOpen, setCreateSaleOpen] = useState(false);
-  const [createExpenseOpen, setCreateExpenseOpen] = useState(false);
-  const [cancelTarget, setCancelTarget] = useState<CashMovement | null>(null);
-  const [exportOpen, setExportOpen] = useState(false);
-=======
 	const movementsQuery = useCashMovements(businessId);
 	const categoriesQuery = useCategories(businessId);
 	const [search, setSearch] = useState("");
@@ -138,7 +114,6 @@ export function VentasPage({ businessId }: { businessId: string }) {
 	const [createSaleOpen, setCreateSaleOpen] = useState(false);
 	const [createExpenseOpen, setCreateExpenseOpen] = useState(false);
 	const [cancelTarget, setCancelTarget] = useState<CashMovement | null>(null);
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
 	const movements = useMemo(
 		() => movementsQuery.data ?? [],
@@ -224,57 +199,6 @@ export function VentasPage({ businessId }: { businessId: string }) {
 			<OikentraLoader label="Cargando movimientos" className="min-h-[60vh]" />
 		);
 
-<<<<<<< HEAD
-  return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-sm font-medium text-primary">Control de caja</p>
-          <h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
-            Movimientos
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ingresos, gastos y flujo de tu caja al día.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setExportOpen(true)}
-          >
-            <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
-            Exportar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            render={
-              <Link href={`/dashboard/${businessId}/ventas/categorias`} />
-            }
-          >
-            <HugeiconsIcon icon={Tag01Icon} size={16} aria-hidden="true" />
-            Categorías
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCreateExpenseOpen(true)}
-          >
-            <HugeiconsIcon
-              icon={ChartDecreaseIcon}
-              size={16}
-              aria-hidden="true"
-            />
-            Nuevo gasto
-          </Button>
-          <Button size="sm" onClick={() => setCreateSaleOpen(true)}>
-            <HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
-            Nueva venta
-          </Button>
-        </div>
-      </div>
-=======
 	if (movementsQuery.error)
 		return (
 			<div className="mx-auto max-w-lg py-20 text-center">
@@ -290,7 +214,6 @@ export function VentasPage({ businessId }: { businessId: string }) {
 				</Button>
 			</div>
 		);
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
 	return (
 		<div className="mx-auto max-w-5xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-4 sm:py-8">
@@ -448,33 +371,6 @@ export function VentasPage({ businessId }: { businessId: string }) {
 				</div>
 			</div>
 
-<<<<<<< HEAD
-      <CreateSaleDialog
-        businessId={businessId}
-        open={createSaleOpen}
-        onOpenChange={setCreateSaleOpen}
-      />
-      <CreateExpenseDialog
-        businessId={businessId}
-        open={createExpenseOpen}
-        onOpenChange={setCreateExpenseOpen}
-      />
-      <CancelMovementDialog
-        businessId={businessId}
-        movement={cancelTarget}
-        open={Boolean(cancelTarget)}
-        onOpenChange={(value) => {
-          if (!value) setCancelTarget(null);
-        }}
-      />
-      <ExportReportDialog
-        businessId={businessId}
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-      />
-    </div>
-  );
-=======
 			{!filtered.length ? (
 				<div className="rounded-2xl border border-dashed py-16 text-center">
 					<HugeiconsIcon
@@ -554,7 +450,6 @@ export function VentasPage({ businessId }: { businessId: string }) {
 			/>
 		</div>
 	);
->>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 }
 
 function StatTile({
