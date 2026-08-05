@@ -8,6 +8,7 @@ export type CashMovement = {
 	type: CashMovementType;
 	amount: number;
 	category: string | null;
+	paymentMethod: string | null;
 	note: string | null;
 	businessDate: string;
 	occurredAt: string;
@@ -58,6 +59,7 @@ export function createSale(
 	input: {
 		amount: number;
 		category?: string;
+		paymentMethod?: string;
 		note?: string;
 		businessDate: string;
 		occurredAt: string;
@@ -74,6 +76,7 @@ export function createExpense(
 	input: {
 		amount: number;
 		category?: string;
+		paymentMethod?: string;
 		note?: string;
 		businessDate: string;
 		occurredAt: string;

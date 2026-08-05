@@ -87,6 +87,9 @@ function invalidateAll(
 	void queryClient.invalidateQueries({
 		queryKey: fiadosQueryKeys.summary(businessId),
 	});
+	void queryClient.invalidateQueries({
+		queryKey: ["dashboard-summary", businessId],
+	});
 }
 
 export function useCreateCustomer(businessId: string) {

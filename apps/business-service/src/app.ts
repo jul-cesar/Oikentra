@@ -1,6 +1,11 @@
-import { Hono } from 'hono'
-import { logError, requestIdMiddleware, requestLoggerMiddleware } from '@oikentra/http-logging'
+import { Hono } from "hono";
+import {
+	logError,
+	requestIdMiddleware,
+	requestLoggerMiddleware,
+} from "@oikentra/http-logging";
 
+<<<<<<< HEAD
 import { checkDatabaseConnection } from './db/health'
 import { AppError } from './http/errors'
 import type { AppBindings } from './http/request-context'
@@ -13,26 +18,46 @@ import { cashMovementsRoutes } from './modules/cash-movements/cash-movements.rou
 import { cashMovementCategoriesRoutes } from './modules/cash-movements/cash-movement-categories.routes'
 import { creditsRoutes } from './modules/credits/credits.routes'
 import { internalReportsRoutes } from './modules/reports/internal-reports.routes'
+=======
+import { checkDatabaseConnection } from "./db/health";
+import { AppError } from "./http/errors";
+import type { AppBindings } from "./http/request-context";
+import { success } from "./http/response";
+import { businessesRoutes } from "./modules/businesses/businesses.routes";
+import { membersRoutes } from "./modules/businesses/members.routes";
+import { invitationsRoutes } from "./modules/businesses/invitations.routes";
+import { paymentMethodsRoutes } from "./modules/businesses/payment-methods.routes";
+import { customersRoutes } from "./modules/customers/customers.routes";
+import { dashboardSummaryRoutes } from "./modules/dashboard/dashboard-summary.routes";
+import { cashMovementsRoutes } from "./modules/cash-movements/cash-movements.routes";
+import { cashMovementCategoriesRoutes } from "./modules/cash-movements/cash-movement-categories.routes";
+import { creditsRoutes } from "./modules/credits/credits.routes";
+>>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
-export const app = new Hono<AppBindings>()
+export const app = new Hono<AppBindings>();
 
-app.use('*', requestIdMiddleware())
-app.use('*', requestLoggerMiddleware('business-service'))
+app.use("*", requestIdMiddleware());
+app.use("*", requestLoggerMiddleware("business-service"));
 
-app.get('/api/business/health/live', (c) => {
-  return success(c, { status: 'ok', service: 'business-service' })
-})
+app.get("/api/business/health/live", (c) => {
+	return success(c, { status: "ok", service: "business-service" });
+});
 
-app.get('/api/business/health/ready', async (c) => {
-  try {
-    await checkDatabaseConnection()
-  } catch (error) {
-    throw new AppError('DEPENDENCY_UNAVAILABLE', 503, 'The database is unavailable.')
-  }
+app.get("/api/business/health/ready", async (c) => {
+	try {
+		await checkDatabaseConnection();
+	} catch (error) {
+		throw new AppError(
+			"DEPENDENCY_UNAVAILABLE",
+			503,
+			"The database is unavailable.",
+		);
+	}
 
-  return success(c, { status: 'ready', service: 'business-service' })
-})
+	return success(c, { status: "ready", service: "business-service" });
+});
 
+<<<<<<< HEAD
 app.route('/api/business/businesses', businessesRoutes)
 app.route('/api/business/invitations', invitationsRoutes)
 app.route('/api/business/businesses/:businessId/members', membersRoutes)
@@ -41,33 +66,56 @@ app.route('/api/business/businesses/:businessId/cash-movements', cashMovementsRo
 app.route('/api/business/businesses/:businessId/cash-movement-categories', cashMovementCategoriesRoutes)
 app.route('/api/business/businesses/:businessId/credits', creditsRoutes)
 app.route('/internal/reports', internalReportsRoutes)
+=======
+app.route("/api/business/businesses", businessesRoutes);
+app.route("/api/business/invitations", invitationsRoutes);
+app.route("/api/business/businesses/:businessId/members", membersRoutes);
+app.route(
+	"/api/business/businesses/:businessId/payment-methods",
+	paymentMethodsRoutes,
+);
+app.route("/api/business/businesses/:businessId/customers", customersRoutes);
+app.route(
+	"/api/business/businesses/:businessId/dashboard-summary",
+	dashboardSummaryRoutes,
+);
+app.route(
+	"/api/business/businesses/:businessId/cash-movements",
+	cashMovementsRoutes,
+);
+app.route(
+	"/api/business/businesses/:businessId/cash-movement-categories",
+	cashMovementCategoriesRoutes,
+);
+app.route("/api/business/businesses/:businessId/credits", creditsRoutes);
+>>>>>>> fc7654e08c519fd818b6b95fda28b9b6b0800364
 
 app.onError((error, c) => {
-  const requestId = c.get('requestId') ?? crypto.randomUUID()
+	const requestId = c.get("requestId") ?? crypto.randomUUID();
 
-  if (error instanceof AppError) {
-    logError('business-service', error, c, error.status)
+	if (error instanceof AppError) {
+		logError("business-service", error, c, error.status);
 
-    return c.json(
-      {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        requestId,
-      },
-      error.status,
-    )
-  }
+		return c.json(
+			{
+				code: error.code,
+				message: error.message,
+				details: error.details,
+				requestId,
+			},
+			error.status,
+		);
+	}
 
-  console.error(error)
+	console.error(error);
 
-  return c.json(
-    {
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'An internal error occurred.',
-      details: error instanceof Error ? error.message : null,
-      requestId,
-    },
-    500,
-  )
-})
+	return c.json(
+		{
+			code: "INTERNAL_SERVER_ERROR",
+			message: "An internal error occurred.",
+			details: error instanceof Error ? error.message : null,
+			requestId,
+		},
+		500,
+	);
+});

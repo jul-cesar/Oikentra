@@ -10,6 +10,7 @@ import type {
 	CancelCashMovementInput,
 	CashMovementRecord,
 } from "./types/cash-movements.types";
+import { paymentMethodsService } from "../businesses/payment-methods.service";
 
 function toCashMovementResponse(
 	movement: CashMovementRecord,
@@ -21,6 +22,7 @@ function toCashMovementResponse(
 		type: movement.type,
 		amount: movement.amount,
 		category: movement.category,
+		paymentMethod: movement.paymentMethod,
 		note: movement.note,
 		businessDate: movement.businessDate,
 		occurredAt: movement.occurredAt.toISOString(),
@@ -51,6 +53,10 @@ export function createCashMovementsService(
 				permissions.cashCreate,
 			);
 
+			const paymentMethod = await paymentMethodsService.validateActiveMethod(
+				businessId,
+				input.paymentMethod,
+			);
 			const now = new Date();
 			const movement = await repository.create({
 				id: crypto.randomUUID(),
@@ -59,6 +65,7 @@ export function createCashMovementsService(
 				type: "SALE",
 				amount: input.amount,
 				category: input.category ?? null,
+				paymentMethod,
 				note: input.note ?? null,
 				businessDate: input.businessDate,
 				occurredAt: new Date(input.occurredAt),
@@ -89,6 +96,7 @@ export function createCashMovementsService(
 				type: "EXPENSE",
 				amount: input.amount,
 				category: input.category ?? null,
+				paymentMethod: null,
 				note: input.note ?? null,
 				businessDate: input.businessDate,
 				occurredAt: new Date(input.occurredAt),
