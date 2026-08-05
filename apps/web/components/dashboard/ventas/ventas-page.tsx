@@ -34,6 +34,7 @@ import type { CashMovement } from "@/lib/cash-movements-api";
 import { CreateSaleDialog } from "./create-sale-dialog";
 import { CreateExpenseDialog } from "./create-expense-dialog";
 import { CancelMovementDialog } from "./cancel-movement-dialog";
+import { ExportReportDialog } from "./export-report-dialog";
 
 type FilterType = "ALL" | "SALE" | "EXPENSE";
 

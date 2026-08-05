@@ -114,7 +114,7 @@ export function CreateCategoryDialog({
 									<FormControl>
 										<Input
 											{...field}
-											placeholder="Ej. Venta diaria, Servicio, Propina"
+											placeholder="Ej. Herramientas, electronicos, etc."
 											autoFocus
 										/>
 									</FormControl>

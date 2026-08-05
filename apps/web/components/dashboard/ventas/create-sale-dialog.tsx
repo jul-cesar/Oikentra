@@ -37,7 +37,10 @@ import {
 	type CreateSaleFormValues,
 } from "@/lib/validation/ventas-schemas";
 
-const today = () => new Date().toISOString().slice(0, 10);
+function today(): string {
+	const now = new Date();
+	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
 
 function localIsoNow(): string {
 	const now = new Date();
