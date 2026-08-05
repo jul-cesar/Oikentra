@@ -391,10 +391,15 @@ function PaymentMethodsChart({
 									content={
 										<ChartTooltipContent
 											nameKey="name"
-											formatter={(value) => (
-												<span className="font-mono font-medium tabular-nums">
-													{currencyFormatter.format(Number(value))}
-												</span>
+											formatter={(value, name) => (
+												<div className="flex flex-1 items-center justify-between gap-2 leading-none">
+													<span className="text-muted-foreground">
+														{String(name)}
+													</span>
+													<span className="font-mono font-medium text-foreground tabular-nums">
+														{currencyFormatter.format(Number(value))}
+													</span>
+												</div>
 											)}
 										/>
 									}
