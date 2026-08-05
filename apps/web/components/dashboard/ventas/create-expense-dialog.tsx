@@ -73,7 +73,7 @@ export function CreateExpenseDialog({
 
 	async function onSubmit(values: CreateSaleFormValues) {
 		try {
-			await mutation.mutateAsync({
+			const movement = await mutation.mutateAsync({
 				amount: Number(values.amount),
 				businessDate: values.businessDate,
 				occurredAt: localIsoNow(),
@@ -84,8 +84,12 @@ export function CreateExpenseDialog({
 			onOpenChange(false);
 			toast.add({
 				type: "success",
-				title: "Gasto registrado",
-				description: "El gasto se agregó a los movimientos de caja.",
+				title: movement.localSyncStatus
+					? "Gasto guardado sin conexión"
+					: "Gasto registrado",
+				description: movement.localSyncStatus
+					? "Se sincronizará cuando vuelva la conexión."
+					: "El gasto se agregó a los movimientos de caja.",
 			});
 		} catch (cause) {
 			const message =

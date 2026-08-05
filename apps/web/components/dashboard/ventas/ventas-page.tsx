@@ -539,7 +539,13 @@ function MovementRow({
 					{config.sign}
 					{money(movement.amount)}
 				</p>
-				{cancelled ? (
+				{movement.localSyncStatus === "pending" ? (
+					<span className="text-xs text-amber-600">
+						Pendiente de sincronizar
+					</span>
+				) : movement.localSyncStatus === "failed" ? (
+					<span className="text-xs text-destructive">Error al sincronizar</span>
+				) : cancelled ? (
 					<span className="text-xs text-muted-foreground">Anulado</span>
 				) : (
 					<Button
