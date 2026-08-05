@@ -15,7 +15,7 @@ import { ScrollView, View } from 'react-native';
 const money = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
 const formatDateTime = (value: string) => new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 const typeLabel: Record<CashMovementType, string> = { SALE: 'Venta', EXPENSE: 'Gasto', CREDIT_PAYMENT: 'Abono fiado' };
-const toDateOnly = (date: Date) => date.toISOString().slice(0, 10);
+const toDateOnly = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 type Kind = 'SALE' | 'EXPENSE';
 type SortKey = 'new' | 'old' | 'high' | 'low';

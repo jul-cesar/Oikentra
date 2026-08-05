@@ -30,7 +30,7 @@ const money = (n: number) =>
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(n);
-const toDateOnly = (date: Date) => date.toISOString().slice(0, 10);
+const toDateOnly = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 export default function FiadosScreen() {

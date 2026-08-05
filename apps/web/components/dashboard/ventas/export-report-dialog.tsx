@@ -37,7 +37,10 @@ const REPORT_TYPES = [
 
 const DATE_REQUIRED = new Set(["WEEKLY_SUMMARY", "MOVEMENT_HISTORY"]);
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+	const now = new Date();
+	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+};
 
 export function ExportReportDialog({
   businessId,

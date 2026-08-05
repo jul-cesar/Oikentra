@@ -29,7 +29,10 @@ import {
   type CreatePaymentFormValues,
 } from "@/lib/validation/fiados-schemas";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+	const now = new Date();
+	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+};
 const money = (value: number) =>
   new Intl.NumberFormat("es-CO", {
     style: "currency",
