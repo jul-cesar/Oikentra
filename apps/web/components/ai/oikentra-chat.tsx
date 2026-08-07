@@ -10,6 +10,7 @@ import {
 	Cancel01Icon,
 	SentIcon,
 } from "@hugeicons/core-free-icons";
+import type { ClientSessionState, MessageStreamEvent } from "eve/client";
 import { useEveAgent, type EveMessagePart } from "eve/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -42,6 +43,46 @@ type Props = {
 		timezone?: string | null;
 	};
 };
+
+type StoredChatSession = {
+	session: ClientSessionState;
+	events: readonly MessageStreamEvent[];
+};
+
+function chatStorageKey(businessId: string) {
+	return `oikentra:eve-chat:${businessId}`;
+}
+
+function readStoredChatSession(businessId: string) {
+	if (typeof window === "undefined") return undefined;
+
+	try {
+		const raw = window.localStorage.getItem(chatStorageKey(businessId));
+		if (!raw) return undefined;
+		const parsed = JSON.parse(raw) as Partial<StoredChatSession>;
+		if (!parsed.session?.sessionId || !Array.isArray(parsed.events)) return undefined;
+		return parsed as StoredChatSession;
+	} catch {
+		return undefined;
+	}
+}
+
+function writeStoredChatSession(
+	businessId: string,
+	session: ClientSessionState | undefined,
+	events: readonly MessageStreamEvent[],
+) {
+	if (typeof window === "undefined") return;
+	if (!session) {
+		window.localStorage.removeItem(chatStorageKey(businessId));
+		return;
+	}
+
+	window.localStorage.setItem(
+		chatStorageKey(businessId),
+		JSON.stringify({ session, events } satisfies StoredChatSession),
+	);
+}
 
 function renderTextParts(parts: readonly EveMessagePart[]) {
 	return parts
@@ -173,12 +214,28 @@ export function OikentraChat({ business }: Props) {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
 	const [message, setMessage] = useState("");
+	const [restoredSession] = useState(() => readStoredChatSession(business.id));
 
 	const agent = useEveAgent({
 		headers: () => ({
 			"X-Oikentra-Business-Id": business.id,
 		}),
+		initialEvents: restoredSession?.events,
+		initialSession: restoredSession?.session,
+		onFinish: (snapshot) => {
+			writeStoredChatSession(business.id, snapshot.session, snapshot.events);
+		},
+		onSessionChange: (session) => {
+			writeStoredChatSession(business.id, session, agent.events);
+		},
 	});
+
+	function resetChat() {
+		if (typeof window !== "undefined") {
+			window.localStorage.removeItem(chatStorageKey(business.id));
+		}
+		agent.reset();
+	}
 
 	const isBusy = agent.status === "submitted" || agent.status === "streaming";
 	const lastRequest = useMemo(() => {
@@ -238,7 +295,7 @@ export function OikentraChat({ business }: Props) {
 									variant="ghost"
 									size="icon-sm"
 									aria-label="Nueva conversación"
-									onClick={agent.reset}
+									onClick={resetChat}
 								>
 									<HugeiconsIcon
 										icon={ArrowReloadHorizontalIcon}
@@ -293,10 +350,10 @@ export function OikentraChat({ business }: Props) {
 																Hola, soy Eve.
 															</p>
 															<p className="mt-1 leading-relaxed">
-																Puedo ayudarte a consultar ventas, gastos, abonos,
-																fiados, clientes que deben y movimientos recientes de
-																tu negocio. Por ahora solo consulto datos; no registro
-																cambios todavía.
+																Puedo ayudarte a consultar ventas, gastos,
+																abonos, fiados, clientes que deben y movimientos
+																recientes de tu negocio. Por ahora solo consulto
+																datos; no registro cambios todavía.
 															</p>
 														</div>
 													</div>

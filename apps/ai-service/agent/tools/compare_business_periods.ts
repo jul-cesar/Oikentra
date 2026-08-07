@@ -69,12 +69,15 @@ function readMode(input: Record<string, unknown>): ComparisonMode {
 	) {
 		return mode;
 	}
-	throw new Error("mode must be today_vs_yesterday, week_vs_previous, or custom.");
+	throw new Error(
+		"mode must be today_vs_yesterday, week_vs_previous, or custom.",
+	);
 }
 
 function readDate(input: Record<string, unknown>, key: string) {
 	const value = input[key];
-	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value))
+		return value;
 	throw new Error(`${key} must be YYYY-MM-DD.`);
 }
 
@@ -86,7 +89,10 @@ function resolveRanges(input: Record<string, unknown>) {
 		return {
 			mode,
 			current: { from: toIsoDate(today), to: toIsoDate(today) },
-			previous: { from: toIsoDate(addDays(today, -1)), to: toIsoDate(addDays(today, -1)) },
+			previous: {
+				from: toIsoDate(addDays(today, -1)),
+				to: toIsoDate(addDays(today, -1)),
+			},
 		};
 	}
 
@@ -94,7 +100,10 @@ function resolveRanges(input: Record<string, unknown>) {
 		return {
 			mode,
 			current: { from: toIsoDate(addDays(today, -6)), to: toIsoDate(today) },
-			previous: { from: toIsoDate(addDays(today, -13)), to: toIsoDate(addDays(today, -7)) },
+			previous: {
+				from: toIsoDate(addDays(today, -13)),
+				to: toIsoDate(addDays(today, -7)),
+			},
 		};
 	}
 
@@ -119,13 +128,17 @@ function percentageDelta(current: number, previous: number) {
 	return Math.round(((current - previous) / previous) * 100);
 }
 
-function compare(current: DashboardSummary, previous: DashboardSummary): PeriodComparison {
+function compare(
+	current: DashboardSummary,
+	previous: DashboardSummary,
+): PeriodComparison {
 	return {
 		current,
 		previous,
 		delta: {
 			salesAmount: current.kpis.salesAmount - previous.kpis.salesAmount,
-			expensesAmount: current.kpis.expensesAmount - previous.kpis.expensesAmount,
+			expensesAmount:
+				current.kpis.expensesAmount - previous.kpis.expensesAmount,
 			creditPaymentsAmount:
 				current.kpis.creditPaymentsAmount - previous.kpis.creditPaymentsAmount,
 			netCashFlow: current.kpis.netCashFlow - previous.kpis.netCashFlow,
@@ -163,7 +176,8 @@ export default defineTool<CompareBusinessPeriodsOutput>({
 			mode: {
 				type: "string",
 				enum: ["today_vs_yesterday", "week_vs_previous", "custom"],
-				description: "Comparación predefinida o custom. Por defecto today_vs_yesterday.",
+				description:
+					"Comparación predefinida o custom. Por defecto today_vs_yesterday.",
 			},
 			currentFrom: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
 			currentTo: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
@@ -200,7 +214,10 @@ export default defineTool<CompareBusinessPeriodsOutput>({
 			value: {
 				mode: output.mode,
 				current: { period: output.current.period, kpis: output.current.kpis },
-				previous: { period: output.previous.period, kpis: output.previous.kpis },
+				previous: {
+					period: output.previous.period,
+					kpis: output.previous.kpis,
+				},
 				delta: output.delta,
 				percentage: output.percentage,
 			},
