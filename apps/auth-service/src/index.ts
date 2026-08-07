@@ -68,6 +68,7 @@ app.get('/internal/session/validate', async (c) => {
       userId: session.user.id,
       sessionId: session.session.id,
       audience: getConfig().internalAuthAudience,
+      ttlSeconds: getConfig().internalAuthTokenTtlSeconds,
     }),
   )
 
