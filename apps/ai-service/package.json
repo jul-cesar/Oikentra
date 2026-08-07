@@ -1,0 +1,31 @@
+{
+  "name": "@oikentra/ai-service",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*": "./agent/*",
+    "#evals/*": "./evals/*"
+  },
+  "scripts": {
+    "build": "eve build",
+    "dev": "eve dev",
+    "start": "eve start",
+    "typecheck": "tsc"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.34",
+    "@oikentra/internal-auth": "workspace:*",
+    "@vercel/connect": "0.4.3",
+    "ai": "^7.0.38",
+    "eve": "^0.31.0",
+    "zod": "4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "24.x",
+    "just-bash": "^3.2.0",
+    "typescript": "7.0.2"
+  }
+}

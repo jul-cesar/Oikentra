@@ -135,8 +135,9 @@ function RootLayoutInner() {
     void navigateFromAuthUrl();
   }, [initialUrl, initialUrlResolved, rootNavigationState?.key, router]);
 
-  const inAuthGroup = segments[0] === '(auth)';
-  const isVerificationRoute = inAuthGroup && segments[1] === 'verify';
+  const [firstSegment, secondSegment] = segments as readonly string[];
+  const inAuthGroup = firstSegment === '(auth)';
+  const isVerificationRoute = inAuthGroup && secondSegment === 'verify';
 
   React.useEffect(() => {
     if (isPending || !initialUrlResolved) return;
