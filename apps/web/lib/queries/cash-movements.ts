@@ -5,7 +5,15 @@ import {
 	createExpense,
 	createSale,
 	getCashMovements,
+	isRetryableCashRequestError,
+	type CashMovementInput,
 } from "@/lib/cash-movements-api";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useSession } from "@/hooks/use-session";
+import {
+	enqueueCashOperation,
+	toPendingCashMovement,
+} from "@/lib/offline/sync-queue";
 
 export const cashMovementQueryKeys = {
 	movements: (businessId: string) => ["cash-movements", businessId] as const,
@@ -35,19 +43,107 @@ export function useCashMovements(businessId: string) {
 
 export function useCreateSale(businessId: string) {
 	const queryClient = useQueryClient();
+	const isOnline = useOnlineStatus();
+	const { user } = useSession();
 	return useMutation({
-		mutationFn: (input: Parameters<typeof createSale>[1]) =>
-			createSale(businessId, input),
-		onSuccess: () => invalidateCashData(queryClient, businessId),
+		networkMode: "always",
+		mutationFn: async (input: CashMovementInput) => {
+			const operationInput = { ...input, id: input.id ?? crypto.randomUUID() };
+			if (!isOnline) {
+				await enqueueCashOperation({
+					id: operationInput.id,
+					userId: user?.id ?? "anonymous",
+					businessId,
+					kind: "SALE",
+					input: operationInput,
+					createdAt: Date.now(),
+					status: "pending",
+				});
+				return toPendingCashMovement(businessId, "SALE", operationInput);
+			}
+
+			try {
+				return await createSale(businessId, operationInput);
+			} catch (error) {
+				if (!isRetryableCashRequestError(error)) throw error;
+				await enqueueCashOperation({
+					id: operationInput.id,
+					userId: user?.id ?? "anonymous",
+					businessId,
+					kind: "SALE",
+					input: operationInput,
+					createdAt: Date.now(),
+					status: "pending",
+				});
+				return toPendingCashMovement(businessId, "SALE", operationInput);
+			}
+		},
+		onSuccess: (movement) => {
+			if (movement.localSyncStatus) {
+				queryClient.setQueryData(
+					cashMovementQueryKeys.movements(businessId),
+					(existing: (typeof movement)[] | undefined) => [
+						movement,
+						...(existing ?? []),
+					],
+				);
+				return;
+			}
+			void invalidateCashData(queryClient, businessId);
+		},
 	});
 }
 
 export function useCreateExpense(businessId: string) {
 	const queryClient = useQueryClient();
+	const isOnline = useOnlineStatus();
+	const { user } = useSession();
 	return useMutation({
-		mutationFn: (input: Parameters<typeof createExpense>[1]) =>
-			createExpense(businessId, input),
-		onSuccess: () => invalidateCashData(queryClient, businessId),
+		networkMode: "always",
+		mutationFn: async (input: CashMovementInput) => {
+			const operationInput = { ...input, id: input.id ?? crypto.randomUUID() };
+			if (!isOnline) {
+				await enqueueCashOperation({
+					id: operationInput.id,
+					userId: user?.id ?? "anonymous",
+					businessId,
+					kind: "EXPENSE",
+					input: operationInput,
+					createdAt: Date.now(),
+					status: "pending",
+				});
+				return toPendingCashMovement(businessId, "EXPENSE", operationInput);
+			}
+
+			try {
+				return await createExpense(businessId, operationInput);
+			} catch (error) {
+				if (!isRetryableCashRequestError(error)) throw error;
+				await enqueueCashOperation({
+					id: operationInput.id,
+					userId: user?.id ?? "anonymous",
+					businessId,
+					kind: "EXPENSE",
+					input: operationInput,
+					createdAt: Date.now(),
+					status: "pending",
+				});
+				return toPendingCashMovement(businessId, "EXPENSE", operationInput);
+			}
+		},
+		onSuccess: (movement) => {
+			if (movement.localSyncStatus) {
+				queryClient.setQueryData(
+					cashMovementQueryKeys.movements(businessId),
+					(existing: (typeof movement)[] | undefined) => [
+						movement,
+						...(existing ?? []),
+					],
+				);
+				return;
+			}
+			void invalidateCashData(queryClient, businessId);
+		},
 	});
 }
 
