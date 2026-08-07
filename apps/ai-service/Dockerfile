@@ -19,6 +19,9 @@ FROM base AS builder
 
 WORKDIR /workspace
 
+COPY --from=deps /workspace/package.json ./package.json
+COPY --from=deps /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=deps /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=deps /workspace/node_modules ./node_modules
 COPY --from=deps /workspace/apps/ai-service/node_modules ./apps/ai-service/node_modules
 COPY --from=deps /workspace/packages/internal-auth/node_modules ./packages/internal-auth/node_modules
