@@ -27,7 +27,7 @@ Necesitan credenciales del modelo (`OPENAI_API_KEY`) porque ejecutan el agente r
 Dependen de un negocio de prueba con datos conocidos.
 
 ```bash
-pnpm --filter @oikentra/ai-service eval -- --tag requires-business-data
+pnpm --filter @oikentra/ai-service eval:read-only
 ```
 
 Cubren selección de tools para:

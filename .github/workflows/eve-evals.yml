@@ -63,6 +63,4 @@ jobs:
           INTERNAL_AUTH_DEV_BYPASS: "true"
           INTERNAL_AUTH_DEV_USER_ID: ${{ vars.OIKENTRA_EVAL_USER_ID }}
           BUSINESS_BASE_URL: ${{ vars.OIKENTRA_EVAL_BUSINESS_BASE_URL }}
-        run: >-
-          pnpm --filter @oikentra/ai-service eval --
-          --tag requires-business-data --strict
+        run: pnpm --filter @oikentra/ai-service eval:read-only
