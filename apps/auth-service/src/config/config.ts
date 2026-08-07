@@ -60,6 +60,20 @@ function readUrl(name: "BETTER_AUTH_URL" | "WEB_URL") {
 	return value;
 }
 
+function readInternalAuthTokenTtlSeconds() {
+	const value = readOptionalEnv("INTERNAL_AUTH_TOKEN_TTL_SECONDS");
+	if (!value) return 10 * 60;
+
+	const ttl = Number(value);
+	if (!Number.isInteger(ttl) || ttl < 60 || ttl > 60 * 60) {
+		throw new Error(
+			"INTERNAL_AUTH_TOKEN_TTL_SECONDS must be an integer between 60 and 3600.",
+		);
+	}
+
+	return ttl;
+}
+
 export function getConfig() {
 	return {
 		authEmailFrom: readRequiredEnv("AUTH_EMAIL_FROM"),
@@ -70,6 +84,7 @@ export function getConfig() {
 		internalAuthPrivateKeyBase64: readRequiredEnv(
 			"INTERNAL_AUTH_PRIVATE_KEY_B64",
 		),
+		internalAuthTokenTtlSeconds: readInternalAuthTokenTtlSeconds(),
 		internalAuthAudience: [
 			"business-service",
 			"sync-service",

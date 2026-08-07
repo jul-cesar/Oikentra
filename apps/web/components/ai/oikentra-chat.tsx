@@ -10,6 +10,7 @@ import {
 	Cancel01Icon,
 	SentIcon,
 } from "@hugeicons/core-free-icons";
+import type { ClientSessionState, MessageStreamEvent } from "eve/client";
 import { useEveAgent, type EveMessagePart } from "eve/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -43,6 +44,47 @@ type Props = {
 	};
 };
 
+type StoredChatSession = {
+	session: ClientSessionState;
+	events: readonly MessageStreamEvent[];
+};
+
+function chatStorageKey(businessId: string) {
+	return `oikentra:eve-chat:${businessId}`;
+}
+
+function readStoredChatSession(businessId: string) {
+	if (typeof window === "undefined") return undefined;
+
+	try {
+		const raw = window.localStorage.getItem(chatStorageKey(businessId));
+		if (!raw) return undefined;
+		const parsed = JSON.parse(raw) as Partial<StoredChatSession>;
+		if (!parsed.session?.sessionId || !Array.isArray(parsed.events))
+			return undefined;
+		return parsed as StoredChatSession;
+	} catch {
+		return undefined;
+	}
+}
+
+function writeStoredChatSession(
+	businessId: string,
+	session: ClientSessionState | undefined,
+	events: readonly MessageStreamEvent[],
+) {
+	if (typeof window === "undefined") return;
+	if (!session) {
+		window.localStorage.removeItem(chatStorageKey(businessId));
+		return;
+	}
+
+	window.localStorage.setItem(
+		chatStorageKey(businessId),
+		JSON.stringify({ session, events } satisfies StoredChatSession),
+	);
+}
+
 function renderTextParts(parts: readonly EveMessagePart[]) {
 	return parts
 		.filter((part) => part.type === "text")
@@ -71,16 +113,16 @@ function pendingInputRequest(parts: readonly EveMessagePart[]) {
 
 function ToolStatus({ part }: { part: EveMessagePart }) {
 	if (part.type !== "dynamic-tool") return null;
+	if (part.state === "output-available" || part.state === "output-denied") {
+		return null;
+	}
 
-	const label = part.toolMetadata?.eve?.name ?? part.toolName;
-	const status =
-		part.state === "output-available"
-			? "listo"
-			: part.state === "output-error"
-				? "error"
-				: part.state === "approval-requested"
-					? "esperando aprobación"
-					: "consultando";
+	const label =
+		part.state === "output-error"
+			? "No pude consultar esos datos"
+			: part.state === "approval-requested"
+				? "Necesito tu confirmación"
+				: "Consultando datos de Oikentra";
 
 	return (
 		<div className="flex w-fit items-center gap-1.5 rounded-full border bg-background/80 px-2.5 py-1 text-xs text-muted-foreground shadow-sm">
@@ -90,9 +132,7 @@ function ToolStatus({ part }: { part: EveMessagePart }) {
 				strokeWidth={2}
 				aria-hidden="true"
 			/>
-			<span>
-				{label}: {status}
-			</span>
+			<span>{label}</span>
 		</div>
 	);
 }
@@ -173,12 +213,28 @@ export function OikentraChat({ business }: Props) {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
 	const [message, setMessage] = useState("");
+	const [restoredSession] = useState(() => readStoredChatSession(business.id));
 
 	const agent = useEveAgent({
 		headers: () => ({
 			"X-Oikentra-Business-Id": business.id,
 		}),
+		initialEvents: restoredSession?.events,
+		initialSession: restoredSession?.session,
+		onFinish: (snapshot) => {
+			writeStoredChatSession(business.id, snapshot.session, snapshot.events);
+		},
+		onSessionChange: (session) => {
+			writeStoredChatSession(business.id, session, agent.events);
+		},
 	});
+
+	function resetChat() {
+		if (typeof window !== "undefined") {
+			window.localStorage.removeItem(chatStorageKey(business.id));
+		}
+		agent.reset();
+	}
 
 	const isBusy = agent.status === "submitted" || agent.status === "streaming";
 	const lastRequest = useMemo(() => {
@@ -238,7 +294,7 @@ export function OikentraChat({ business }: Props) {
 									variant="ghost"
 									size="icon-sm"
 									aria-label="Nueva conversación"
-									onClick={agent.reset}
+									onClick={resetChat}
 								>
 									<HugeiconsIcon
 										icon={ArrowReloadHorizontalIcon}
@@ -279,13 +335,35 @@ export function OikentraChat({ business }: Props) {
 										{agent.data.messages.length === 0 ? (
 											<MessageScrollerItem messageId="empty-state">
 												<div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+													<div className="mb-4 flex gap-3">
+														<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+															<HugeiconsIcon
+																icon={BubbleChatSparkIcon}
+																size={18}
+																strokeWidth={2}
+																aria-hidden="true"
+															/>
+														</span>
+														<div>
+															<p className="font-medium text-foreground">
+																Hola, soy Eve.
+															</p>
+															<p className="mt-1 leading-relaxed">
+																Puedo ayudarte a consultar ventas, gastos,
+																abonos, fiados, clientes que deben y movimientos
+																recientes de tu negocio. Por ahora solo consulto
+																datos; no registro cambios todavía.
+															</p>
+														</div>
+													</div>
 													<p className="mb-2 font-medium text-foreground">
-														¿Qué quieres consultar?
+														Prueba con una pregunta:
 													</p>
 													<div className="flex flex-wrap gap-2">
 														{[
 															"¿Cómo van las ventas de hoy?",
-															"¿Cuánto me debe Julio?",
+															"¿Quiénes me deben?",
+															"Muéstrame los últimos movimientos",
 															"¿Cuánto me deben en total?",
 														].map((example) => (
 															<Button
