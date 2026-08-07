@@ -11,6 +11,8 @@
     "dev": "eve dev",
     "eval": "eve eval",
     "eval:list": "eve eval --list",
+    "eval:safety": "eve eval --tag safety",
+    "eval:smoke": "eve eval --tag fast --tag safety",
     "start": "eve start",
     "typecheck": "tsc"
   },
