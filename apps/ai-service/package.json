@@ -11,6 +11,7 @@
     "dev": "eve dev",
     "eval": "eve eval",
     "eval:list": "eve eval --list",
+    "eval:read-only": "eve eval --tag requires-business-data --strict",
     "eval:safety": "eve eval --tag safety --strict",
     "eval:smoke": "eve eval --tag fast --strict",
     "start": "eve start",
