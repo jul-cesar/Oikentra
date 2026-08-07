@@ -9,6 +9,7 @@ import { authClient } from "@/lib/auth-client";
 import { clearLastUser } from "@/hooks/use-session";
 import { clearPersistedQueryCache } from "@/lib/offline/query-cache";
 import { AppSidebar } from "@/components/app-sidebar";
+import { OikentraChat } from "@/components/ai/oikentra-chat";
 import { getBusinesses } from "@/lib/onboarding-api";
 import { queryKeys } from "@/lib/queries/onboarding";
 import {
@@ -54,6 +55,7 @@ export function DashboardShell({ business, user, children }: Props) {
 				onSignOut={() => void signOut()}
 			/>
 			<SidebarInset>
+				<OikentraChat business={business} />
 				<header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur sm:px-6">
 					<SidebarTrigger aria-label="Alternar menú lateral" className="-ml-1">
 						<HugeiconsIcon icon={Menu01Icon} size={20} />

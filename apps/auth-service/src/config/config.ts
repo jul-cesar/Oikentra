@@ -75,6 +75,7 @@ export function getConfig() {
 			"sync-service",
 			"reports-service",
 			"employees-service",
+			"ai-service",
 		],
 		googleClientId: readRequiredEnv("GOOGLE_CLIENT_ID"),
 		googleClientSecret: readRequiredEnv("GOOGLE_CLIENT_SECRET"),

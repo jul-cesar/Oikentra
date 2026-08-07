@@ -1,4 +1,3 @@
-import { issueInternalAssertion } from "@oikentra/internal-auth";
 import type { OikentraAgentContext } from "./agent-context";
 
 type ApiEnvelope<T> = {
@@ -35,39 +34,8 @@ function businessBaseUrl() {
 	return value.endsWith("/") ? value : `${value}/`;
 }
 
-function normalizePrivateKeyBase64(value: string) {
-	const normalized = value.trim().replace(/\\n/g, "\n");
-
-	if (normalized.startsWith("-----BEGIN ")) {
-		return Buffer.from(normalized, "utf8").toString("base64");
-	}
-
-	return normalized;
-}
-
-async function internalAuthHeader(context: OikentraAgentContext) {
-	const configuredPrivateKey =
-		process.env.OIKENTRA_INTERNAL_AUTH_PRIVATE_KEY_B64?.trim() ??
-		process.env.INTERNAL_AUTH_PRIVATE_KEY_B64?.trim();
-
-	if (!configuredPrivateKey) return undefined;
-
-	try {
-		const token = await issueInternalAssertion({
-			privateKeyBase64: normalizePrivateKeyBase64(configuredPrivateKey),
-			userId: context.userId,
-			sessionId: context.sessionId,
-			audience: "business-service",
-		});
-
-		return token;
-	} catch (error) {
-		throw new Error(
-			`Internal auth private key is invalid. Set OIKENTRA_INTERNAL_AUTH_PRIVATE_KEY_B64 or INTERNAL_AUTH_PRIVATE_KEY_B64 to a base64-encoded PKCS#8 PEM private key (-----BEGIN PRIVATE KEY-----), not a public key or RSA PRIVATE KEY. ${
-				error instanceof Error ? error.message : ""
-			}`,
-		);
-	}
+function internalAuthHeader(context: OikentraAgentContext) {
+	return context.internalAuthToken;
 }
 
 export async function businessApi<T>(
@@ -89,7 +57,7 @@ export async function businessApi<T>(
 	if (request.body !== undefined)
 		headers.set("Content-Type", "application/json");
 
-	const token = await internalAuthHeader(context);
+	const token = internalAuthHeader(context);
 	if (token) headers.set("X-Internal-Auth", token);
 
 	const response = await fetch(url, {
