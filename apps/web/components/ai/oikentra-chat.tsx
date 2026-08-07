@@ -279,13 +279,35 @@ export function OikentraChat({ business }: Props) {
 										{agent.data.messages.length === 0 ? (
 											<MessageScrollerItem messageId="empty-state">
 												<div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+													<div className="mb-4 flex gap-3">
+														<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+															<HugeiconsIcon
+																icon={BubbleChatSparkIcon}
+																size={18}
+																strokeWidth={2}
+																aria-hidden="true"
+															/>
+														</span>
+														<div>
+															<p className="font-medium text-foreground">
+																Hola, soy Eve.
+															</p>
+															<p className="mt-1 leading-relaxed">
+																Puedo ayudarte a consultar ventas, gastos, abonos,
+																fiados, clientes que deben y movimientos recientes de
+																tu negocio. Por ahora solo consulto datos; no registro
+																cambios todavía.
+															</p>
+														</div>
+													</div>
 													<p className="mb-2 font-medium text-foreground">
-														¿Qué quieres consultar?
+														Prueba con una pregunta:
 													</p>
 													<div className="flex flex-wrap gap-2">
 														{[
 															"¿Cómo van las ventas de hoy?",
-															"¿Cuánto me debe Julio?",
+															"¿Quiénes me deben?",
+															"Muéstrame los últimos movimientos",
 															"¿Cuánto me deben en total?",
 														].map((example) => (
 															<Button
