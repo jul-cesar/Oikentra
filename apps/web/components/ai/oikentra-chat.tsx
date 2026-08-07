@@ -111,6 +111,22 @@ function pendingInputRequest(parts: readonly EveMessagePart[]) {
 	return undefined;
 }
 
+function friendlyChatError(error: Error) {
+	const status = (error as { status?: unknown }).status;
+	const numericStatus = typeof status === "number" ? status : undefined;
+
+	switch (numericStatus) {
+		case 401:
+			return "Tu sesión venció. Recarga la página o inicia sesión otra vez.";
+		case 429:
+			return "Has hecho muchas consultas seguidas. Intenta de nuevo en un momento.";
+		case 503:
+			return "No pude conectarme con Oikentra ahora. Intenta de nuevo en unos segundos.";
+		default:
+			return "No pude completar la consulta. Intenta de nuevo.";
+	}
+}
+
 function ToolStatus({ part }: { part: EveMessagePart }) {
 	if (part.type !== "dynamic-tool") return null;
 	if (part.state === "output-available" || part.state === "output-denied") {
@@ -460,8 +476,11 @@ export function OikentraChat({ business }: Props) {
 										) : null}
 										{agent.error ? (
 											<MessageScrollerItem messageId="error">
-												<p className="rounded-md bg-destructive/10 p-2 text-xs text-destructive">
-													{agent.error.message}
+												<p
+													role="alert"
+													className="rounded-md bg-destructive/10 p-2 text-xs text-destructive"
+												>
+													{friendlyChatError(agent.error)}
 												</p>
 											</MessageScrollerItem>
 										) : null}
