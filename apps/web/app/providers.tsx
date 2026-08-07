@@ -39,7 +39,6 @@ function PersistedQueryClient({
 	React.useEffect(() => {
 		let active = true;
 		let stopPersistence: (() => void) | undefined;
-		setRestoredScope(null);
 		queryClient.clear();
 
 		void restoreQueryCache(queryClient, scope).finally(() => {
