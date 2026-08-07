@@ -38,6 +38,8 @@ RUN pnpm --filter @oikentra/web build
 
 FROM node:22-alpine AS runner
 
+LABEL org.opencontainers.image.vendor="Oikentra"
+
 WORKDIR /app
 
 ENV NODE_ENV=production

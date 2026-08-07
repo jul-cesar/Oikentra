@@ -29,6 +29,8 @@ RUN pnpm --filter @oikentra/ai-service build
 
 FROM node:24-alpine AS runtime
 
+LABEL org.opencontainers.image.vendor="Oikentra"
+
 WORKDIR /workspace/apps/ai-service
 
 ENV NODE_ENV=production

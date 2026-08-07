@@ -13,6 +13,8 @@ RUN pnpm install --filter @oikentra/auth-service... --prod --frozen-lockfile
 
 FROM oven/bun:1.3.14-alpine AS runtime
 
+LABEL org.opencontainers.image.vendor="Oikentra"
+
 WORKDIR /workspace
 
 COPY --from=dependencies /workspace/node_modules ./node_modules
