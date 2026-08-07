@@ -44,6 +44,8 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 eve
 COPY --from=builder --chown=eve:nodejs /workspace/apps/ai-service/.output ./.output
 COPY --from=builder --chown=eve:nodejs /workspace/apps/ai-service/package.json ./package.json
 
+RUN mkdir -p .eve/.workflow-data && chown -R eve:nodejs /workspace/apps/ai-service
+
 USER 1001
 
 EXPOSE 3333
