@@ -4,14 +4,20 @@
   "packageManager": "pnpm@11.9.0",
   "scripts": {
     "dev:mobile": "pnpm --filter @oikentra/mobile dev-client",
-    
     "dev:auth": "pnpm --filter @oikentra/auth-service dev",
     "dev:business": "pnpm --filter @oikentra/business-service dev",
     "dev:sync": "pnpm --filter @oikentra/sync-service dev",
     "dev:reports": "pnpm --filter @oikentra/reports-service dev",
     "dev:employees": "pnpm --filter @oikentra/employees-service dev",
+    "dev:ai": "pnpm --filter @oikentra/ai-service dev",
     "lint": "pnpm -r --if-present run lint",
     "test": "pnpm -r --if-present run test",
     "typecheck": "pnpm -r --if-present run typecheck"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "zod": "4.1.11"
   }
 }

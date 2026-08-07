@@ -172,18 +172,40 @@ export function createCreditsService(
 					"The credit was not found.",
 				);
 			}
-			if (credit.status !== "PENDING") {
-				throw new AppError(
-					"CREDIT_NOT_PENDING",
-					400,
-					"The credit is not pending.",
-				);
-			}
 			if (credit.businessId !== businessId) {
 				throw new AppError(
 					"BUSINESS_ACCESS_DENIED",
 					403,
 					"The credit does not belong to this business.",
+				);
+			}
+
+			if (input.id) {
+				const existingPayment = await repository.findPaymentById(input.id);
+				if (existingPayment) {
+					if (
+						existingPayment.userId !== userId ||
+						existingPayment.businessId !== businessId ||
+						existingPayment.creditId !== creditId
+					) {
+						throw new AppError(
+							"IDEMPOTENCY_KEY_REUSED",
+							409,
+							"The payment id is already in use.",
+						);
+					}
+
+					const payments = await repository.findPaymentsByCreditId(creditId);
+					const totalPaid = await repository.getCreditTotalPaid(creditId);
+					return toCreditResponse(credit, payments, totalPaid);
+				}
+			}
+
+			if (credit.status !== "PENDING") {
+				throw new AppError(
+					"CREDIT_NOT_PENDING",
+					400,
+					"The credit is not pending.",
 				);
 			}
 
@@ -199,7 +221,7 @@ export function createCreditsService(
 			}
 
 			const now = new Date();
-			const paymentId = crypto.randomUUID();
+			const paymentId = input.id ?? crypto.randomUUID();
 			await repository.createPayment(
 				{
 					id: paymentId,
@@ -317,11 +339,7 @@ export function createCreditsService(
 				);
 			}
 
-			const { payment: cancelledPayment } = await repository.cancelPayment(
-				paymentId,
-				creditId,
-				input.reason,
-			);
+			await repository.cancelPayment(paymentId, creditId, input.reason);
 
 			const totalPaid = await repository.getCreditTotalPaid(creditId);
 

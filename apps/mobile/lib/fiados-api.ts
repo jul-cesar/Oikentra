@@ -93,7 +93,7 @@ export const getCustomerCredits = (id: string, customerId: string) =>
 export const createPayment = (
   id: string,
   creditId: string,
-  input: { amount: number; paymentDate: string; note?: string }
+  input: { id?: string; amount: number; paymentDate: string; note?: string }
 ) =>
   request<Credit>(`${base(id)}/credits/${encodeURIComponent(creditId)}/payments`, {
     method: 'POST',

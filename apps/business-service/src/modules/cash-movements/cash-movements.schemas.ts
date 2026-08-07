@@ -6,6 +6,7 @@ export const cashMovementIdParamsSchema = z.object({
 });
 
 export const createSaleSchema = z.object({
+	id: z.string().uuid().optional(),
 	amount: z.number().int().positive(),
 	category: z.string().trim().max(80).optional(),
 	paymentMethod: z.string().trim().max(80).optional(),
@@ -15,6 +16,7 @@ export const createSaleSchema = z.object({
 });
 
 export const createExpenseSchema = z.object({
+	id: z.string().uuid().optional(),
 	amount: z.number().int().positive(),
 	category: z.string().trim().max(80).optional(),
 	paymentMethod: z.string().trim().max(80).optional(),

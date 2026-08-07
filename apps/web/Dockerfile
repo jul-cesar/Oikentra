@@ -27,6 +27,8 @@ ARG BUSINESS_BASE_URL=https://api.oikentra.com/api/business
 ENV BUSINESS_BASE_URL=$BUSINESS_BASE_URL
 ARG REPORTS_BASE_URL
 ENV REPORTS_BASE_URL=$REPORTS_BASE_URL
+ARG AI_BASE_URL
+ENV AI_BASE_URL=$AI_BASE_URL
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
@@ -40,13 +42,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG AI_BASE_URL
+ENV AI_BASE_URL=$AI_BASE_URL
 
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 
-USER nextjs
+USER 1001
 
 EXPOSE 3000
 

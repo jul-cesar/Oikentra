@@ -1,6 +1,16 @@
 export type CashMovementType = "SALE" | "EXPENSE" | "CREDIT_PAYMENT";
 export type CashMovementStatus = "ACTIVE" | "CANCELLED";
 
+export type CashMovementInput = {
+	id?: string;
+	amount: number;
+	category?: string;
+	paymentMethod?: string;
+	note?: string;
+	businessDate: string;
+	occurredAt: string;
+};
+
 export type CashMovement = {
 	id: string;
 	userId: string;
@@ -24,7 +34,17 @@ export type CashMovement = {
 	version: number;
 	createdAt: string;
 	updatedAt: string;
+	localSyncStatus?: "pending" | "failed";
 };
+
+export function isRetryableCashRequestError(error: unknown) {
+	if (typeof navigator !== "undefined" && !navigator.onLine) return true;
+	if (error instanceof TypeError) return true;
+	if (!(error instanceof Error)) return false;
+	return ["SERVICE_UNAVAILABLE", "UPSTREAM_ERROR"].includes(
+		(error as Error & { code?: string }).code ?? "",
+	);
+}
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
 	const response = await fetch(url, {
@@ -54,34 +74,14 @@ export function getCashMovements(businessId: string) {
 	return request<CashMovement[]>(base(businessId));
 }
 
-export function createSale(
-	businessId: string,
-	input: {
-		amount: number;
-		category?: string;
-		paymentMethod?: string;
-		note?: string;
-		businessDate: string;
-		occurredAt: string;
-	},
-) {
+export function createSale(businessId: string, input: CashMovementInput) {
 	return request<CashMovement>(`${base(businessId)}/sales`, {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
 }
 
-export function createExpense(
-	businessId: string,
-	input: {
-		amount: number;
-		category?: string;
-		paymentMethod?: string;
-		note?: string;
-		businessDate: string;
-		occurredAt: string;
-	},
-) {
+export function createExpense(businessId: string, input: CashMovementInput) {
 	return request<CashMovement>(`${base(businessId)}/expenses`, {
 		method: "POST",
 		body: JSON.stringify(input),

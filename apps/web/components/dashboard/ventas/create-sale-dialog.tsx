@@ -79,7 +79,7 @@ export function CreateSaleDialog({
 
 	async function onSubmit(values: CreateSaleFormValues) {
 		try {
-			await mutation.mutateAsync({
+			const movement = await mutation.mutateAsync({
 				amount: Number(values.amount),
 				businessDate: values.businessDate,
 				occurredAt: localIsoNow(),
@@ -93,8 +93,12 @@ export function CreateSaleDialog({
 			onOpenChange(false);
 			toast.add({
 				type: "success",
-				title: "Venta registrada",
-				description: "La venta se agregó a los movimientos de caja.",
+				title: movement.localSyncStatus
+					? "Venta guardada sin conexión"
+					: "Venta registrada",
+				description: movement.localSyncStatus
+					? "Se sincronizará cuando vuelva la conexión."
+					: "La venta se agregó a los movimientos de caja.",
 			});
 		} catch (cause) {
 			const message =

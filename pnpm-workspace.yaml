@@ -5,8 +5,23 @@ packages:
 overrides:
   "@expo/router-server": "~56.0.16"
   "expo-web-browser": "~56.0.5"
+  "zod": "4.1.11"
 
 allowBuilds:
+  "@mongodb-js/zstd": false
   esbuild: true
+  node-liblzma: false
   sharp: true
   unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - "@ai-sdk/*"
+  - "@rolldown/*"
+  - "@vercel/*"
+  - "@workflow/*"
+  - ai
+  - experimental-ai-sdk-code-mode
+  - eve
+  - nitro
+  - rolldown
+  - workflow

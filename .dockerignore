@@ -8,6 +8,10 @@
 !**/.env.example
 node_modules
 **/node_modules
+.eve
+**/.eve
+.output
+**/.output
 dist
 **/dist
 build

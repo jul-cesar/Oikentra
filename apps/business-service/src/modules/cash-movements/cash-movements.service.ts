@@ -41,6 +41,26 @@ function toCashMovementResponse(
 export function createCashMovementsService(
 	repository: CashMovementRepository = cashMovementRepository,
 ) {
+	async function existingMovement(
+		userId: string,
+		businessId: string,
+		id: string | undefined,
+		type: "SALE" | "EXPENSE",
+	) {
+		if (!id) return null;
+
+		const movement = await repository.findByIdAndBusiness(id, businessId);
+		if (!movement) return null;
+		if (movement.userId !== userId || movement.type !== type) {
+			throw new AppError(
+				"IDEMPOTENCY_KEY_REUSED",
+				409,
+				"The movement id is already in use.",
+			);
+		}
+		return toCashMovementResponse(movement);
+	}
+
 	return {
 		async createSale(
 			userId: string,
@@ -53,13 +73,21 @@ export function createCashMovementsService(
 				permissions.cashCreate,
 			);
 
+			const previous = await existingMovement(
+				userId,
+				businessId,
+				input.id,
+				"SALE",
+			);
+			if (previous) return previous;
+
 			const paymentMethod = await paymentMethodsService.validateActiveMethod(
 				businessId,
 				input.paymentMethod,
 			);
 			const now = new Date();
 			const movement = await repository.create({
-				id: crypto.randomUUID(),
+				id: input.id ?? crypto.randomUUID(),
 				userId,
 				businessId,
 				type: "SALE",
@@ -88,9 +116,17 @@ export function createCashMovementsService(
 				permissions.cashCreate,
 			);
 
+			const previous = await existingMovement(
+				userId,
+				businessId,
+				input.id,
+				"EXPENSE",
+			);
+			if (previous) return previous;
+
 			const now = new Date();
 			const movement = await repository.create({
-				id: crypto.randomUUID(),
+				id: input.id ?? crypto.randomUUID(),
 				userId,
 				businessId,
 				type: "EXPENSE",
