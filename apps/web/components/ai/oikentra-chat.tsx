@@ -60,7 +60,8 @@ function readStoredChatSession(businessId: string) {
 		const raw = window.localStorage.getItem(chatStorageKey(businessId));
 		if (!raw) return undefined;
 		const parsed = JSON.parse(raw) as Partial<StoredChatSession>;
-		if (!parsed.session?.sessionId || !Array.isArray(parsed.events)) return undefined;
+		if (!parsed.session?.sessionId || !Array.isArray(parsed.events))
+			return undefined;
 		return parsed as StoredChatSession;
 	} catch {
 		return undefined;
@@ -112,16 +113,16 @@ function pendingInputRequest(parts: readonly EveMessagePart[]) {
 
 function ToolStatus({ part }: { part: EveMessagePart }) {
 	if (part.type !== "dynamic-tool") return null;
+	if (part.state === "output-available" || part.state === "output-denied") {
+		return null;
+	}
 
-	const label = part.toolMetadata?.eve?.name ?? part.toolName;
-	const status =
-		part.state === "output-available"
-			? "listo"
-			: part.state === "output-error"
-				? "error"
-				: part.state === "approval-requested"
-					? "esperando aprobación"
-					: "consultando";
+	const label =
+		part.state === "output-error"
+			? "No pude consultar esos datos"
+			: part.state === "approval-requested"
+				? "Necesito tu confirmación"
+				: "Consultando datos de Oikentra";
 
 	return (
 		<div className="flex w-fit items-center gap-1.5 rounded-full border bg-background/80 px-2.5 py-1 text-xs text-muted-foreground shadow-sm">
@@ -131,9 +132,7 @@ function ToolStatus({ part }: { part: EveMessagePart }) {
 				strokeWidth={2}
 				aria-hidden="true"
 			/>
-			<span>
-				{label}: {status}
-			</span>
+			<span>{label}</span>
 		</div>
 	);
 }
