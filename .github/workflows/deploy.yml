@@ -52,6 +52,7 @@ jobs:
             web:
               - 'apps/web/**'
             shared:
+              - '.github/workflows/deploy.yml'
               - 'packages/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
@@ -107,16 +108,20 @@ jobs:
 
           if [[ "${GITHUB_EVENT_NAME}" == "push" \
             && "${GITHUB_REF}" == refs/heads/* ]]; then
-            previous_conclusion=$(gh api \
-              "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml/runs" \
-              -f branch="${GITHUB_REF_NAME}" \
-              -f event="push" \
-              -f status="completed" \
-              -f per_page=5 \
-              --jq ".workflow_runs[] \
-                | select(.id != ${GITHUB_RUN_ID}) \
-                | .conclusion" \
-              | head -n 1)
+            previous_conclusion=$(
+              gh api \
+                "repos/${GITHUB_REPOSITORY}/actions/runs" \
+                -f branch="${GITHUB_REF_NAME}" \
+                -f event="push" \
+                -f status="completed" \
+                -f per_page=5 \
+                --jq ".workflow_runs[] \
+                  | select(.id != ${GITHUB_RUN_ID}) \
+                  | .conclusion" \
+                2>/dev/null \
+                | head -n 1 \
+                || true
+            )
 
             if [[ -n "$previous_conclusion" \
               && "$previous_conclusion" != "success" ]]; then
