@@ -1,8 +1,7 @@
 import { defineEval } from "eve/evals";
 
 export default defineEval({
-	description:
-		"Uses customer search before consulting a named customer's debt.",
+	description: "Uses period comparison for sales-vs-yesterday questions.",
 	tags: ["read-only", "requires-business-data"],
 	async test(t) {
 		if (!process.env.OIKENTRA_AGENT_BUSINESS_ID) {
@@ -12,11 +11,10 @@ export default defineEval({
 			return;
 		}
 
-		await t.send("¿Cuánto me debe Julio?");
+		await t.send("¿Vendí más hoy que ayer?");
 
 		t.succeeded();
-		t.calledTool("find_customer");
-		t.toolOrder(["find_customer"]);
-		t.maxToolCalls(3);
+		t.calledTool("compare_business_periods");
+		t.maxToolCalls(2);
 	},
 });

@@ -47,14 +47,20 @@ type ListCashMovementsOutput = {
 function readDate(input: Record<string, unknown>, key: "from" | "to") {
 	const value = input[key];
 	if (value === undefined) return undefined;
-	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value))
+		return value;
 	throw new Error(`${key} must be YYYY-MM-DD.`);
 }
 
 function readType(input: Record<string, unknown>): MovementType | "ALL" {
 	const value = input.type;
 	if (value === undefined) return "ALL";
-	if (value === "SALE" || value === "EXPENSE" || value === "CREDIT_PAYMENT" || value === "ALL") {
+	if (
+		value === "SALE" ||
+		value === "EXPENSE" ||
+		value === "CREDIT_PAYMENT" ||
+		value === "ALL"
+	) {
 		return value;
 	}
 	throw new Error("type must be SALE, EXPENSE, CREDIT_PAYMENT, or ALL.");
@@ -63,7 +69,13 @@ function readType(input: Record<string, unknown>): MovementType | "ALL" {
 function readLimit(input: Record<string, unknown>) {
 	const limit = input.limit;
 	if (limit === undefined) return 10;
-	if (typeof limit === "number" && Number.isInteger(limit) && limit >= 1 && limit <= 50) return limit;
+	if (
+		typeof limit === "number" &&
+		Number.isInteger(limit) &&
+		limit >= 1 &&
+		limit <= 50
+	)
+		return limit;
 	throw new Error("limit must be an integer between 1 and 50.");
 }
 
@@ -76,7 +88,10 @@ export default defineTool<ListCashMovementsOutput>({
 		properties: {
 			from: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
 			to: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
-			type: { type: "string", enum: ["SALE", "EXPENSE", "CREDIT_PAYMENT", "ALL"] },
+			type: {
+				type: "string",
+				enum: ["SALE", "EXPENSE", "CREDIT_PAYMENT", "ALL"],
+			},
 			limit: { type: "number", minimum: 1, maximum: 50 },
 		},
 	},
@@ -104,7 +119,8 @@ export default defineTool<ListCashMovementsOutput>({
 			(acc, movement) => {
 				if (movement.type === "SALE") acc.sales += movement.amount;
 				if (movement.type === "EXPENSE") acc.expenses += movement.amount;
-				if (movement.type === "CREDIT_PAYMENT") acc.creditPayments += movement.amount;
+				if (movement.type === "CREDIT_PAYMENT")
+					acc.creditPayments += movement.amount;
 				return acc;
 			},
 			{ sales: 0, expenses: 0, creditPayments: 0 },

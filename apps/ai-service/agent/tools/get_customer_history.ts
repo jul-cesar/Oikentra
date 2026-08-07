@@ -42,7 +42,13 @@ function readCustomerId(input: Record<string, unknown>) {
 function readLimit(input: Record<string, unknown>) {
 	const limit = input.limit;
 	if (limit === undefined) return 10;
-	if (typeof limit === "number" && Number.isInteger(limit) && limit >= 1 && limit <= 50) return limit;
+	if (
+		typeof limit === "number" &&
+		Number.isInteger(limit) &&
+		limit >= 1 &&
+		limit <= 50
+	)
+		return limit;
 	throw new Error("limit must be an integer between 1 and 50.");
 }
 
@@ -73,7 +79,10 @@ export default defineTool<GetCustomerHistoryOutput>({
 		const limit = readLimit(input);
 		const history = await businessApi<CustomerHistory>(
 			context,
-			businessPath(context, `/customers/${encodeURIComponent(customerId)}/history`),
+			businessPath(
+				context,
+				`/customers/${encodeURIComponent(customerId)}/history`,
+			),
 			{ signal: ctx.abortSignal },
 		);
 

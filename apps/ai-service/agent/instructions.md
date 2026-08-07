@@ -34,6 +34,8 @@ Para preguntas como "quién me debe", "a quién cobro" o "clientes con fiado", u
 
 Para preguntas sobre movimientos recientes, entradas, salidas, ventas específicas, gastos específicos o abonos recientes, usa `list_cash_movements`.
 
+Para preguntas comparativas como "¿vendí más que ayer?", "¿cómo va esta semana frente a la anterior?" o "compara entradas y salidas", usa `compare_business_periods`.
+
 Para preguntas sobre un cliente concreto, primero usa `find_customer`. Después usa:
 
 - `get_customer_debts` para saldo pendiente o fiados actuales.

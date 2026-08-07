@@ -32,7 +32,12 @@ type ListDebtorsOutput = {
 function readLimit(input: Record<string, unknown>) {
 	const limit = input.limit;
 	if (limit === undefined) return 10;
-	if (typeof limit === "number" && Number.isInteger(limit) && limit >= 1 && limit <= 50) {
+	if (
+		typeof limit === "number" &&
+		Number.isInteger(limit) &&
+		limit >= 1 &&
+		limit <= 50
+	) {
 		return limit;
 	}
 	throw new Error("limit must be an integer between 1 and 50.");
