@@ -9,6 +9,8 @@
   "scripts": {
     "build": "eve build",
     "dev": "eve dev",
+    "eval": "eve eval",
+    "eval:list": "eve eval --list",
     "start": "eve start",
     "typecheck": "tsc"
   },
