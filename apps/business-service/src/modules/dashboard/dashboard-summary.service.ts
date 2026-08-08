@@ -78,6 +78,46 @@ function calcDebt(
 	return { totalDebt, customersWithDebt: customers.size, oldDebts };
 }
 
+function calcLoanDebt(
+	pendingLoans: {
+		id: string;
+		customerId: string;
+		totalAmount: number;
+		dueDate: string;
+	}[],
+	payments: { loanId: string; amount: number }[],
+) {
+	const paid = new Map<string, number>();
+	for (const payment of payments)
+		paid.set(
+			payment.loanId,
+			(paid.get(payment.loanId) ?? 0) + payment.amount,
+		);
+
+	const customers = new Set<string>();
+	let totalDebt = 0;
+	let overdueLoans = 0;
+	const today = new Date();
+
+	for (const loan of pendingLoans) {
+		const remaining = Math.max(
+			0,
+			loan.totalAmount - (paid.get(loan.id) ?? 0),
+		);
+		if (!remaining) continue;
+		totalDebt += remaining;
+		customers.add(loan.customerId);
+		const due = new Date(`${loan.dueDate}T00:00:00Z`);
+		if (due.getTime() < today.getTime()) overdueLoans += 1;
+	}
+
+	return {
+		totalDebt,
+		customersWithDebt: customers.size,
+		overdueLoans,
+	};
+}
+
 export function createDashboardSummaryService(
 	repository: DashboardSummaryRepository = dashboardSummaryRepository,
 ) {
@@ -99,14 +139,21 @@ export function createDashboardSummaryService(
 				to: requestedRange.to ?? fallback.to,
 			};
 
-			const [movements, pendingCredits] = await Promise.all([
+			const [movements, pendingCredits, pendingLoans] = await Promise.all([
 				repository.findActiveMovementsByBusinessAndDateRange(businessId, range),
 				repository.findPendingCreditsByBusiness(businessId),
+				repository.findPendingLoansByBusiness(businessId),
 			]);
-			const payments = await repository.findActivePaymentsForCredits(
-				pendingCredits.map((credit) => credit.id),
-			);
+			const [payments, loanPayments] = await Promise.all([
+				repository.findActivePaymentsForCredits(
+					pendingCredits.map((credit) => credit.id),
+				),
+				repository.findActivePaymentsForLoans(
+					pendingLoans.map((loan) => loan.id),
+				),
+			]);
 			const debt = calcDebt(pendingCredits, payments);
+			const loanDebt = calcLoanDebt(pendingLoans, loanPayments);
 
 			let salesAmount = 0;
 			let salesCount = 0;
@@ -114,11 +161,22 @@ export function createDashboardSummaryService(
 			let expensesCount = 0;
 			let creditPaymentsAmount = 0;
 			let creditPaymentsCount = 0;
+			let loanPaymentsAmount = 0;
+			let loanPaymentsCount = 0;
+			let loanDisbursementsAmount = 0;
 
 			const daily = new Map(
 				eachDay(range.from, range.to).map((date) => [
 					date,
-					{ date, sales: 0, expenses: 0, creditPayments: 0, net: 0 },
+					{
+						date,
+						sales: 0,
+						expenses: 0,
+						creditPayments: 0,
+						loanPayments: 0,
+						loanDisbursements: 0,
+						net: 0,
+					},
 				]),
 			);
 			const paymentMethods = new Map<
@@ -141,6 +199,8 @@ export function createDashboardSummaryService(
 					sales: 0,
 					expenses: 0,
 					creditPayments: 0,
+					loanPayments: 0,
+					loanDisbursements: 0,
 					net: 0,
 				};
 				if (movement.type === "SALE") {
@@ -164,8 +224,20 @@ export function createDashboardSummaryService(
 					creditPaymentsAmount += movement.amount;
 					creditPaymentsCount += 1;
 					day.creditPayments += movement.amount;
+				} else if (movement.type === "LOAN_PAYMENT") {
+					loanPaymentsAmount += movement.amount;
+					loanPaymentsCount += 1;
+					day.loanPayments += movement.amount;
+				} else if (movement.type === "LOAN_DISBURSEMENT") {
+					loanDisbursementsAmount += movement.amount;
+					day.loanDisbursements += movement.amount;
 				}
-				day.net = day.sales + day.creditPayments - day.expenses;
+				day.net =
+					day.sales +
+					day.creditPayments +
+					day.loanPayments -
+					day.expenses -
+					day.loanDisbursements;
 				daily.set(movement.businessDate, day);
 
 				if (
@@ -185,7 +257,12 @@ export function createDashboardSummaryService(
 				}
 			}
 
-			const netCashFlow = salesAmount + creditPaymentsAmount - expensesAmount;
+			const netCashFlow =
+				salesAmount +
+				creditPaymentsAmount +
+				loanPaymentsAmount -
+				expensesAmount -
+				loanDisbursementsAmount;
 			const paymentMethodRows = Array.from(paymentMethods.values())
 				.sort((a, b) => b.amount - a.amount)
 				.slice(0, 6)
@@ -208,6 +285,9 @@ export function createDashboardSummaryService(
 					expensesCount,
 					creditPaymentsAmount,
 					creditPaymentsCount,
+					loanPaymentsAmount,
+					loanPaymentsCount,
+					loanDisbursementsAmount,
 					netCashFlow,
 					averageSaleTicket: salesCount
 						? Math.round(salesAmount / salesCount)
@@ -215,6 +295,9 @@ export function createDashboardSummaryService(
 					totalDebt: debt.totalDebt,
 					customersWithDebt: debt.customersWithDebt,
 					oldDebts: debt.oldDebts,
+					loanDebt: loanDebt.totalDebt,
+					loansWithDebt: loanDebt.customersWithDebt,
+					overdueLoans: loanDebt.overdueLoans,
 				},
 				dailyCashFlow: Array.from(daily.values()).sort((a, b) =>
 					a.date.localeCompare(b.date),
@@ -244,6 +327,12 @@ export function createDashboardSummaryService(
 						value: money(debt.totalDebt),
 						detail: `${debt.customersWithDebt} cliente${debt.customersWithDebt === 1 ? "" : "s"} con saldo`,
 						tone: debt.oldDebts ? "warning" : "info",
+					},
+					{
+						label: "Préstamos vigentes",
+						value: money(loanDebt.totalDebt),
+						detail: `${loanDebt.overdueLoans} préstamo${loanDebt.overdueLoans === 1 ? "" : "s"} vencido${loanDebt.overdueLoans === 1 ? "" : "s"}`,
+						tone: loanDebt.overdueLoans ? "warning" : "info",
 					},
 				],
 			};

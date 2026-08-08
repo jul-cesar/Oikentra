@@ -10,17 +10,25 @@ export type DashboardSummaryResponse = {
 		expensesCount: number;
 		creditPaymentsAmount: number;
 		creditPaymentsCount: number;
+		loanPaymentsAmount: number;
+		loanPaymentsCount: number;
+		loanDisbursementsAmount: number;
 		netCashFlow: number;
 		averageSaleTicket: number;
 		totalDebt: number;
 		customersWithDebt: number;
 		oldDebts: number;
+		loanDebt: number;
+		loansWithDebt: number;
+		overdueLoans: number;
 	};
 	dailyCashFlow: {
 		date: string;
 		sales: number;
 		expenses: number;
 		creditPayments: number;
+		loanPayments: number;
+		loanDisbursements: number;
 		net: number;
 	}[];
 	paymentMethods: {

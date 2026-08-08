@@ -1,7 +1,13 @@
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
 
 import { getDb } from "../../db/client";
-import { cashMovements, creditPayments, credits } from "../../db/schema";
+import {
+	cashMovements,
+	creditPayments,
+	credits,
+	loanPayments,
+	loans,
+} from "../../db/schema";
 
 export type DashboardSummaryRepository = {
 	findActiveMovementsByBusinessAndDateRange(
@@ -14,6 +20,12 @@ export type DashboardSummaryRepository = {
 	findActivePaymentsForCredits(
 		creditIds: string[],
 	): Promise<Pick<typeof creditPayments.$inferSelect, "creditId" | "amount">[]>;
+	findPendingLoansByBusiness(
+		businessId: string,
+	): Promise<(typeof loans.$inferSelect)[]>;
+	findActivePaymentsForLoans(
+		loanIds: string[],
+	): Promise<Pick<typeof loanPayments.$inferSelect, "loanId" | "amount">[]>;
 };
 
 export const dashboardSummaryRepository: DashboardSummaryRepository = {
@@ -52,6 +64,31 @@ export const dashboardSummaryRepository: DashboardSummaryRepository = {
 				and(
 					inArray(creditPayments.creditId, creditIds),
 					eq(creditPayments.status, "ACTIVE"),
+				),
+			);
+	},
+
+	async findPendingLoansByBusiness(businessId) {
+		return getDb()
+			.select()
+			.from(loans)
+			.where(
+				and(eq(loans.businessId, businessId), eq(loans.status, "PENDING")),
+			);
+	},
+
+	async findActivePaymentsForLoans(loanIds) {
+		if (!loanIds.length) return [];
+		return getDb()
+			.select({
+				loanId: loanPayments.loanId,
+				amount: loanPayments.amount,
+			})
+			.from(loanPayments)
+			.where(
+				and(
+					inArray(loanPayments.loanId, loanIds),
+					eq(loanPayments.status, "ACTIVE"),
 				),
 			);
 	},
