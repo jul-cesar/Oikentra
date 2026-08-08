@@ -1,8 +1,9 @@
-import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, eq, gte, inArray, lte, ne } from "drizzle-orm";
 
 import { getDb } from "../../db/client";
 import {
 	cashMovements,
+	creditMovements,
 	creditPayments,
 	credits,
 	loanPayments,
@@ -19,6 +20,10 @@ export type DashboardSummaryRepository = {
 		businessId: string,
 		range: { from: string; to: string },
 	): Promise<(typeof portfolioMovements.$inferSelect)[]>;
+	findActiveCreditMovementsByBusinessAndDateRange(
+		businessId: string,
+		range: { from: string; to: string },
+	): Promise<(typeof creditMovements.$inferSelect)[]>;
 	findPendingCreditsByBusiness(
 		businessId: string,
 	): Promise<(typeof credits.$inferSelect)[]>;
@@ -44,6 +49,9 @@ export const dashboardSummaryRepository: DashboardSummaryRepository = {
 					eq(cashMovements.status, "ACTIVE"),
 					gte(cashMovements.businessDate, range.from),
 					lte(cashMovements.businessDate, range.to),
+					ne(cashMovements.type, "CREDIT_PAYMENT"),
+					ne(cashMovements.type, "LOAN_PAYMENT"),
+					ne(cashMovements.type, "LOAN_DISBURSEMENT"),
 				),
 			);
 	},
@@ -58,6 +66,20 @@ export const dashboardSummaryRepository: DashboardSummaryRepository = {
 					eq(portfolioMovements.status, "ACTIVE"),
 					gte(portfolioMovements.businessDate, range.from),
 					lte(portfolioMovements.businessDate, range.to),
+				),
+			);
+	},
+
+	async findActiveCreditMovementsByBusinessAndDateRange(businessId, range) {
+		return getDb()
+			.select()
+			.from(creditMovements)
+			.where(
+				and(
+					eq(creditMovements.businessId, businessId),
+					eq(creditMovements.status, "ACTIVE"),
+					gte(creditMovements.businessDate, range.from),
+					lte(creditMovements.businessDate, range.to),
 				),
 			);
 	},

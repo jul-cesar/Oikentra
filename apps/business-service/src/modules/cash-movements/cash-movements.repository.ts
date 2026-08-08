@@ -57,6 +57,7 @@ export const cashMovementRepository: CashMovementRepository = {
 				and(
 					eq(cashMovements.businessId, businessId),
 					eq(cashMovements.status, "ACTIVE"),
+					ne(cashMovements.type, "CREDIT_PAYMENT"),
 					ne(cashMovements.type, "LOAN_PAYMENT"),
 					ne(cashMovements.type, "LOAN_DISBURSEMENT"),
 				),
