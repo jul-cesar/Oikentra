@@ -198,7 +198,7 @@ function BusinessDashboardContent() {
 								icon={<HugeiconsIcon icon={Wallet01Icon} size={16} />}
 								label="Flujo neto"
 								value={currencyFormatter.format(summary.kpis.netCashFlow)}
-								detail="Ventas + abonos - gastos"
+								detail="Ventas - gastos"
 								tone={summary.kpis.netCashFlow >= 0 ? "default" : "danger"}
 							/>
 							<MetricCard

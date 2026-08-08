@@ -2,24 +2,27 @@
 
 import { getDb } from "../../db/client";
 import {
+	creditMovements,
 	creditPayments,
 	credits,
-	cashMovements,
 	type Credit,
+	type CreditMovement,
 	type CreditPayment,
 	type NewCredit,
+	type NewCreditMovement,
 	type NewCreditPayment,
-	type CashMovement,
-	type NewCashMovement,
 	type CreditStatus,
 } from "../../db/schema";
 
 export type CreditRepository = {
-	createCredit(input: NewCredit): Promise<Credit>;
+	createCredit(
+		creditInput: NewCredit,
+		creditMovementInput: NewCreditMovement,
+	): Promise<{ credit: Credit; creditMovement: CreditMovement }>;
 	createPayment(
 		paymentInput: NewCreditPaymentInput,
-		cashMovementInput: NewCashMovement,
-	): Promise<{ payment: CreditPayment; cashMovement: CashMovement }>;
+		creditMovementInput: NewCreditMovement,
+	): Promise<{ payment: CreditPayment; creditMovement: CreditMovement }>;
 	findCreditById(creditId: string): Promise<Credit | null>;
 	findCreditsByBusiness(
 		businessId: string,
@@ -51,7 +54,7 @@ export type CreditRepository = {
 		reason: string,
 	): Promise<{
 		payment: CreditPayment | null;
-		cashMovement: CashMovement | null;
+		creditMovement: CreditMovement | null;
 	}>;
 	getActiveCreditsByCustomer(
 		customerId: string,
@@ -77,33 +80,41 @@ type NewCreditPaymentInput = Omit<
 >;
 
 export const creditRepository: CreditRepository = {
-	async createCredit(input) {
-		const db = getDb();
-		const [credit] = await db.insert(credits).values(input).returning();
-		return credit;
-	},
-
-	async createPayment(paymentInput, cashMovementInput) {
+	async createCredit(creditInput, creditMovementInput) {
 		const db = getDb();
 		const now = new Date();
 
 		return db.transaction(async (tx) => {
-			const [cashMovement] = await tx
-				.insert(cashMovements)
-				.values(cashMovementInput)
+			const [credit] = await tx.insert(credits).values(creditInput).returning();
+			const [creditMovement] = await tx
+				.insert(creditMovements)
+				.values(creditMovementInput)
+				.returning();
+			return { credit, creditMovement };
+		});
+	},
+
+	async createPayment(paymentInput, creditMovementInput) {
+		const db = getDb();
+		const now = new Date();
+
+		return db.transaction(async (tx) => {
+			const [creditMovement] = await tx
+				.insert(creditMovements)
+				.values(creditMovementInput)
 				.returning();
 
 			const [payment] = await tx
 				.insert(creditPayments)
 				.values({
 					...paymentInput,
-					cashMovementId: cashMovement.id,
+					cashMovementId: creditMovement.id,
 					createdAt: now,
 					updatedAt: now,
 				})
 				.returning();
 
-			return { payment, cashMovement };
+			return { payment, creditMovement };
 		});
 	},
 
@@ -213,18 +224,41 @@ export const creditRepository: CreditRepository = {
 	async cancelCredit(creditId, reason) {
 		const db = getDb();
 		const now = new Date();
-		const [credit] = await db
-			.update(credits)
-			.set({
-				status: "CANCELLED",
-				cancellationReason: reason,
-				cancelledAt: now,
-				updatedAt: now,
-				version: sql`${credits.version} + 1`,
-			})
-			.where(and(eq(credits.id, creditId), eq(credits.status, "PENDING")))
-			.returning();
-		return credit ?? null;
+
+		return db.transaction(async (tx) => {
+			const [credit] = await tx
+				.update(credits)
+				.set({
+					status: "CANCELLED",
+					cancellationReason: reason,
+					cancelledAt: now,
+					updatedAt: now,
+					version: sql`${credits.version} + 1`,
+				})
+				.where(and(eq(credits.id, creditId), eq(credits.status, "PENDING")))
+				.returning();
+
+			if (!credit) return null;
+
+			await tx
+				.update(creditMovements)
+				.set({
+					status: "CANCELLED",
+					cancellationReason: reason,
+					cancelledAt: now,
+					updatedAt: now,
+					version: sql`${creditMovements.version} + 1`,
+				})
+				.where(
+					and(
+						eq(creditMovements.sourceType, "CREDIT_DISBURSEMENT"),
+						eq(creditMovements.sourceId, creditId),
+						eq(creditMovements.status, "ACTIVE"),
+					),
+				);
+
+			return credit;
+		});
 	},
 
 	async cancelPayment(paymentId, creditId, reason) {
@@ -250,26 +284,26 @@ export const creditRepository: CreditRepository = {
 				)
 				.returning();
 
-			if (!payment) return { payment: null, cashMovement: null };
+			if (!payment) return { payment: null, creditMovement: null };
 
-			const [cashMovement] = await tx
-				.update(cashMovements)
+			const [creditMovement] = await tx
+				.update(creditMovements)
 				.set({
 					status: "CANCELLED",
 					cancellationReason: reason,
 					cancelledAt: now,
 					updatedAt: now,
-					version: sql`${cashMovements.version} + 1`,
+					version: sql`${creditMovements.version} + 1`,
 				})
 				.where(
 					and(
-						eq(cashMovements.id, payment.cashMovementId),
-						eq(cashMovements.status, "ACTIVE"),
+						eq(creditMovements.id, payment.cashMovementId),
+						eq(creditMovements.status, "ACTIVE"),
 					),
 				)
 				.returning();
 
-			return { payment, cashMovement };
+			return { payment, creditMovement };
 		});
 	},
 

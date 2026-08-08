@@ -64,6 +64,13 @@
       "when": 1786161266796,
       "tag": "0009_portfolio_movements",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786300000000,
+      "tag": "0010_credit_movements",
+      "breakpoints": true
     }
   ]
 }

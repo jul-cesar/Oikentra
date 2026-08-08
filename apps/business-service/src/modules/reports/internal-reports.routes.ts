@@ -1,10 +1,11 @@
 import { Hono } from 'hono'
-import { and, desc, eq, gte, lte, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, inArray, ne, sql } from 'drizzle-orm'
 
 import { getDb } from '../../db/client'
 import {
   businesses,
   cashMovements,
+  creditMovements,
   credits,
   creditPayments,
   customers,
@@ -45,25 +46,19 @@ internalReportsRoutes.post('/data', async (c) => {
     throw new AppError('BUSINESS_NOT_FOUND', 404, 'The business was not found.')
   }
 
-  // Fetch cash movements for the date range
-  const movementConditions = [eq(cashMovements.businessId, businessId)]
+  // Fetch cash movements for the date range (operating cash: sales and expenses)
+  const movementConditions = [
+    eq(cashMovements.businessId, businessId),
+    ne(cashMovements.type, 'CREDIT_PAYMENT'),
+    ne(cashMovements.type, 'LOAN_PAYMENT'),
+    ne(cashMovements.type, 'LOAN_DISBURSEMENT'),
+  ]
   if (from) movementConditions.push(gte(cashMovements.businessDate, from))
   if (to) movementConditions.push(lte(cashMovements.businessDate, to))
   if (customerId) {
-    // For customer statements, get movements linked to their credits and loans
-    const customerCredits = await db
-      .select({ id: credits.id })
-      .from(credits)
-      .where(and(eq(credits.businessId, businessId), eq(credits.customerId, customerId)))
-    const creditIds = customerCredits.map((cr) => cr.id)
-    const creditIn = creditIds.length ? sql`IN (${sql.join(creditIds.map((id) => sql`${id}`), sql`,`)})` : sql`IN (NULL)`
+    // For customer statements, only operating cash movements
     movementConditions.push(
-      sql`(${cashMovements.id} IN (
-        SELECT cm.id FROM cash_movements cm
-        WHERE cm.source_type = 'CREDIT_PAYMENT' AND cm.source_id IN (
-          SELECT cp.id FROM credit_payments cp WHERE cp.credit_id ${creditIn}
-        )
-      ) OR (${cashMovements.sourceType} IS NULL AND ${cashMovements.type} IN ('SALE', 'EXPENSE')))`,
+      sql`(${cashMovements.sourceType} IS NULL AND ${cashMovements.type} IN ('SALE', 'EXPENSE'))`,
     )
   }
 
@@ -72,6 +67,36 @@ internalReportsRoutes.post('/data', async (c) => {
     .from(cashMovements)
     .where(and(...movementConditions))
     .orderBy(desc(cashMovements.businessDate))
+
+  // Fetch credit movements (fiado abonos and fiados granted) for the date range
+  const creditMovementConditions = [eq(creditMovements.businessId, businessId)]
+  if (from) creditMovementConditions.push(gte(creditMovements.businessDate, from))
+  if (to) creditMovementConditions.push(lte(creditMovements.businessDate, to))
+  if (customerId) {
+    const customerCredits = await db
+      .select({ id: credits.id })
+      .from(credits)
+      .where(and(eq(credits.businessId, businessId), eq(credits.customerId, customerId)))
+    const creditIds = customerCredits.map((cr) => cr.id)
+    const creditIn = creditIds.length ? sql`IN (${sql.join(creditIds.map((id) => sql`${id}`), sql`,`)})` : sql`IN (NULL)`
+    creditMovementConditions.push(
+      sql`(${creditMovements.id} IN (
+        SELECT cm.id FROM credit_movements cm
+        WHERE cm.source_type = 'CREDIT_PAYMENT' AND cm.source_id IN (
+          SELECT cp.id FROM credit_payments cp WHERE cp.credit_id ${creditIn}
+        )
+        UNION
+        SELECT cm.id FROM credit_movements cm
+        WHERE cm.source_type = 'CREDIT_DISBURSEMENT' AND cm.source_id ${creditIn}
+      ))`,
+    )
+  }
+
+  const creditMovementRows = await db
+    .select()
+    .from(creditMovements)
+    .where(and(...creditMovementConditions))
+    .orderBy(desc(creditMovements.businessDate))
 
   // Fetch portfolio movements (loan payments and disbursements)
   const portfolioConditions = [eq(portfolioMovements.businessId, businessId)]
@@ -141,9 +166,31 @@ internalReportsRoutes.post('/data', async (c) => {
     } else if (m.type === 'EXPENSE') {
       day.expensesTotal += m.amount
       day.totalOut += m.amount
-    } else if (m.type === 'CREDIT_PAYMENT') {
-      day.creditPaymentsTotal += m.amount
-      day.totalIn += m.amount
+    }
+    day.remaining = day.totalIn - day.totalOut
+  }
+
+  for (const cm of creditMovementRows) {
+    if (cm.status !== 'ACTIVE') continue
+    const date = cm.businessDate
+    if (!dailyMap.has(date)) {
+      dailyMap.set(date, {
+        date,
+        salesTotal: 0,
+        expensesTotal: 0,
+        creditPaymentsTotal: 0,
+        creditCreatedTotal: 0,
+        loanPaymentsTotal: 0,
+        loanDisbursementsTotal: 0,
+        totalIn: 0,
+        totalOut: 0,
+        remaining: 0,
+      })
+    }
+    const day = dailyMap.get(date)!
+    if (cm.type === 'CREDIT_PAYMENT') {
+      day.creditPaymentsTotal += cm.amount
+      day.totalIn += cm.amount
     }
     day.remaining = day.totalIn - day.totalOut
   }
@@ -365,6 +412,15 @@ internalReportsRoutes.post('/data', async (c) => {
           note: m.note,
           businessDate: m.businessDate,
           status: m.status,
+        })),
+        ...creditMovementRows.map((cm) => ({
+          id: cm.id,
+          type: cm.type,
+          amount: cm.amount,
+          category: null,
+          note: cm.note,
+          businessDate: cm.businessDate,
+          status: cm.status,
         })),
         ...portfolioMovementRows.map((pm) => ({
           id: pm.id,

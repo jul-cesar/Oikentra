@@ -10,6 +10,7 @@ export type DashboardSummaryResponse = {
 		expensesCount: number;
 		creditPaymentsAmount: number;
 		creditPaymentsCount: number;
+		creditDisbursementsAmount: number;
 		loanPaymentsAmount: number;
 		loanPaymentsCount: number;
 		loanDisbursementsAmount: number;
@@ -27,6 +28,7 @@ export type DashboardSummaryResponse = {
 		sales: number;
 		expenses: number;
 		creditPayments: number;
+		creditDisbursements: number;
 		loanPayments: number;
 		loanDisbursements: number;
 		net: number;

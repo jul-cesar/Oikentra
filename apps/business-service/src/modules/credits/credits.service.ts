@@ -66,19 +66,39 @@ export function createCreditsService(
 			}
 
 			const now = new Date();
-			const credit = await repository.createCredit({
-				id: crypto.randomUUID(),
-				userId,
-				businessId,
-				customerId: input.customerId,
-				originalAmount: input.originalAmount,
-				description: input.description ?? null,
-				creditDate: input.creditDate,
-				status: "PENDING",
-				version: 1,
-				createdAt: now,
-				updatedAt: now,
-			});
+			const creditId = crypto.randomUUID();
+			const { credit } = await repository.createCredit(
+				{
+					id: creditId,
+					userId,
+					businessId,
+					customerId: input.customerId,
+					originalAmount: input.originalAmount,
+					description: input.description ?? null,
+					creditDate: input.creditDate,
+					status: "PENDING",
+					version: 1,
+					createdAt: now,
+					updatedAt: now,
+				},
+				{
+					id: crypto.randomUUID(),
+					userId,
+					businessId,
+					customerId: input.customerId,
+					type: "CREDIT_DISBURSEMENT",
+					amount: input.originalAmount,
+					note: input.description ?? null,
+					businessDate: input.creditDate,
+					occurredAt: now,
+					status: "ACTIVE",
+					sourceType: "CREDIT_DISBURSEMENT",
+					sourceId: creditId,
+					version: 1,
+					createdAt: now,
+					updatedAt: now,
+				},
+			);
 
 			return toCreditResponse(credit, [], 0);
 		},
@@ -238,10 +258,9 @@ export function createCreditsService(
 					id: crypto.randomUUID(),
 					userId,
 					businessId,
+					customerId: credit.customerId,
 					type: "CREDIT_PAYMENT",
 					amount: input.amount,
-					category: null,
-					paymentMethod: null,
 					note: input.note ?? null,
 					businessDate: input.paymentDate,
 					occurredAt: now,
