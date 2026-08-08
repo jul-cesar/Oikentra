@@ -11,8 +11,9 @@
     "dev": "eve dev",
     "eval": "eve eval",
     "eval:list": "eve eval --list",
-    "eval:safety": "eve eval --tag safety",
-    "eval:smoke": "eve eval --tag fast --tag safety",
+    "eval:read-only": "eve eval --tag requires-business-data --strict",
+    "eval:safety": "eve eval --tag safety --strict",
+    "eval:smoke": "eve eval --tag fast --strict",
     "start": "eve start",
     "typecheck": "tsc"
   },
