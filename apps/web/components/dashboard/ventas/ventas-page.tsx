@@ -69,6 +69,14 @@ const MOVEMENT_CONFIG = {
 	},
 } as const;
 
+const MOVEMENT_FALLBACK_CONFIG = {
+	label: "Movimiento",
+	icon: ReceiptTextIcon,
+	ring: "bg-muted text-muted-foreground",
+	sign: "",
+	amount: "text-foreground",
+} as const;
+
 const money = (value: number) =>
 	new Intl.NumberFormat("es-CO", {
 		style: "currency",
@@ -485,7 +493,8 @@ function MovementRow({
 	movement: CashMovement;
 	onCancel: (movement: CashMovement) => void;
 }) {
-	const config = MOVEMENT_CONFIG[movement.type];
+	const config =
+		MOVEMENT_CONFIG[movement.type] ?? MOVEMENT_FALLBACK_CONFIG;
 	const cancelled = movement.status === "CANCELLED";
 
 	return (
