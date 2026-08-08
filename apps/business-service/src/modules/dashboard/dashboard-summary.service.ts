@@ -139,11 +139,16 @@ export function createDashboardSummaryService(
 				to: requestedRange.to ?? fallback.to,
 			};
 
-			const [movements, pendingCredits, pendingLoans] = await Promise.all([
-				repository.findActiveMovementsByBusinessAndDateRange(businessId, range),
-				repository.findPendingCreditsByBusiness(businessId),
-				repository.findPendingLoansByBusiness(businessId),
-			]);
+			const [movements, portfolioMovements, pendingCredits, pendingLoans] =
+				await Promise.all([
+					repository.findActiveMovementsByBusinessAndDateRange(businessId, range),
+					repository.findActivePortfolioMovementsByBusinessAndDateRange(
+						businessId,
+						range,
+					),
+					repository.findPendingCreditsByBusiness(businessId),
+					repository.findPendingLoansByBusiness(businessId),
+				]);
 			const [payments, loanPayments] = await Promise.all([
 				repository.findActivePaymentsForCredits(
 					pendingCredits.map((credit) => credit.id),
@@ -176,6 +181,7 @@ export function createDashboardSummaryService(
 						loanPayments: 0,
 						loanDisbursements: 0,
 						net: 0,
+						portfolioNet: 0,
 					},
 				]),
 			);
@@ -202,6 +208,7 @@ export function createDashboardSummaryService(
 					loanPayments: 0,
 					loanDisbursements: 0,
 					net: 0,
+					portfolioNet: 0,
 				};
 				if (movement.type === "SALE") {
 					salesAmount += movement.amount;
@@ -224,20 +231,8 @@ export function createDashboardSummaryService(
 					creditPaymentsAmount += movement.amount;
 					creditPaymentsCount += 1;
 					day.creditPayments += movement.amount;
-				} else if (movement.type === "LOAN_PAYMENT") {
-					loanPaymentsAmount += movement.amount;
-					loanPaymentsCount += 1;
-					day.loanPayments += movement.amount;
-				} else if (movement.type === "LOAN_DISBURSEMENT") {
-					loanDisbursementsAmount += movement.amount;
-					day.loanDisbursements += movement.amount;
 				}
-				day.net =
-					day.sales +
-					day.creditPayments +
-					day.loanPayments -
-					day.expenses -
-					day.loanDisbursements;
+				day.net = day.sales + day.creditPayments - day.expenses;
 				daily.set(movement.businessDate, day);
 
 				if (
@@ -257,12 +252,31 @@ export function createDashboardSummaryService(
 				}
 			}
 
-			const netCashFlow =
-				salesAmount +
-				creditPaymentsAmount +
-				loanPaymentsAmount -
-				expensesAmount -
-				loanDisbursementsAmount;
+			for (const portfolioMovement of portfolioMovements) {
+				const day = daily.get(portfolioMovement.businessDate) ?? {
+					date: portfolioMovement.businessDate,
+					sales: 0,
+					expenses: 0,
+					creditPayments: 0,
+					loanPayments: 0,
+					loanDisbursements: 0,
+					net: 0,
+					portfolioNet: 0,
+				};
+				if (portfolioMovement.type === "LOAN_PAYMENT") {
+					loanPaymentsAmount += portfolioMovement.amount;
+					loanPaymentsCount += 1;
+					day.loanPayments += portfolioMovement.amount;
+				} else if (portfolioMovement.type === "LOAN_DISBURSEMENT") {
+					loanDisbursementsAmount += portfolioMovement.amount;
+					day.loanDisbursements += portfolioMovement.amount;
+				}
+				day.portfolioNet =
+					day.loanPayments - day.loanDisbursements;
+				daily.set(portfolioMovement.businessDate, day);
+			}
+
+			const netCashFlow = salesAmount + creditPaymentsAmount - expensesAmount;
 			const paymentMethodRows = Array.from(paymentMethods.values())
 				.sort((a, b) => b.amount - a.amount)
 				.slice(0, 6)

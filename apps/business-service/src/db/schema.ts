@@ -231,6 +231,64 @@ export const cashMovements = pgTable(
 export type CashMovement = typeof cashMovements.$inferSelect;
 export type NewCashMovement = typeof cashMovements.$inferInsert;
 
+// ─── Portfolio Movements (Movimientos de cartera) ─────────────
+// Libro de caja de la cartera (créditos y préstamos). Separado de la
+// caja operativa (ventas y gastos) para que su dinero no la afecte.
+
+export const portfolioMovementTypes = [
+	"LOAN_PAYMENT",
+	"LOAN_DISBURSEMENT",
+] as const;
+
+export type PortfolioMovementType = (typeof portfolioMovementTypes)[number];
+
+export const portfolioMovements = pgTable(
+	"portfolio_movements",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		customerId: text("customer_id").notNull(),
+		type: text("type", { enum: portfolioMovementTypes }).notNull(),
+		amount: bigint("amount", { mode: "number" }).notNull(),
+		note: text("note"),
+		businessDate: date("business_date").notNull(),
+		occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+		status: text("status", { enum: cashMovementStatuses })
+			.notNull()
+			.default("ACTIVE"),
+		sourceType: text("source_type").notNull(),
+		sourceId: text("source_id").notNull(),
+		cancellationReason: text("cancellation_reason"),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("portfolio_movements_business_date_idx").on(
+			table.businessId,
+			table.businessDate,
+		),
+		index("portfolio_movements_business_type_date_idx").on(
+			table.businessId,
+			table.type,
+			table.businessDate,
+		),
+		index("portfolio_movements_customer_date_idx").on(
+			table.customerId,
+			table.businessDate,
+		),
+		index("portfolio_movements_source_type_source_id_idx").on(
+			table.sourceType,
+			table.sourceId,
+		),
+	],
+);
+
+export type PortfolioMovement = typeof portfolioMovements.$inferSelect;
+export type NewPortfolioMovement = typeof portfolioMovements.$inferInsert;
+
 // ─── Cash Movement Categories ────────────────────────────────
 
 export const cashMovementCategoryStatuses = ["ACTIVE", "INACTIVE"] as const;

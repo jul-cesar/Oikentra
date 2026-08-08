@@ -10,6 +10,7 @@ import {
   customers,
   loans,
   loanPayments,
+  portfolioMovements,
 } from '../../db/schema'
 import { AppError } from '../../http/errors'
 import type { AppBindings } from '../../http/request-context'
@@ -55,27 +56,13 @@ internalReportsRoutes.post('/data', async (c) => {
       .from(credits)
       .where(and(eq(credits.businessId, businessId), eq(credits.customerId, customerId)))
     const creditIds = customerCredits.map((cr) => cr.id)
-    const customerLoans = await db
-      .select({ id: loans.id })
-      .from(loans)
-      .where(and(eq(loans.businessId, businessId), eq(loans.customerId, customerId)))
-    const loanIds = customerLoans.map((l) => l.id)
     const creditIn = creditIds.length ? sql`IN (${sql.join(creditIds.map((id) => sql`${id}`), sql`,`)})` : sql`IN (NULL)`
-    const loanIn = loanIds.length ? sql`IN (${sql.join(loanIds.map((id) => sql`${id}`), sql`,`)})` : sql`IN (NULL)`
     movementConditions.push(
       sql`(${cashMovements.id} IN (
         SELECT cm.id FROM cash_movements cm
         WHERE cm.source_type = 'CREDIT_PAYMENT' AND cm.source_id IN (
           SELECT cp.id FROM credit_payments cp WHERE cp.credit_id ${creditIn}
         )
-        UNION
-        SELECT cm.id FROM cash_movements cm
-        WHERE cm.source_type = 'LOAN_PAYMENT' AND cm.source_id IN (
-          SELECT lp.id FROM loan_payments lp WHERE lp.loan_id ${loanIn}
-        )
-        UNION
-        SELECT cm.id FROM cash_movements cm
-        WHERE cm.source_type = 'LOAN_DISBURSEMENT' AND cm.source_id ${loanIn}
       ) OR (${cashMovements.sourceType} IS NULL AND ${cashMovements.type} IN ('SALE', 'EXPENSE')))`,
     )
   }
@@ -85,6 +72,36 @@ internalReportsRoutes.post('/data', async (c) => {
     .from(cashMovements)
     .where(and(...movementConditions))
     .orderBy(desc(cashMovements.businessDate))
+
+  // Fetch portfolio movements (loan payments and disbursements)
+  const portfolioConditions = [eq(portfolioMovements.businessId, businessId)]
+  if (from) portfolioConditions.push(gte(portfolioMovements.businessDate, from))
+  if (to) portfolioConditions.push(lte(portfolioMovements.businessDate, to))
+  if (customerId) {
+    const customerLoans = await db
+      .select({ id: loans.id })
+      .from(loans)
+      .where(and(eq(loans.businessId, businessId), eq(loans.customerId, customerId)))
+    const loanIds = customerLoans.map((l) => l.id)
+    const loanIn = loanIds.length ? sql`IN (${sql.join(loanIds.map((id) => sql`${id}`), sql`,`)})` : sql`IN (NULL)`
+    portfolioConditions.push(
+      sql`(${portfolioMovements.id} IN (
+        SELECT pm.id FROM portfolio_movements pm
+        WHERE pm.source_type = 'LOAN_PAYMENT' AND pm.source_id IN (
+          SELECT lp.id FROM loan_payments lp WHERE lp.loan_id ${loanIn}
+        )
+        UNION
+        SELECT pm.id FROM portfolio_movements pm
+        WHERE pm.source_type = 'LOAN_DISBURSEMENT' AND pm.source_id ${loanIn}
+      ))`,
+    )
+  }
+
+  const portfolioMovementRows = await db
+    .select()
+    .from(portfolioMovements)
+    .where(and(...portfolioConditions))
+    .orderBy(desc(portfolioMovements.businessDate))
 
   // Build daily summaries
   const dailyMap = new Map<string, {
@@ -127,12 +144,34 @@ internalReportsRoutes.post('/data', async (c) => {
     } else if (m.type === 'CREDIT_PAYMENT') {
       day.creditPaymentsTotal += m.amount
       day.totalIn += m.amount
-    } else if (m.type === 'LOAN_PAYMENT') {
-      day.loanPaymentsTotal += m.amount
-      day.totalIn += m.amount
-    } else if (m.type === 'LOAN_DISBURSEMENT') {
-      day.loanDisbursementsTotal += m.amount
-      day.totalOut += m.amount
+    }
+    day.remaining = day.totalIn - day.totalOut
+  }
+
+  for (const pm of portfolioMovementRows) {
+    if (pm.status !== 'ACTIVE') continue
+    const date = pm.businessDate
+    if (!dailyMap.has(date)) {
+      dailyMap.set(date, {
+        date,
+        salesTotal: 0,
+        expensesTotal: 0,
+        creditPaymentsTotal: 0,
+        creditCreatedTotal: 0,
+        loanPaymentsTotal: 0,
+        loanDisbursementsTotal: 0,
+        totalIn: 0,
+        totalOut: 0,
+        remaining: 0,
+      })
+    }
+    const day = dailyMap.get(date)!
+    if (pm.type === 'LOAN_PAYMENT') {
+      day.loanPaymentsTotal += pm.amount
+      day.totalIn += pm.amount
+    } else if (pm.type === 'LOAN_DISBURSEMENT') {
+      day.loanDisbursementsTotal += pm.amount
+      day.totalOut += pm.amount
     }
     day.remaining = day.totalIn - day.totalOut
   }
@@ -317,15 +356,26 @@ internalReportsRoutes.post('/data', async (c) => {
         loansWithDebt: pendingLoans.length,
         overdueLoans,
       },
-      movements: movements.map((m) => ({
-        id: m.id,
-        type: m.type,
-        amount: m.amount,
-        category: m.category,
-        note: m.note,
-        businessDate: m.businessDate,
-        status: m.status,
-      })),
+      movements: [
+        ...movements.map((m) => ({
+          id: m.id,
+          type: m.type,
+          amount: m.amount,
+          category: m.category,
+          note: m.note,
+          businessDate: m.businessDate,
+          status: m.status,
+        })),
+        ...portfolioMovementRows.map((pm) => ({
+          id: pm.id,
+          type: pm.type,
+          amount: pm.amount,
+          category: null,
+          note: pm.note,
+          businessDate: pm.businessDate,
+          status: pm.status,
+        })),
+      ],
     },
   })
 })

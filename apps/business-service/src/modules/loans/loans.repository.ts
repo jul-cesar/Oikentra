@@ -2,31 +2,35 @@ import { and, desc, eq, gte, inArray, lte, sql, sum } from "drizzle-orm";
 
 import { getDb } from "../../db/client";
 import {
-	cashMovements,
 	loanInstallments,
 	loanPayments,
 	loans,
-	type CashMovement,
+	portfolioMovements,
 	type Loan,
 	type LoanInstallment,
 	type LoanPayment,
 	type LoanStatus,
-	type NewCashMovement,
 	type NewLoan,
 	type NewLoanInstallment,
 	type NewLoanPayment,
+	type NewPortfolioMovement,
+	type PortfolioMovement,
 } from "../../db/schema";
 
 export type LoanRepository = {
 	createLoan(
 		loanInput: NewLoan,
 		installments: NewLoanInstallment[],
-		cashMovementInput: NewCashMovement,
-	): Promise<{ loan: Loan; installments: LoanInstallment[]; cashMovement: CashMovement }>;
+		portfolioMovementInput: NewPortfolioMovement,
+	): Promise<{
+		loan: Loan;
+		installments: LoanInstallment[];
+		portfolioMovement: PortfolioMovement;
+	}>;
 	createPayment(
 		paymentInput: NewLoanPaymentInput,
-		cashMovementInput: NewCashMovement,
-	): Promise<{ payment: LoanPayment; cashMovement: CashMovement }>;
+		portfolioMovementInput: NewPortfolioMovement,
+	): Promise<{ payment: LoanPayment; portfolioMovement: PortfolioMovement }>;
 	findLoanById(loanId: string): Promise<Loan | null>;
 	findLoansByBusiness(
 		businessId: string,
@@ -59,7 +63,7 @@ export type LoanRepository = {
 		reason: string,
 	): Promise<{
 		payment: LoanPayment | null;
-		cashMovement: CashMovement | null;
+		portfolioMovement: PortfolioMovement | null;
 	}>;
 	getBusinessLoanSummary(
 		businessId: string,
@@ -76,7 +80,7 @@ type NewLoanPaymentInput = Omit<
 >;
 
 export const loanRepository: LoanRepository = {
-	async createLoan(loanInput, installments, cashMovementInput) {
+	async createLoan(loanInput, installments, portfolioMovementInput) {
 		const db = getDb();
 		const now = new Date();
 
@@ -86,35 +90,39 @@ export const loanRepository: LoanRepository = {
 				installments.length > 0
 					? await tx.insert(loanInstallments).values(installments).returning()
 					: [];
-			const [cashMovement] = await tx
-				.insert(cashMovements)
-				.values(cashMovementInput)
+			const [portfolioMovement] = await tx
+				.insert(portfolioMovements)
+				.values(portfolioMovementInput)
 				.returning();
-			return { loan, installments: insertedInstallments, cashMovement };
+			return {
+				loan,
+				installments: insertedInstallments,
+				portfolioMovement,
+			};
 		});
 	},
 
-	async createPayment(paymentInput, cashMovementInput) {
+	async createPayment(paymentInput, portfolioMovementInput) {
 		const db = getDb();
 		const now = new Date();
 
 		return db.transaction(async (tx) => {
-			const [cashMovement] = await tx
-				.insert(cashMovements)
-				.values(cashMovementInput)
+			const [portfolioMovement] = await tx
+				.insert(portfolioMovements)
+				.values(portfolioMovementInput)
 				.returning();
 
 			const [payment] = await tx
 				.insert(loanPayments)
 				.values({
 					...paymentInput,
-					cashMovementId: cashMovement.id,
+					cashMovementId: portfolioMovement.id,
 					createdAt: now,
 					updatedAt: now,
 				})
 				.returning();
 
-			return { payment, cashMovement };
+			return { payment, portfolioMovement };
 		});
 	},
 
@@ -250,19 +258,19 @@ export const loanRepository: LoanRepository = {
 			if (!loan) return null;
 
 			await tx
-				.update(cashMovements)
+				.update(portfolioMovements)
 				.set({
 					status: "CANCELLED",
 					cancellationReason: reason,
 					cancelledAt: now,
 					updatedAt: now,
-					version: sql`${cashMovements.version} + 1`,
+					version: sql`${portfolioMovements.version} + 1`,
 				})
 				.where(
 					and(
-						eq(cashMovements.sourceType, "LOAN_DISBURSEMENT"),
-						eq(cashMovements.sourceId, loanId),
-						eq(cashMovements.status, "ACTIVE"),
+						eq(portfolioMovements.sourceType, "LOAN_DISBURSEMENT"),
+						eq(portfolioMovements.sourceId, loanId),
+						eq(portfolioMovements.status, "ACTIVE"),
 					),
 				);
 
@@ -293,26 +301,26 @@ export const loanRepository: LoanRepository = {
 				)
 				.returning();
 
-			if (!payment) return { payment: null, cashMovement: null };
+			if (!payment) return { payment: null, portfolioMovement: null };
 
-			const [cashMovement] = await tx
-				.update(cashMovements)
+			const [portfolioMovement] = await tx
+				.update(portfolioMovements)
 				.set({
 					status: "CANCELLED",
 					cancellationReason: reason,
 					cancelledAt: now,
 					updatedAt: now,
-					version: sql`${cashMovements.version} + 1`,
+					version: sql`${portfolioMovements.version} + 1`,
 				})
 				.where(
 					and(
-						eq(cashMovements.id, payment.cashMovementId),
-						eq(cashMovements.status, "ACTIVE"),
+						eq(portfolioMovements.id, payment.cashMovementId),
+						eq(portfolioMovements.status, "ACTIVE"),
 					),
 				)
 				.returning();
 
-			return { payment, cashMovement };
+			return { payment, portfolioMovement };
 		});
 	},
 

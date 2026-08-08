@@ -2,13 +2,68 @@
   "version": "7",
   "dialect": "postgresql",
   "entries": [
-    { "idx": 0, "version": "7", "when": 1784512084648, "tag": "0000_opposite_hardball", "breakpoints": true },
-    { "idx": 1, "version": "7", "when": 1784576042649, "tag": "0001_medical_strong_guy", "breakpoints": true },
-    { "idx": 2, "version": "7", "when": 1784592359205, "tag": "0003_salty_captain_america", "breakpoints": true },
-    { "idx": 3, "version": "7", "when": 1784592787991, "tag": "0004_business_invitations", "breakpoints": true },
-    { "idx": 4, "version": "7", "when": 1784595123183, "tag": "0005_invitation_target", "breakpoints": true },
-    { "idx": 5, "version": "7", "when": 1784595500000, "tag": "0006_cash_movement_categories", "breakpoints": true },
-    { "idx": 6, "version": "7", "when": 1784595600000, "tag": "0007_business_payment_methods", "breakpoints": true },
-    { "idx": 7, "version": "7", "when": 1786138411204, "tag": "0008_loans", "breakpoints": true }
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1784512084648,
+      "tag": "0000_opposite_hardball",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784576042649,
+      "tag": "0001_medical_strong_guy",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784592359205,
+      "tag": "0003_salty_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784592787991,
+      "tag": "0004_business_invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784595123183,
+      "tag": "0005_invitation_target",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784595500000,
+      "tag": "0006_cash_movement_categories",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784595600000,
+      "tag": "0007_business_payment_methods",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786138411204,
+      "tag": "0008_loans",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786161266796,
+      "tag": "0009_portfolio_movements",
+      "breakpoints": true
+    }
   ]
 }

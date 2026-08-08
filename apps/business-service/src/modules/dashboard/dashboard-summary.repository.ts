@@ -7,6 +7,7 @@ import {
 	credits,
 	loanPayments,
 	loans,
+	portfolioMovements,
 } from "../../db/schema";
 
 export type DashboardSummaryRepository = {
@@ -14,6 +15,10 @@ export type DashboardSummaryRepository = {
 		businessId: string,
 		range: { from: string; to: string },
 	): Promise<(typeof cashMovements.$inferSelect)[]>;
+	findActivePortfolioMovementsByBusinessAndDateRange(
+		businessId: string,
+		range: { from: string; to: string },
+	): Promise<(typeof portfolioMovements.$inferSelect)[]>;
 	findPendingCreditsByBusiness(
 		businessId: string,
 	): Promise<(typeof credits.$inferSelect)[]>;
@@ -39,6 +44,20 @@ export const dashboardSummaryRepository: DashboardSummaryRepository = {
 					eq(cashMovements.status, "ACTIVE"),
 					gte(cashMovements.businessDate, range.from),
 					lte(cashMovements.businessDate, range.to),
+				),
+			);
+	},
+
+	async findActivePortfolioMovementsByBusinessAndDateRange(businessId, range) {
+		return getDb()
+			.select()
+			.from(portfolioMovements)
+			.where(
+				and(
+					eq(portfolioMovements.businessId, businessId),
+					eq(portfolioMovements.status, "ACTIVE"),
+					gte(portfolioMovements.businessDate, range.from),
+					lte(portfolioMovements.businessDate, range.to),
 				),
 			);
 	},

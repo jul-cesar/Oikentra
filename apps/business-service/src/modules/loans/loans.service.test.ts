@@ -7,8 +7,8 @@ import type {
 	LoanPayment,
 	NewLoan,
 	NewLoanInstallment,
-	NewCashMovement,
-	CashMovement,
+	NewPortfolioMovement,
+	PortfolioMovement,
 } from "../../db/schema";
 
 type Customer = {
@@ -107,15 +107,15 @@ function makePayment(loanId: string, overrides: Partial<LoanPayment> = {}): Loan
 
 function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 	payments: LoanPayment[];
-	disbursementMovements: CashMovement[];
+	disbursementMovements: PortfolioMovement[];
 } {
 	const loans = new Map<string, Loan>(seed.map((loan) => [loan.id, loan]));
 	const payments: LoanPayment[] = [];
-	const disbursementMovements: CashMovement[] = [];
+	const disbursementMovements: PortfolioMovement[] = [];
 
 	const repo: LoanRepository & {
 		payments: LoanPayment[];
-		disbursementMovements: CashMovement[];
+		disbursementMovements: PortfolioMovement[];
 	} = {
 		payments,
 		disbursementMovements,
@@ -123,11 +123,11 @@ function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 		async createLoan(
 			loanInput: NewLoan,
 			installments: NewLoanInstallment[],
-			cashMovementInput: NewCashMovement,
+			portfolioMovementInput: NewPortfolioMovement,
 		) {
 			const loan = loanInput as Loan;
 			loans.set(loan.id, loan);
-			disbursementMovements.push(cashMovementInput as CashMovement);
+			disbursementMovements.push(portfolioMovementInput as PortfolioMovement);
 			return {
 				loan,
 				installments: installments.map((installment) => ({
@@ -140,11 +140,11 @@ function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				})),
-				cashMovement: cashMovementInput as CashMovement,
+				portfolioMovement: portfolioMovementInput as PortfolioMovement,
 			};
 		},
 
-		async createPayment(paymentInput, cashMovementInput) {
+		async createPayment(paymentInput, portfolioMovementInput) {
 			const payment = {
 				...paymentInput,
 				status: "ACTIVE",
@@ -152,7 +152,10 @@ function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 				updatedAt: new Date(),
 			} as LoanPayment;
 			payments.push(payment);
-			return { payment, cashMovement: cashMovementInput as CashMovement };
+			return {
+				payment,
+				portfolioMovement: portfolioMovementInput as PortfolioMovement,
+			};
 		},
 
 		async findLoanById(loanId) {
@@ -230,7 +233,7 @@ function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 			const payment = payments.find(
 				(p) => p.id === paymentId && p.loanId === loanId && p.status === "ACTIVE",
 			);
-			if (!payment) return { payment: null, cashMovement: null };
+			if (!payment) return { payment: null, portfolioMovement: null };
 			const cancelled = {
 				...payment,
 				status: "CANCELLED" as const,
@@ -240,7 +243,7 @@ function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
 			};
 			const index = payments.indexOf(payment);
 			payments[index] = cancelled;
-			return { payment: cancelled, cashMovement: null };
+			return { payment: cancelled, portfolioMovement: null };
 		},
 
 		async getBusinessLoanSummary(businessId) {
