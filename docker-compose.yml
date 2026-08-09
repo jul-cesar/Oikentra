@@ -43,7 +43,7 @@ services:
       BETTER_AUTH_URL: http://localhost:3001
       GOOGLE_CLIENT_ID: local-google-client-id
       GOOGLE_CLIENT_SECRET: local-google-client-secret
-      RESEND_API_KEY: re_RAB9MvXh_36xSycMED8cMtNyUupU2EtwA
+      RESEND_API_KEY: api-key
       AUTH_EMAIL_FROM: "noreply@oikentra.com"
       WEB_URL: http://localhost:3000
       AUTH_COOKIE_DOMAIN: ""
