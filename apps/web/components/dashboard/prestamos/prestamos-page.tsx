@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
 	ArrowRight01Icon,
+	ArrowUpDownIcon,
 	BankIcon,
 	HandCoinsIcon,
 	PlusSignIcon,
@@ -77,6 +78,7 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 	const summaryQuery = useLoanSummary(businessId);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<Loan["status"] | "ALL">("ALL");
+	const [sort, setSort] = useState<"debt" | "name">("debt");
 	const [createOpen, setCreateOpen] = useState(false);
 	const [detail, setDetail] = useState<Loan | null>(null);
 	const [detailOpen, setDetailOpen] = useState(false);
@@ -94,25 +96,40 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 		}
 		return map;
 	}, [customersQuery.data]);
+	const customerPhones = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const customer of customersQuery.data ?? []) {
+			map.set(customer.id, customer.phone ?? "");
+		}
+		return map;
+	}, [customersQuery.data]);
 
 	const filtered = useMemo(
 		() =>
-			loans.filter((loan) => {
-				const matchesStatus =
-					statusFilter === "ALL" || loan.status === statusFilter;
-				if (!matchesStatus) return false;
-				if (!search.trim()) return true;
-				const term = search.trim().toLocaleLowerCase();
-				return (
-					customerNames
-						.get(loan.customerId)
-						?.toLocaleLowerCase()
-						.includes(term) ||
-					loan.description?.toLocaleLowerCase().includes(term) ||
-					money(loan.totalAmount).includes(term)
-				);
-			}),
-		[loans, customerNames, search, statusFilter],
+			loans
+				.filter((loan) => {
+					const matchesStatus =
+						statusFilter === "ALL" || loan.status === statusFilter;
+					if (!matchesStatus) return false;
+					const query = search.trim().toLocaleLowerCase();
+					if (!query) return true;
+					return (
+						(customerNames.get(loan.customerId) ?? "")
+							.toLocaleLowerCase()
+							.includes(query) ||
+						(customerPhones.get(loan.customerId) ?? "")
+							.toLocaleLowerCase()
+							.includes(query)
+					);
+				})
+				.sort((a, b) =>
+					sort === "name"
+						? (customerNames.get(a.customerId) ?? "").localeCompare(
+								customerNames.get(b.customerId) ?? "",
+							)
+						: b.remainingAmount - a.remainingAmount,
+				),
+		[customerNames, customerPhones, loans, search, sort, statusFilter],
 	);
 
 	if (loansQuery.isLoading || customersQuery.isLoading || summaryQuery.isLoading)
@@ -217,19 +234,33 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 						</button>
 					))}
 				</div>
-				<div className="relative w-full sm:w-64">
-					<HugeiconsIcon
-						icon={Search01Icon}
-						size={16}
-						className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-						aria-hidden="true"
-					/>
-					<Input
-						className="rounded-full pl-9"
-						placeholder="Buscar préstamo"
-						value={search}
-						onChange={(event) => setSearch(event.target.value)}
-					/>
+				<div className="flex w-full items-center gap-2 sm:w-auto">
+					<div className="relative w-full flex-1 sm:w-64">
+						<HugeiconsIcon
+							icon={Search01Icon}
+							size={16}
+							className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+							aria-hidden="true"
+						/>
+						<Input
+							className="rounded-full pl-9"
+							placeholder="Buscar cliente"
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+						/>
+					</div>
+					<button
+						type="button"
+						onClick={() => setSort(sort === "debt" ? "name" : "debt")}
+						className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+					>
+						<HugeiconsIcon
+							icon={ArrowUpDownIcon}
+							size={14}
+							aria-hidden="true"
+						/>
+						{sort === "debt" ? "Por nombre" : "Por deuda"}
+					</button>
 				</div>
 			</div>
 
