@@ -239,6 +239,22 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						variant="outline"
 						size="sm"
 						render={
+							<Link
+								href={`/dashboard/${businessId}/ventas/estadisticas`}
+							/>
+						}
+					>
+						<HugeiconsIcon
+							icon={ChartIncreaseIcon}
+							size={16}
+							aria-hidden="true"
+						/>
+						Ver estadísticas
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						render={
 							<Link href={`/dashboard/${businessId}/ventas/categorias`} />
 						}
 					>
