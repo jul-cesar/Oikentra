@@ -74,8 +74,9 @@ export function getSafeAuthErrorMessage(
     case 'EMAIL_NOT_VERIFIED':
       return 'Confirma tu correo para continuar.';
     case 'USER_ALREADY_EXISTS':
+    case 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL':
     case 'EMAIL_ALREADY_EXISTS':
-      return 'Ya existe una cuenta con ese correo.';
+      return 'Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.';
     case 'PASSWORD_TOO_SHORT':
       return 'La contraseña debe tener al menos 8 caracteres.';
     case 'SOCIAL_PROVIDER_ERROR':

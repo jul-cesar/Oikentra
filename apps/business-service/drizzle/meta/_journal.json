@@ -71,6 +71,13 @@
       "when": 1786300000000,
       "tag": "0010_credit_movements",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786309000000,
+      "tag": "0008_business_profile_details",
+      "breakpoints": true
     }
   ]
 }

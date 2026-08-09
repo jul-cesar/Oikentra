@@ -1,68 +1,97 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
 
-import { validationError } from '../../http/errors'
-import type { AppBindings } from '../../http/request-context'
-import { success } from '../../http/response'
-import { requireAuthHeaders } from '../../http/middleware/require-auth-headers'
-import { businessesService } from './businesses.service'
+import { validationError } from "../../http/errors";
+import type { AppBindings } from "../../http/request-context";
+import { success } from "../../http/response";
+import { requireAuthHeaders } from "../../http/middleware/require-auth-headers";
+import { businessesService } from "./businesses.service";
+import { createBusinessLogoUpload } from "./logo-upload.service";
 import {
-  businessIdParamsSchema,
-  createBusinessSchema,
-  updateBusinessSchema,
-} from './businesses.schemas'
+	businessIdParamsSchema,
+	createBusinessSchema,
+	logoUploadSchema,
+	updateBusinessSchema,
+} from "./businesses.schemas";
 
-export const businessesRoutes = new Hono<AppBindings>()
+export const businessesRoutes = new Hono<AppBindings>();
 
-businessesRoutes.use('*', requireAuthHeaders)
+businessesRoutes.use("*", requireAuthHeaders);
 
-businessesRoutes.post('/', async (c) => {
-  const parsed = createBusinessSchema.safeParse(await c.req.json().catch(() => null))
+businessesRoutes.post("/logo-upload", async (c) => {
+	const parsed = logoUploadSchema.safeParse(
+		await c.req.json().catch(() => null),
+	);
 
-  if (!parsed.success) {
-    throw validationError(parsed.error)
-  }
+	if (!parsed.success) {
+		throw validationError(parsed.error);
+	}
 
-  const business = await businessesService.create(c.get('auth').userId, parsed.data)
+	const upload = await createBusinessLogoUpload(
+		c.get("auth").userId,
+		parsed.data.contentType,
+	);
 
-  return success(c, business, 201)
-})
+	return success(c, upload);
+});
 
-businessesRoutes.get('/', async (c) => {
-  const records = await businessesService.list(c.get('auth').userId)
+businessesRoutes.post("/", async (c) => {
+	const parsed = createBusinessSchema.safeParse(
+		await c.req.json().catch(() => null),
+	);
 
-  return success(c, records)
-})
+	if (!parsed.success) {
+		throw validationError(parsed.error);
+	}
 
-businessesRoutes.get('/:businessId', async (c) => {
-  const parsedParams = businessIdParamsSchema.safeParse(c.req.param())
+	const business = await businessesService.create(
+		c.get("auth").userId,
+		parsed.data,
+	);
 
-  if (!parsedParams.success) {
-    throw validationError(parsedParams.error)
-  }
+	return success(c, business, 201);
+});
 
-  const business = await businessesService.get(c.get('auth').userId, parsedParams.data.businessId)
+businessesRoutes.get("/", async (c) => {
+	const records = await businessesService.list(c.get("auth").userId);
 
-  return success(c, business)
-})
+	return success(c, records);
+});
 
-businessesRoutes.patch('/:businessId', async (c) => {
-  const parsedParams = businessIdParamsSchema.safeParse(c.req.param())
+businessesRoutes.get("/:businessId", async (c) => {
+	const parsedParams = businessIdParamsSchema.safeParse(c.req.param());
 
-  if (!parsedParams.success) {
-    throw validationError(parsedParams.error)
-  }
+	if (!parsedParams.success) {
+		throw validationError(parsedParams.error);
+	}
 
-  const parsedBody = updateBusinessSchema.safeParse(await c.req.json().catch(() => null))
+	const business = await businessesService.get(
+		c.get("auth").userId,
+		parsedParams.data.businessId,
+	);
 
-  if (!parsedBody.success) {
-    throw validationError(parsedBody.error)
-  }
+	return success(c, business);
+});
 
-  const business = await businessesService.update(
-    c.get('auth').userId,
-    parsedParams.data.businessId,
-    parsedBody.data,
-  )
+businessesRoutes.patch("/:businessId", async (c) => {
+	const parsedParams = businessIdParamsSchema.safeParse(c.req.param());
 
-  return success(c, business)
-})
+	if (!parsedParams.success) {
+		throw validationError(parsedParams.error);
+	}
+
+	const parsedBody = updateBusinessSchema.safeParse(
+		await c.req.json().catch(() => null),
+	);
+
+	if (!parsedBody.success) {
+		throw validationError(parsedBody.error);
+	}
+
+	const business = await businessesService.update(
+		c.get("auth").userId,
+		parsedParams.data.businessId,
+		parsedBody.data,
+	);
+
+	return success(c, business);
+});

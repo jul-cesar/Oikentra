@@ -9,7 +9,12 @@ COPY apps/business-service/package.json apps/business-service/package.json
 COPY packages/http-logging/package.json packages/http-logging/package.json
 COPY packages/internal-auth/package.json packages/internal-auth/package.json
 
-RUN pnpm install --filter @oikentra/business-service... --prod --frozen-lockfile
+ARG INSTALL_DEV_DEPENDENCIES=false
+RUN if [ "$INSTALL_DEV_DEPENDENCIES" = "true" ]; then \
+		pnpm install --filter @oikentra/business-service... --frozen-lockfile; \
+	else \
+		pnpm install --filter @oikentra/business-service... --prod --frozen-lockfile; \
+	fi
 
 FROM oven/bun:1.3.14-alpine AS runtime
 
@@ -35,5 +40,5 @@ WORKDIR /workspace/apps/business-service
 ENV NODE_ENV=production
 EXPOSE 3000
 
-USER bun
+USER 1000
 CMD ["bun", "run", "src/index.ts"]

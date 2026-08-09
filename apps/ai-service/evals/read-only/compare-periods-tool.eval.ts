@@ -11,10 +11,10 @@ export default defineEval({
 			return;
 		}
 
-		await t.send("¿Vendí más hoy que ayer?");
+		await t.send("¿Vendí más hoy que ?");
 
 		t.succeeded();
 		t.calledTool("compare_business_periods");
 		t.maxToolCalls(2);
-	},
+	}, 
 });

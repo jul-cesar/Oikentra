@@ -51,7 +51,8 @@ function logBusinessApi(fields: {
 	requestId: string;
 	errorCode?: string;
 }) {
-	const level = fields.status >= 500 ? "error" : fields.status >= 400 ? "warn" : "info";
+	const level =
+		fields.status >= 500 ? "error" : fields.status >= 400 ? "warn" : "info";
 	console[level](
 		JSON.stringify({
 			timestamp: new Date().toISOString(),
@@ -93,7 +94,8 @@ export async function businessApi<T>(
 		response = await fetch(url, {
 			method,
 			headers,
-			body: request.body === undefined ? undefined : JSON.stringify(request.body),
+			body:
+				request.body === undefined ? undefined : JSON.stringify(request.body),
 			cache: "no-store",
 			signal: request.signal,
 		});

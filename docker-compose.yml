@@ -1,0 +1,190 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: oikentra-postgres
+    restart: "no"
+    cpus: 0.5
+    mem_limit: 512m
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - oikentra-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-local-databases.sql:/docker-entrypoint-initdb.d/10-init-local-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  auth:
+    container_name: oikentra-auth
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      args:
+        INSTALL_DEV_DEPENDENCIES: "true"
+    restart: "no"
+    cpus: 0.5
+    mem_limit: 384m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    secrets:
+      - better_auth_secret
+      - internal_auth_private_key_b64
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/oikentra_auth
+      BETTER_AUTH_URL: http://localhost:3001
+      GOOGLE_CLIENT_ID: local-google-client-id
+      GOOGLE_CLIENT_SECRET: local-google-client-secret
+      RESEND_API_KEY: api-key
+      AUTH_EMAIL_FROM: "noreply@oikentra.com"
+      WEB_URL: http://localhost:3000
+      AUTH_COOKIE_DOMAIN: ""
+    volumes:
+      - ./apps/auth-service/src:/workspace/apps/auth-service/src
+      - ./apps/auth-service/drizzle:/workspace/apps/auth-service/drizzle
+      - ./apps/auth-service/drizzle.config.ts:/workspace/apps/auth-service/drizzle.config.ts:ro
+      - ./packages/http-logging/src:/workspace/packages/http-logging/src
+      - ./packages/internal-auth/src:/workspace/packages/internal-auth/src
+    command:
+      - sh
+      - -c
+      - |
+        BETTER_AUTH_SECRET_PATH=/run/secrets/better_auth_secret
+        PRIVATE_KEY_PATH=/run/secrets/internal_auth_private_key_b64
+        export BETTER_AUTH_SECRET="$$(cat $$BETTER_AUTH_SECRET_PATH)"
+        export INTERNAL_AUTH_PRIVATE_KEY_B64="$$(cat $$PRIVATE_KEY_PATH)"
+        bun run db:migrate
+        exec bun run --hot src/index.ts
+    ports:
+      - "3001:3001"
+
+  business:
+    container_name: oikentra-business
+    build:
+      context: .
+      dockerfile: apps/business-service/Dockerfile
+      args:
+        INSTALL_DEV_DEPENDENCIES: "true"
+    restart: "no"
+    cpus: 0.5
+    mem_limit: 384m
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    secrets:
+      - internal_auth_public_key_b64
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/oikentra_business
+      INTERNAL_AUTH_DEV_BYPASS: "true"
+      INTERNAL_AUTH_DEV_USER_ID: local-test-user
+    volumes:
+      - ./apps/business-service/src:/workspace/apps/business-service/src
+      - ./apps/business-service/drizzle:/workspace/apps/business-service/drizzle
+      - ./apps/business-service/drizzle.config.ts:/workspace/apps/business-service/drizzle.config.ts:ro
+      - ./packages/http-logging/src:/workspace/packages/http-logging/src
+      - ./packages/internal-auth/src:/workspace/packages/internal-auth/src
+    command:
+      - sh
+      - -c
+      - |
+        PUBLIC_KEY_PATH=/run/secrets/internal_auth_public_key_b64
+        export INTERNAL_AUTH_PUBLIC_KEY_B64="$$(cat $$PUBLIC_KEY_PATH)"
+        bun run db:migrate
+        exec bun run --hot src/index.ts
+    ports:
+      - "3002:3000"
+
+  ai:
+    container_name: oikentra-ai
+    profiles: ["ai"]
+    build:
+      context: .
+      dockerfile: apps/ai-service/Dockerfile
+      target: deps
+    restart: "no"
+    cpus: 1.0
+    mem_limit: 768m
+    depends_on:
+      business:
+        condition: service_started
+    secrets:
+      - internal_auth_public_key_b64
+    environment:
+      NODE_ENV: development
+      PORT: 3333
+      BUSINESS_BASE_URL: http://business:3000
+      OIKENTRA_AGENT_USER_ID: local-test-user
+      OIKENTRA_AGENT_BUSINESS_ID: local-biz
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL_ID: ${OPENAI_MODEL_ID:-openai/gpt-4o-mini}
+    volumes:
+      - ./apps/ai-service:/workspace/apps/ai-service
+      - /workspace/apps/ai-service/node_modules
+      - /workspace/apps/ai-service/.eve
+      - /workspace/apps/ai-service/.output
+      - ./packages/internal-auth:/workspace/packages/internal-auth
+      - /workspace/packages/internal-auth/node_modules
+    command:
+      - sh
+      - -c
+      - |
+        PUBLIC_KEY_PATH=/run/secrets/internal_auth_public_key_b64
+        export INTERNAL_AUTH_PUBLIC_KEY_B64="$$(cat $$PUBLIC_KEY_PATH)"
+        exec pnpm --filter @oikentra/ai-service dev
+    ports:
+      - "3333:3333"
+
+  web:
+    container_name: oikentra-web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: deps
+    restart: "no"
+    cpus: 1.0
+    mem_limit: 768m
+    depends_on:
+      auth:
+        condition: service_started
+      business:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      NEXT_PUBLIC_AUTH_BASE_URL: http://localhost:3001/api/auth
+      AUTH_BASE_URL: http://auth:3001/api/auth
+      BUSINESS_BASE_URL: http://business:3000/api/business
+      AI_BASE_URL: http://ai:3333
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - ./apps/web:/app/apps/web
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+      - ./packages/location-catalog:/app/packages/location-catalog
+      - /app/packages/location-catalog/node_modules
+    command: ["pnpm", "--filter", "@oikentra/web", "dev"]
+    ports:
+      - "3000:3000"
+
+secrets:
+  better_auth_secret:
+    file: ./docker/secrets/better_auth_secret.txt
+  internal_auth_private_key_b64:
+    file: ./docker/secrets/internal_auth_private_key_b64.txt
+  internal_auth_public_key_b64:
+    file: ./docker/secrets/internal_auth_public_key_b64.txt
+
+volumes:
+  oikentra-postgres-data:

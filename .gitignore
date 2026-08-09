@@ -24,3 +24,10 @@ graphify-out/
 .pi-subagents/
 
 .ruff_cache
+
+.codegraph/
+
+# Local Docker secrets. Keep real local/prod secrets out of git.
+docker/secrets/*.txt
+!docker/secrets/*.example
+!docker/secrets/.gitkeep

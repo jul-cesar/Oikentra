@@ -27,6 +27,9 @@ export const businesses = pgTable(
 		ownerUserId: text("owner_user_id").notNull(),
 		name: text("name").notNull(),
 		businessType: text("business_type", { enum: businessTypes }),
+		description: text("description"),
+		logoUrl: text("logo_url"),
+		logoObjectKey: text("logo_object_key"),
 		currencyCode: text("currency_code").notNull().default("COP"),
 		timezone: text("timezone").notNull().default("America/Bogota"),
 		status: text("status", { enum: businessStatuses })
