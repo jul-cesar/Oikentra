@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  DashboardSquare01Icon,
   UserGroupIcon,
   Settings01Icon,
   Wallet01Icon,
   Dollar01Icon,
+  BankIcon,
+  ChartLineData01Icon,
 } from "@hugeicons/core-free-icons";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -40,9 +41,10 @@ export function AppSidebar({
   const pathname = usePathname();
   const base = `/dashboard/${business.id}`;
   const items = [
-    { title: "Resumen", url: base, icon: DashboardSquare01Icon },
+    { title: "Resumen general", url: `${base}/resumen-general`, icon: ChartLineData01Icon },
     { title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
     { title: "Ventas", url: `${base}/ventas`, icon: Dollar01Icon },
+    { title: "Préstamos", url: `${base}/prestamos`, icon: BankIcon },
     { title: "Fiados", url: `${base}/fiados`, icon: Wallet01Icon },
   ];
   return (

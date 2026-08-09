@@ -1,4 +1,4 @@
-﻿import { and, desc, eq, sql } from "drizzle-orm";
+﻿import { and, desc, eq, ne, sql } from "drizzle-orm";
 
 import { getDb } from "../../db/client";
 import {
@@ -57,6 +57,9 @@ export const cashMovementRepository: CashMovementRepository = {
 				and(
 					eq(cashMovements.businessId, businessId),
 					eq(cashMovements.status, "ACTIVE"),
+					ne(cashMovements.type, "CREDIT_PAYMENT"),
+					ne(cashMovements.type, "LOAN_PAYMENT"),
+					ne(cashMovements.type, "LOAN_DISBURSEMENT"),
 				),
 			)
 			.orderBy(desc(cashMovements.occurredAt));

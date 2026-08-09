@@ -1,5 +1,8 @@
-import BusinessDashboard from "@/components/dashboard/business-dashboard";
+"use client";
+
+import { redirect, useParams } from "next/navigation";
 
 export default function Page() {
-  return <BusinessDashboard />;
+	const { businessId } = useParams<{ businessId: string }>();
+	redirect(`/dashboard/${businessId}/resumen-general`);
 }

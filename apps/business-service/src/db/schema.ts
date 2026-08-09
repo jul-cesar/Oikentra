@@ -171,7 +171,13 @@ export type NewCustomer = typeof customers.$inferInsert;
 
 // ─── Cash Movements ──────────────────────────────────────────
 
-export const cashMovementTypes = ["SALE", "EXPENSE", "CREDIT_PAYMENT"] as const;
+export const cashMovementTypes = [
+	"SALE",
+	"EXPENSE",
+	"CREDIT_PAYMENT",
+	"LOAN_DISBURSEMENT",
+	"LOAN_PAYMENT",
+] as const;
 
 export type CashMovementType = (typeof cashMovementTypes)[number];
 
@@ -227,6 +233,64 @@ export const cashMovements = pgTable(
 
 export type CashMovement = typeof cashMovements.$inferSelect;
 export type NewCashMovement = typeof cashMovements.$inferInsert;
+
+// ─── Portfolio Movements (Cartera de préstamos) ───────────────
+// Libro de caja de la cartera de préstamos. Separado de la caja
+// operativa (ventas y gastos) para que su dinero no la afecte.
+
+export const portfolioMovementTypes = [
+	"LOAN_PAYMENT",
+	"LOAN_DISBURSEMENT",
+] as const;
+
+export type PortfolioMovementType = (typeof portfolioMovementTypes)[number];
+
+export const portfolioMovements = pgTable(
+	"portfolio_movements",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		customerId: text("customer_id").notNull(),
+		type: text("type", { enum: portfolioMovementTypes }).notNull(),
+		amount: bigint("amount", { mode: "number" }).notNull(),
+		note: text("note"),
+		businessDate: date("business_date").notNull(),
+		occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+		status: text("status", { enum: cashMovementStatuses })
+			.notNull()
+			.default("ACTIVE"),
+		sourceType: text("source_type").notNull(),
+		sourceId: text("source_id").notNull(),
+		cancellationReason: text("cancellation_reason"),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("portfolio_movements_business_date_idx").on(
+			table.businessId,
+			table.businessDate,
+		),
+		index("portfolio_movements_business_type_date_idx").on(
+			table.businessId,
+			table.type,
+			table.businessDate,
+		),
+		index("portfolio_movements_customer_date_idx").on(
+			table.customerId,
+			table.businessDate,
+		),
+		index("portfolio_movements_source_type_source_id_idx").on(
+			table.sourceType,
+			table.sourceId,
+		),
+	],
+);
+
+export type PortfolioMovement = typeof portfolioMovements.$inferSelect;
+export type NewPortfolioMovement = typeof portfolioMovements.$inferInsert;
 
 // ─── Cash Movement Categories ────────────────────────────────
 
@@ -387,3 +451,172 @@ export const creditPayments = pgTable(
 
 export type CreditPayment = typeof creditPayments.$inferSelect;
 export type NewCreditPayment = typeof creditPayments.$inferInsert;
+
+// ─── Credit Movements (Cartera de fiados) ────────────────────
+// Libro de caja de la cartera de fiados (abonos y fiados otorgados).
+// Separado de la caja operativa (ventas y gastos) para que su dinero
+// no la afecte. Cada abono genera un CREDIT_PAYMENT y cada fiado
+// otorgado genera un CREDIT_DISBURSEMENT.
+
+export const creditMovementTypes = [
+	"CREDIT_DISBURSEMENT",
+	"CREDIT_PAYMENT",
+] as const;
+
+export type CreditMovementType = (typeof creditMovementTypes)[number];
+
+export const creditMovements = pgTable(
+	"credit_movements",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		customerId: text("customer_id").notNull(),
+		type: text("type", { enum: creditMovementTypes }).notNull(),
+		amount: bigint("amount", { mode: "number" }).notNull(),
+		note: text("note"),
+		businessDate: date("business_date").notNull(),
+		occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+		status: text("status", { enum: cashMovementStatuses })
+			.notNull()
+			.default("ACTIVE"),
+		sourceType: text("source_type").notNull(),
+		sourceId: text("source_id").notNull(),
+		cancellationReason: text("cancellation_reason"),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("credit_movements_business_date_idx").on(
+			table.businessId,
+			table.businessDate,
+		),
+		index("credit_movements_business_type_date_idx").on(
+			table.businessId,
+			table.type,
+			table.businessDate,
+		),
+		index("credit_movements_customer_date_idx").on(
+			table.customerId,
+			table.businessDate,
+		),
+		index("credit_movements_source_type_source_id_idx").on(
+			table.sourceType,
+			table.sourceId,
+		),
+	],
+);
+
+export type CreditMovement = typeof creditMovements.$inferSelect;
+export type NewCreditMovement = typeof creditMovements.$inferInsert;
+
+// ─── Loans (Préstamos) ───────────────────────────────────────
+
+export const loanStatuses = ["PENDING", "PAID", "CANCELLED"] as const;
+
+export type LoanStatus = (typeof loanStatuses)[number];
+
+export const loans = pgTable(
+	"loans",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		customerId: text("customer_id").notNull(),
+		capitalAmount: bigint("capital_amount", { mode: "number" }).notNull(),
+		interestAmount: bigint("interest_amount", { mode: "number" })
+			.notNull()
+			.default(0),
+		totalAmount: bigint("total_amount", { mode: "number" }).notNull(),
+		termCount: integer("term_count").notNull().default(1),
+		description: text("description"),
+		loanDate: date("loan_date").notNull(),
+		dueDate: date("due_date").notNull(),
+		status: text("status", { enum: loanStatuses })
+			.notNull()
+			.default("PENDING"),
+		cancellationReason: text("cancellation_reason"),
+		paidAt: timestamp("paid_at", { withTimezone: true }),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("loans_business_id_status_idx").on(table.businessId, table.status),
+		index("loans_customer_id_status_idx").on(table.customerId, table.status),
+		index("loans_business_id_loan_date_idx").on(
+			table.businessId,
+			table.loanDate,
+		),
+	],
+);
+
+export type Loan = typeof loans.$inferSelect;
+export type NewLoan = typeof loans.$inferInsert;
+
+// ─── Loan Installments (Cuotas de préstamo) ──────────────────
+
+export const loanInstallments = pgTable(
+	"loan_installments",
+	{
+		id: text("id").primaryKey(),
+		loanId: text("loan_id").notNull(),
+		number: integer("number").notNull(),
+		dueDate: date("due_date").notNull(),
+		amount: bigint("amount", { mode: "number" }).notNull(),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("loan_installments_loan_id_idx").on(table.loanId),
+	],
+);
+
+export type LoanInstallment = typeof loanInstallments.$inferSelect;
+export type NewLoanInstallment = typeof loanInstallments.$inferInsert;
+
+// ─── Loan Payments (Abonos de préstamo) ──────────────────────
+
+export const loanPayments = pgTable(
+	"loan_payments",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		loanId: text("loan_id").notNull(),
+		customerId: text("customer_id").notNull(),
+		cashMovementId: text("cash_movement_id").notNull(),
+		amount: bigint("amount", { mode: "number" }).notNull(),
+		paymentDate: date("payment_date").notNull(),
+		note: text("note"),
+		status: text("status", { enum: paymentStatuses })
+			.notNull()
+			.default("ACTIVE"),
+		cancellationReason: text("cancellation_reason"),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		uniqueIndex("loan_payments_cash_movement_id_unique").on(
+			table.cashMovementId,
+		),
+		index("loan_payments_loan_id_status_idx").on(table.loanId, table.status),
+		index("loan_payments_customer_id_date_idx").on(
+			table.customerId,
+			table.paymentDate,
+		),
+		index("loan_payments_business_id_date_idx").on(
+			table.businessId,
+			table.paymentDate,
+		),
+	],
+);
+
+export type LoanPayment = typeof loanPayments.$inferSelect;
+export type NewLoanPayment = typeof loanPayments.$inferInsert;

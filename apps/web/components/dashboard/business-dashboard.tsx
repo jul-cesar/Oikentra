@@ -143,7 +143,7 @@ function BusinessDashboardContent() {
 			<div className="mx-auto max-w-6xl space-y-6">
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<p className="text-sm font-medium text-primary">Resumen</p>
+						<p className="text-sm font-medium text-primary">Estadísticas</p>
 						<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
 							Buenos días, {user.name?.split(" ")[0] || "bienvenido"}
 						</h1>
@@ -198,7 +198,7 @@ function BusinessDashboardContent() {
 								icon={<HugeiconsIcon icon={Wallet01Icon} size={16} />}
 								label="Flujo neto"
 								value={currencyFormatter.format(summary.kpis.netCashFlow)}
-								detail="Ventas + abonos - gastos"
+								detail="Ventas - gastos"
 								tone={summary.kpis.netCashFlow >= 0 ? "default" : "danger"}
 							/>
 							<MetricCard
