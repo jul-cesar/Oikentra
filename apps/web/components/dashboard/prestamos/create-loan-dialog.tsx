@@ -70,7 +70,7 @@ export function CreateLoanDialog({
       newCustomerPhone: "",
       newCustomerNotes: "",
       capitalAmount: "",
-      interestAmount: "",
+      interestRate: "",
       termCount: "1",
       loanDate: today(),
       dueDate: "",
@@ -79,7 +79,8 @@ export function CreateLoanDialog({
   });
   const customerId = useWatch({ control: form.control, name: "customerId" });
   const capital = Number(useWatch({ control: form.control, name: "capitalAmount" }));
-  const interest = Number(useWatch({ control: form.control, name: "interestAmount" }));
+  const rate = Number(useWatch({ control: form.control, name: "interestRate" }));
+  const interest = Math.round((capital * rate) / 100);
   const total = capital + interest;
   const creatingCustomer = customerId === NEW_CUSTOMER;
 
@@ -101,7 +102,9 @@ export function CreateLoanDialog({
       await createLoan.mutateAsync({
         customerId: selectedCustomerId,
         capitalAmount: Number(values.capitalAmount),
-        interestAmount: Number(values.interestAmount),
+        interestAmount: Math.round(
+          (Number(values.capitalAmount) * Number(values.interestRate)) / 100,
+        ),
         termCount: Number(values.termCount),
         loanDate: values.loanDate,
         ...(values.dueDate ? { dueDate: values.dueDate } : {}),
@@ -237,18 +240,19 @@ export function CreateLoanDialog({
               />
               <FormField
                 control={form.control}
-                name="interestAmount"
+                name="interestRate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Interés (opcional)</FormLabel>
+                    <FormLabel>Interés (%)</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="number"
                         min="0"
-                        step="1"
-                        inputMode="numeric"
-                        placeholder="0"
+                        max="100"
+                        step="0.1"
+                        inputMode="decimal"
+                        placeholder="Ej. 10"
                       />
                     </FormControl>
                     <FormMessage />
@@ -323,7 +327,9 @@ export function CreateLoanDialog({
               <strong className="text-foreground">
                 No entra a caja hasta que pague.
               </strong>
-              {total > 0 ? ` Total a recuperar: ${money(total)}.` : ""}
+              {total > 0
+                ? ` Interés: ${money(interest)} · Total a recuperar: ${money(total)}.`
+                : ""}
             </div>
             {form.formState.errors.root?.server?.message ? (
               <p className="text-sm text-destructive" role="alert">

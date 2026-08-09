@@ -8,13 +8,16 @@ const integerAmount = (label: string) =>
     .regex(/^\d+$/, `${label} debe ser un número entero.`)
     .refine((value) => Number(value) > 0, `${label} debe ser mayor que cero.`);
 
-const integerOrZero = (label: string) =>
-  z
-    .string()
-    .trim()
-    .regex(/^\d*$/, `${label} debe ser un número entero.`)
-    .transform((value) => (value === "" ? "0" : value))
-    .refine((value) => Number(value) >= 0, `${label} no puede ser negativo.`);
+const interestRate = z
+  .string()
+  .trim()
+  .regex(/^\d{0,3}([.,]\d{1,2})?$/, "El interés debe ser un porcentaje.")
+  .transform((value) => {
+    const normalized = value.replace(",", ".");
+    return normalized === "" ? "0" : normalized;
+  })
+  .refine((value) => Number(value) >= 0, "El interés no puede ser negativo.")
+  .refine((value) => Number(value) <= 100, "El interés no puede superar 100%.");
 
 const businessDate = z
   .string()
@@ -27,7 +30,7 @@ export const createLoanFormSchema = z
     newCustomerPhone: z.string().trim().max(30, "El teléfono no puede superar 30 caracteres."),
     newCustomerNotes: z.string().trim().max(500, "Las notas no pueden superar 500 caracteres."),
     capitalAmount: integerAmount("El capital"),
-    interestAmount: integerOrZero("El interés"),
+    interestRate: interestRate,
     termCount: z
       .string()
       .trim()
