@@ -45,6 +45,16 @@ const FILTERS: [FilterType, string][] = [
 	["EXPENSE", "Gastos"],
 ];
 
+const DATE_FILTERS = [
+	["today", "Hoy"],
+	["yesterday", "Ayer"],
+	["7d", "7 días"],
+	["month", "Este mes"],
+	["all", "Todo"],
+] as const;
+
+type DateFilterValue = (typeof DATE_FILTERS)[number][0];
+
 const MOVEMENT_CONFIG = {
 	SALE: {
 		label: "Venta",
@@ -88,6 +98,13 @@ function localDate(date: string) {
 	return new Date(`${date}T00:00:00`);
 }
 
+function toDateKey(date: Date) {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
 function formatDayHeading(date: string) {
 	const target = localDate(date);
 	const today = new Date();
@@ -118,6 +135,8 @@ export function VentasPage({ businessId }: { businessId: string }) {
 	const [search, setSearch] = useState("");
 	const [typeFilter, setTypeFilter] = useState<FilterType>("ALL");
 	const [categoryFilter, setCategoryFilter] = useState(CATEGORY_FILTER_ALL);
+	const [methodFilter, setMethodFilter] = useState("");
+	const [dateFilter, setDateFilter] = useState<DateFilterValue>("today");
 	const [createSaleOpen, setCreateSaleOpen] = useState(false);
 	const [createExpenseOpen, setCreateExpenseOpen] = useState(false);
 	const [cancelTarget, setCancelTarget] = useState<CashMovement | null>(null);
@@ -127,9 +146,43 @@ export function VentasPage({ businessId }: { businessId: string }) {
 		[movementsQuery.data],
 	);
 
+	const paymentMethods = useMemo(() => {
+		const set = new Set<string>();
+		for (const movement of movements) {
+			if (movement.paymentMethod) set.add(movement.paymentMethod);
+		}
+		return Array.from(set).sort();
+	}, [movements]);
+
+	const dateWindow = useMemo(() => {
+		const today = new Date();
+		const todayKey = toDateKey(today);
+		const yesterdayKey = toDateKey(
+			new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
+		);
+		const weekKey = toDateKey(
+			new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6),
+		);
+		const monthKey = toDateKey(
+			new Date(today.getFullYear(), today.getMonth(), 1),
+		);
+		return (date: string) => {
+			if (dateFilter === "today") return date === todayKey;
+			if (dateFilter === "yesterday") return date === yesterdayKey;
+			if (dateFilter === "7d") return date >= weekKey;
+			if (dateFilter === "month") return date >= monthKey;
+			return true;
+		};
+	}, [dateFilter]);
+
 	const active = useMemo(
 		() => movements.filter((movement) => movement.status === "ACTIVE"),
 		[movements],
+	);
+
+	const periodActive = useMemo(
+		() => active.filter((movement) => dateWindow(movement.businessDate)),
+		[active, dateWindow],
 	);
 
 	const categories = useMemo(
@@ -142,26 +195,37 @@ export function VentasPage({ businessId }: { businessId: string }) {
 
 	const totalIn = useMemo(
 		() =>
-			active
+			periodActive
 				.filter((movement) => movement.type !== "EXPENSE")
 				.reduce((sum, movement) => sum + movement.amount, 0),
-		[active],
+		[periodActive],
 	);
 
 	const totalOut = useMemo(
 		() =>
-			active
+			periodActive
 				.filter((movement) => movement.type === "EXPENSE")
 				.reduce((sum, movement) => sum + movement.amount, 0),
-		[active],
+		[periodActive],
 	);
 
 	const net = totalIn - totalOut;
+	const periodLabel =
+		DATE_FILTERS.find(([value]) => value === dateFilter)?.[1] ?? "Período";
+	const flowLabel = `Flujo neto · ${periodLabel}`;
 
 	const filtered = useMemo(() => {
 		return movements.filter((movement) => {
 			if (typeFilter === "SALE" && movement.type === "EXPENSE") return false;
 			if (typeFilter === "EXPENSE" && movement.type !== "EXPENSE") return false;
+			if (!dateWindow(movement.businessDate)) return false;
+			if (
+				methodFilter &&
+				movement.paymentMethod?.toLocaleLowerCase() !==
+					methodFilter.toLocaleLowerCase()
+			) {
+				return false;
+			}
 			if (
 				categoryFilter !== CATEGORY_FILTER_ALL &&
 				movement.category !== categoryFilter
@@ -178,7 +242,14 @@ export function VentasPage({ businessId }: { businessId: string }) {
 				money(movement.amount).includes(term)
 			);
 		});
-	}, [categoryFilter, movements, search, typeFilter]);
+	}, [
+		categoryFilter,
+		dateWindow,
+		methodFilter,
+		movements,
+		search,
+		typeFilter,
+	]);
 
 	const grouped = useMemo(() => {
 		const map = new Map<string, CashMovement[]>();
@@ -287,10 +358,10 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						aria-hidden="true"
 					/>
 					<div className="relative">
-						<div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
-							<HugeiconsIcon icon={Wallet01Icon} size={16} aria-hidden="true" />
-							Flujo neto del período
-						</div>
+					<div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
+						<HugeiconsIcon icon={Wallet01Icon} size={16} aria-hidden="true" />
+						{flowLabel}
+					</div>
 						<p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">
 							{money(net)}
 						</p>
@@ -326,7 +397,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						}
 						label="Ingresos"
 						value={money(totalIn)}
-						detail={`${active.filter((movement) => movement.type !== "EXPENSE").length} registros`}
+						detail={`${periodActive.filter((movement) => movement.type !== "EXPENSE").length} registros`}
 					/>
 					<StatTile
 						icon={
@@ -338,30 +409,62 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						}
 						label="Gastos"
 						value={money(totalOut)}
-						detail={`${active.filter((movement) => movement.type === "EXPENSE").length} registros`}
+						detail={`${periodActive.filter((movement) => movement.type === "EXPENSE").length} registros`}
 					/>
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				<div className="flex gap-1 rounded-full bg-muted p-1">
-					{FILTERS.map(([value, label]) => (
-						<button
-							key={value}
-							type="button"
-							onClick={() => setTypeFilter(value)}
-							className={cn(
-								"flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-4 sm:text-sm",
-								typeFilter === value
-									? "bg-background text-foreground shadow-sm"
-									: "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							{label}
-						</button>
-					))}
+			<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+				<div className="flex shrink-0 flex-col gap-2">
+					<div className="flex w-full gap-1 rounded-full bg-muted p-1 sm:w-fit">
+						{FILTERS.map(([value, label]) => (
+							<button
+								key={value}
+								type="button"
+								onClick={() => setTypeFilter(value)}
+								className={cn(
+									"flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-4 sm:text-sm",
+									typeFilter === value
+										? "bg-background text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{label}
+							</button>
+						))}
+					</div>
+					<div className="flex w-full gap-1 rounded-full bg-muted p-1 sm:w-fit">
+						{DATE_FILTERS.map(([value, label]) => (
+							<button
+								key={value}
+								type="button"
+								onClick={() => setDateFilter(value)}
+								className={cn(
+									"flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-3.5 sm:text-sm",
+									dateFilter === value
+										? "bg-background text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{label}
+							</button>
+						))}
+					</div>
 				</div>
-				<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+				<div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+					<Select value={methodFilter} onValueChange={setMethodFilter}>
+						<SelectTrigger className="w-full min-w-0 rounded-full sm:w-48">
+							<SelectValue placeholder="Todos los medios" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="">Todos los medios</SelectItem>
+							{paymentMethods.map((method) => (
+								<SelectItem key={method} value={method}>
+									{method}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 					<Select value={categoryFilter} onValueChange={setCategoryFilter}>
 						<SelectTrigger className="w-full min-w-0 rounded-full sm:w-56">
 							<SelectValue placeholder="Todas las categorías" />
@@ -385,7 +488,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 							aria-hidden="true"
 						/>
 						<Input
-							className="rounded-full pl-9"
+							className="h-9 rounded-full pl-9"
 							placeholder="Buscar movimiento"
 							value={search}
 							onChange={(event) => setSearch(event.target.value)}
