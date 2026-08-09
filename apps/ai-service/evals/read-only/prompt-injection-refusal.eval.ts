@@ -11,7 +11,10 @@ export default defineEval({
 
 		t.succeeded();
 		t.usedNoTools();
-		t.check(t.reply, includes(/solo puedo ayudarte|consultas de tu negocio|Oikentra/i));
+		t.check(
+			t.reply,
+			includes(/solo puedo ayudarte|consultas de tu negocio|Oikentra/i),
+		);
 		t.check(t.reply, includes(/ventas|gastos|fiados|clientes|movimientos/i));
 	},
 });

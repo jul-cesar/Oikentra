@@ -20,5 +20,6 @@ build
 **/.next
 **/coverage
 docs
+docker/secrets/*.txt
 *.log
 **/*.log

@@ -8,6 +8,7 @@
     { "idx": 3, "version": "7", "when": 1784592787991, "tag": "0004_business_invitations", "breakpoints": true },
     { "idx": 4, "version": "7", "when": 1784595123183, "tag": "0005_invitation_target", "breakpoints": true },
     { "idx": 5, "version": "7", "when": 1784595500000, "tag": "0006_cash_movement_categories", "breakpoints": true },
-    { "idx": 6, "version": "7", "when": 1784595600000, "tag": "0007_business_payment_methods", "breakpoints": true }
+    { "idx": 6, "version": "7", "when": 1784595600000, "tag": "0007_business_payment_methods", "breakpoints": true },
+    { "idx": 7, "version": "7", "when": 1786309000000, "tag": "0008_business_profile_details", "breakpoints": true }
   ]
 }

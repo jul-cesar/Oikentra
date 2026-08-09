@@ -38,6 +38,13 @@ Copy `.env.example` and provide real deployment values outside Git.
 DATABASE_URL=postgres://user:password@localhost:5432/oikentra_business
 INTERNAL_AUTH_PUBLIC_KEY_B64=replace-with-base64-spki-public-key
 PORT=3000
+
+# Optional Cloudflare R2 logo uploads
+R2_ACCOUNT_ID=replace-with-cloudflare-account-id
+R2_BUCKET=oikentra-assets
+R2_ACCESS_KEY_ID=replace-with-r2-access-key-id
+R2_SECRET_ACCESS_KEY=replace-with-r2-secret-access-key
+R2_PUBLIC_BASE_URL=https://assets.oikentra.com
 ```
 
 ## Database
@@ -92,6 +99,7 @@ Readiness returns `503 DEPENDENCY_UNAVAILABLE` when PostgreSQL is unavailable.
 All business endpoints require `X-Internal-Auth`.
 
 ```http
+POST /api/business/businesses/logo-upload
 POST /api/business/businesses
 GET /api/business/businesses
 GET /api/business/businesses/:businessId
@@ -106,6 +114,9 @@ Create body:
 {
   "name": "Store El Progreso",
   "businessType": "STORE",
+  "description": "Tienda de barrio con domicilios.",
+  "logoUrl": "https://assets.oikentra.com/business-logos/user/logo.png",
+  "logoObjectKey": "business-logos/user/logo.png",
   "currencyCode": "COP",
   "timezone": "America/Bogota"
 }
@@ -117,6 +128,9 @@ Patch body accepts any provided subset of:
 {
   "name": "New name",
   "businessType": "STORE",
+  "description": "Tienda de barrio con domicilios.",
+  "logoUrl": "https://assets.oikentra.com/business-logos/user/logo.png",
+  "logoObjectKey": "business-logos/user/logo.png",
   "currencyCode": "COP",
   "timezone": "America/Bogota",
   "status": "ACTIVE"

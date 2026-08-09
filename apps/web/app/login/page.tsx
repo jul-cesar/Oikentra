@@ -1,56 +1,44 @@
-import Link from "next/link"
-import type { Metadata } from "next"
-import { ArrowLeft01Icon, CreditCardIcon, UserGroupIcon, WifiDisconnected02Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { LoginForm } from "@/components/login-form"
-import { OikentraLogo } from "../brand/oikentra-logo"
-import { BeamsBackground } from "@/components/ui/beams-background"
-import { AuthEntryGate } from "@/components/auth-entry-gate"
+import Link from "next/link";
+import type { Metadata } from "next";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
+import { OikentraLogo } from "../brand/oikentra-logo";
+import { AuthEntryGate } from "@/components/auth-entry-gate";
+import { LoginForm } from "@/components/login-form";
+import { BeamsBackground } from "@/components/ui/beams-background";
 
 export const metadata: Metadata = {
-  title: "Iniciar sesión — Oikentra",
-  description: "Entra a Oikentra para gestionar la caja, los clientes y los fiados de tu negocio.",
-}
-
-const chips = [
-  { icon: CreditCardIcon, label: "Caja al día" },
-  { icon: UserGroupIcon, label: "Clientes y fiados" },
-
-]
+	title: "Iniciar sesión — Oikentra",
+	description:
+		"Entra a Oikentra para gestionar la caja, los clientes y los fiados de tu negocio.",
+};
 
 export default function LoginPage() {
-  return (
-     <AuthEntryGate>
-       <BeamsBackground intensity="strong">
+	return (
+		<AuthEntryGate>
+			<BeamsBackground intensity="strong">
+				<main className="relative flex w-full items-center justify-center px-5  sm:px-6 lg:px-8">
 
-      <Link
-        href="/"
-        className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:left-8 md:top-8"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} size={17} strokeWidth={2} aria-hidden="true" />
-        Volver al inicio
-      </Link>
 
-      <div className="relative w-full max-w-sm">
-        <div className="flex flex-col items-center text-center">
-          <OikentraLogo size="lg" />
-        
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-balance">
-            Bienvenido de nuevo
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground">
-            Ingresa para ver tu caja, tus clientes y los fiados del día.
-          </p>
-        </div>
+					<div className=" rounded-[2rem]   px-5 py-5  sm:px-8 sm:py-9">
+						<div className="flex flex-col items-center text-center">
+							<OikentraLogo size="lg" />
 
-        <div className="mt-8">
-          <LoginForm />
-        </div>
+							<h1 className="mt-5 text-2xl font-bold tracking-tight text-balance sm:text-4xl">
+								Bienvenido de nuevo
+							</h1>
+							<p className="mt-3 text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
+								Ingresa para ver tu caja, tus clientes y los fiados del día.
+							</p>
+						</div>
 
-       
-      </div>
-       </BeamsBackground>
-     </AuthEntryGate>
-  )
+						<div className="mt-7 sm:mt-8">
+							<LoginForm />
+						</div>
+					</div>
+				</main>
+			</BeamsBackground>
+		</AuthEntryGate>
+	);
 }
