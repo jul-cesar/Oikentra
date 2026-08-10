@@ -108,7 +108,16 @@ export function createBusinessLogoUpload(contentType: string) {
 export function updateBusiness(
 	id: string,
 	input: Partial<
-		Pick<Business, "name" | "businessType" | "currencyCode" | "timezone">
+		Pick<
+			Business,
+			| "name"
+			| "businessType"
+			| "description"
+			| "logoUrl"
+			| "logoObjectKey"
+			| "currencyCode"
+			| "timezone"
+		>
 	>,
 ) {
 	return request<Business>(

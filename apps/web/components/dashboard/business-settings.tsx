@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AuthGuard } from "@/components/auth-guard";
 import { useSession } from "@/hooks/use-session";
-import { useBusiness, useUpdateBusiness } from "@/lib/queries/onboarding";
+import {
+	useBusiness,
+	useCreateBusinessLogoUpload,
+	useUpdateBusiness,
+} from "@/lib/queries/onboarding";
 import {
 	businessSettingsSchema,
 	type BusinessSettingsValues,
@@ -16,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { CollaboratorsSettings } from "@/components/dashboard/collaborators-settings";
 import { PaymentMethodsSettings } from "@/components/dashboard/payment-methods-settings";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
+import { BusinessLogo } from "@/components/business-logo";
 import {
 	Card,
 	CardContent,
@@ -35,6 +40,7 @@ import { toast } from "@/components/ui/toast";
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -55,11 +61,16 @@ function BusinessSettingsContent() {
 	const router = useRouter();
 	const { data: business, isLoading, error } = useBusiness(businessId);
 	const updateBusinessMutation = useUpdateBusiness();
+	const logoUploadMutation = useCreateBusinessLogoUpload();
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const form = useForm<BusinessSettingsValues>({
 		resolver: zodResolver(businessSettingsSchema),
 		defaultValues: {
 			name: "",
 			businessType: "OTHER",
+			description: "",
+			logoUrl: null,
+			logoObjectKey: null,
 			currencyCode: "COP",
 			timezone: "America/Bogota",
 		},
@@ -74,11 +85,69 @@ function BusinessSettingsContent() {
 				businessType:
 					(business.businessType as BusinessSettingsValues["businessType"]) ||
 					"OTHER",
+				description: business.description ?? "",
+				logoUrl: business.logoUrl ?? null,
+				logoObjectKey: business.logoObjectKey ?? null,
 				currencyCode: business.currencyCode || "COP",
 				timezone: business.timezone || "America/Bogota",
 			});
 		}
 	}, [business, form]);
+
+	async function handleLogoUpload(file: File) {
+		if (
+			!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(
+				file.type,
+			)
+		) {
+			throw new Error("Sube un logo en PNG, JPG, WebP o SVG.");
+		}
+		if (file.size > 2 * 1024 * 1024) {
+			throw new Error("El logo debe pesar máximo 2 MB.");
+		}
+
+		const upload = await logoUploadMutation.mutateAsync(file.type);
+		const url = new URL(upload.uploadUrl);
+		if (
+			url.protocol !== "https:" ||
+			!url.hostname.endsWith(".r2.cloudflarestorage.com")
+		) {
+			throw new Error("La URL para subir el logo no es válida.");
+		}
+
+		const response = await fetch(url.toString(), {
+			method: "PUT",
+			headers: upload.headers,
+			body: file,
+		});
+		if (!response.ok) {
+			throw new Error("No pudimos subir el logo. Intenta con otra imagen.");
+		}
+
+		form.setValue("logoUrl", upload.publicUrl, { shouldDirty: true });
+		form.setValue("logoObjectKey", upload.objectKey, { shouldDirty: true });
+	}
+
+	function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+		const file = event.target.files?.[0];
+		if (!file) return;
+		handleLogoUpload(file).catch((cause) => {
+			toast.add({
+				type: "error",
+				title: "Error al subir el logo",
+				description:
+					cause instanceof Error
+						? cause.message
+						: "No pudimos subir el logo. Inténtalo de nuevo.",
+			});
+		});
+		event.target.value = "";
+	}
+
+	function handleRemoveLogo() {
+		form.setValue("logoUrl", null, { shouldDirty: true });
+		form.setValue("logoObjectKey", null, { shouldDirty: true });
+	}
 
 	async function submit(values: BusinessSettingsValues) {
 		try {
@@ -91,6 +160,9 @@ function BusinessSettingsContent() {
 				businessType:
 					(updated.businessType as BusinessSettingsValues["businessType"]) ||
 					"OTHER",
+				description: updated.description ?? "",
+				logoUrl: updated.logoUrl ?? null,
+				logoObjectKey: updated.logoObjectKey ?? null,
 				currencyCode: updated.currencyCode || "COP",
 				timezone: updated.timezone || "America/Bogota",
 			});
@@ -185,6 +257,77 @@ function BusinessSettingsContent() {
 													</SelectContent>
 												</Select>
 											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="description"
+									render={({ field }) => (
+										<FormItem className="lg:col-span-2">
+											<FormLabel>Descripción</FormLabel>
+											<FormControl>
+												<Input
+													{...field}
+													value={field.value ?? ""}
+													maxLength={280}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="logoUrl"
+									render={({ field }) => (
+										<FormItem className="lg:col-span-2">
+											<FormLabel>Logo del negocio</FormLabel>
+											<FormControl>
+												<div className="flex items-center gap-4">
+													<BusinessLogo
+														business={{
+															name: business.name,
+															logoUrl: field.value,
+														}}
+														className="size-16"
+													/>
+													<input
+														ref={fileInputRef}
+														type="file"
+														accept="image/png,image/jpeg,image/webp,image/svg+xml"
+														className="hidden"
+														onChange={handleFileChange}
+													/>
+													<div className="flex flex-wrap items-center gap-2">
+														<Button
+															type="button"
+															variant="outline"
+															onClick={() => fileInputRef.current?.click()}
+															disabled={logoUploadMutation.isPending}
+														>
+															{logoUploadMutation.isPending
+																? "Subiendo..."
+																: field.value
+																	? "Cambiar logo"
+																	: "Subir logo"}
+														</Button>
+														{field.value ? (
+															<Button
+																type="button"
+																variant="ghost"
+																onClick={handleRemoveLogo}
+															>
+																Eliminar
+															</Button>
+														) : null}
+													</div>
+												</div>
+											</FormControl>
+											<FormDescription>
+												PNG, JPG, WebP o SVG. Máximo 2 MB.
+											</FormDescription>
 											<FormMessage />
 										</FormItem>
 									)}
