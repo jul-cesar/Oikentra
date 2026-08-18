@@ -2,7 +2,11 @@ export type LoanInstallment = {
 	id: string;
 	number: number;
 	dueDate: string;
-	amount: number;
+	principalAmount: number;
+	interestAmount: number;
+	totalAmount: number;
+	paidAmount: number;
+	status: "PENDING" | "PARTIAL" | "PAID" | "OVERDUE";
 };
 
 export type LoanPayment = {
@@ -25,15 +29,18 @@ export type Loan = {
 	userId: string;
 	customerId: string;
 	capitalAmount: number;
+	interestRate: number;
+	frequency: "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY";
+	installmentAmount: number;
 	interestAmount: number;
 	totalAmount: number;
 	paidAmount: number;
 	remainingAmount: number;
 	termCount: number;
 	description: string | null;
-	loanDate: string;
+	startDate: string;
 	dueDate: string;
-	status: "PENDING" | "PAID" | "CANCELLED";
+	status: "ACTIVE" | "PAID" | "DEFAULT" | "CANCELLED";
 	cancellationReason: string | null;
 	cancelledAt: string | null;
 	paidAt: string | null;
@@ -95,11 +102,11 @@ export function createLoan(
 	input: {
 		customerId: string;
 		capitalAmount: number;
-		interestAmount?: number;
-		termCount?: number;
+		interestRate: number;
+		frequency: Loan["frequency"];
+		termCount: number;
 		description?: string;
-		loanDate: string;
-		dueDate?: string;
+		startDate: string;
 	},
 ) {
 	return request<Loan>(`${base(businessId)}/loans`, {
