@@ -40,13 +40,17 @@ const age = (date: string) =>
   );
 
 const STATUS_CONFIG = {
-  PENDING: {
-    label: "Pendiente",
+  ACTIVE: {
+    label: "Activo",
     badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   PAID: {
     label: "Pagado",
     badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  },
+  DEFAULT: {
+    label: "En mora",
+    badge: "bg-destructive/10 text-destructive",
   },
   CANCELLED: {
     label: "Anulado",
@@ -95,11 +99,11 @@ export function LoanDetail({
     [users.data],
   );
 
-  const pending = loan?.status === "PENDING";
+  const pending = loan?.status === "ACTIVE";
   const config = loan
     ? STATUS_CONFIG[loan.status as keyof typeof STATUS_CONFIG]
-    : STATUS_CONFIG.PENDING;
-  const overdue = pending && loan ? age(loan.dueDate) > 0 : false;
+    : STATUS_CONFIG.ACTIVE;
+	const overdue = pending && loan ? loan.installments.some((installment) => installment.status === "OVERDUE") : false;
 
   return (
     <>
@@ -116,7 +120,7 @@ export function LoanDetail({
               >
                 {config.label}
               </span>
-              <span>Préstamo del {loan?.loanDate ?? ""}</span>
+              <span>Préstamo del {loan?.startDate ?? ""}</span>
               {overdue ? (
                 <span className="font-medium text-destructive">
                   · vencido hace {age(loan?.dueDate ?? "")} días
@@ -173,11 +177,14 @@ export function LoanDetail({
                     >
                       <span className="text-muted-foreground">
                         Cuota {installment.number} · vence{" "}
-                        {installment.dueDate}
+						{installment.dueDate} · capital {money(installment.principalAmount)} · interés {money(installment.interestAmount)}
                       </span>
-                      <span className="font-medium tabular-nums">
-                        {money(installment.amount)}
-                      </span>
+						<span className="text-right font-medium tabular-nums">
+							{money(installment.totalAmount)}
+							<span className="block text-xs font-normal text-muted-foreground">
+								{installment.status === "PAID" ? "Pagada" : `Abonado ${money(installment.paidAmount)}`}
+							</span>
+						</span>
                     </div>
                   ))}
                 </div>

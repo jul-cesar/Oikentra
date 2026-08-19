@@ -15,7 +15,11 @@ export type LoanInstallmentResponse = {
 	id: string;
 	number: number;
 	dueDate: string;
-	amount: number;
+	principalAmount: number;
+	interestAmount: number;
+	totalAmount: number;
+	paidAmount: number;
+	status: "PENDING" | "PARTIAL" | "PAID" | "OVERDUE";
 };
 
 export type LoanPaymentResponse = {
@@ -38,15 +42,18 @@ export type LoanResponse = {
 	userId: string;
 	customerId: string;
 	capitalAmount: number;
+	interestRate: number;
+	frequency: "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY";
+	installmentAmount: number;
 	interestAmount: number;
 	totalAmount: number;
 	paidAmount: number;
 	remainingAmount: number;
 	termCount: number;
 	description: string | null;
-	loanDate: string;
+	startDate: string;
 	dueDate: string;
-	status: string;
+	status: "ACTIVE" | "PAID" | "DEFAULT" | "CANCELLED";
 	cancellationReason: string | null;
 	cancelledAt: string | null;
 	paidAt: string | null;

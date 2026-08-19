@@ -31,25 +31,20 @@ export const createLoanFormSchema = z
     newCustomerNotes: z.string().trim().max(500, "Las notas no pueden superar 500 caracteres."),
     capitalAmount: integerAmount("El capital"),
     interestRate: interestRate,
+	frequency: z.enum(["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY"]),
     termCount: z
       .string()
       .trim()
       .regex(/^\d*$/, "El número de cuotas debe ser un número entero.")
       .transform((value) => (value === "" ? "1" : value))
       .refine((value) => Number(value) >= 1, "Debe ser al menos 1 cuota.")
-      .refine((value) => Number(value) <= 24, "No puede superar 24 cuotas."),
-    loanDate: businessDate,
-    dueDate: z
-      .string()
-      .refine((value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value), "Selecciona una fecha válida."),
+      .refine((value) => Number(value) <= 360, "No puede superar 360 cuotas."),
+    startDate: businessDate,
     note: z.string().trim().max(500, "La nota no puede superar 500 caracteres."),
   })
   .superRefine((value, ctx) => {
     if (value.customerId === "__new__" && !value.newCustomerName) {
       ctx.addIssue({ code: "custom", path: ["newCustomerName"], message: "Escribe el nombre del cliente." });
-    }
-    if (value.dueDate && value.loanDate > value.dueDate) {
-      ctx.addIssue({ code: "custom", path: ["dueDate"], message: "La fecha de vencimiento no puede ser anterior a la del préstamo." });
     }
   });
 

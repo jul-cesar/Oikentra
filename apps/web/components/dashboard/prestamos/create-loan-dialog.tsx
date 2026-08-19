@@ -42,13 +42,6 @@ const today = () => {
 	const now = new Date();
 	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 };
-const money = (value: number) =>
-  new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(value);
-
 export function CreateLoanDialog({
   businessId,
   customers,
@@ -71,17 +64,13 @@ export function CreateLoanDialog({
       newCustomerNotes: "",
       capitalAmount: "",
       interestRate: "",
+		frequency: "MONTHLY",
       termCount: "1",
-      loanDate: today(),
-      dueDate: "",
+		startDate: today(),
       note: "",
     },
   });
   const customerId = useWatch({ control: form.control, name: "customerId" });
-  const capital = Number(useWatch({ control: form.control, name: "capitalAmount" }));
-  const rate = Number(useWatch({ control: form.control, name: "interestRate" }));
-  const interest = Math.round((capital * rate) / 100);
-  const total = capital + interest;
   const creatingCustomer = customerId === NEW_CUSTOMER;
 
   async function onSubmit(values: CreateLoanFormValues) {
@@ -102,12 +91,10 @@ export function CreateLoanDialog({
       await createLoan.mutateAsync({
         customerId: selectedCustomerId,
         capitalAmount: Number(values.capitalAmount),
-        interestAmount: Math.round(
-          (Number(values.capitalAmount) * Number(values.interestRate)) / 100,
-        ),
+		interestRate: Number(values.interestRate),
+		frequency: values.frequency,
         termCount: Number(values.termCount),
-        loanDate: values.loanDate,
-        ...(values.dueDate ? { dueDate: values.dueDate } : {}),
+		startDate: values.startDate,
         ...(values.note ? { description: values.note } : {}),
       });
       form.reset();
@@ -243,7 +230,7 @@ export function CreateLoanDialog({
                 name="interestRate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Interés (%)</FormLabel>
+                    <FormLabel>Tasa mensual (%)</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -272,7 +259,7 @@ export function CreateLoanDialog({
                         {...field}
                         type="number"
                         min="1"
-                        max="24"
+						max="360"
                         step="1"
                         inputMode="numeric"
                         placeholder="1"
@@ -282,12 +269,35 @@ export function CreateLoanDialog({
                   </FormItem>
                 )}
               />
+				<FormField
+              control={form.control}
+              name="frequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Frecuencia</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DAILY">Diaria</SelectItem>
+                        <SelectItem value="WEEKLY">Semanal</SelectItem>
+                        <SelectItem value="BIWEEKLY">Quincenal</SelectItem>
+                        <SelectItem value="MONTHLY">Mensual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               <FormField
                 control={form.control}
-                name="loanDate"
+                name="startDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fecha del préstamo</FormLabel>
+                    <FormLabel>Fecha de desembolso</FormLabel>
                     <FormControl>
                       <DatePicker value={field.value} onChange={field.onChange} />
                     </FormControl>
@@ -296,19 +306,6 @@ export function CreateLoanDialog({
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Vence el (opcional)</FormLabel>
-                  <FormControl>
-                    <DatePicker value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="note"
@@ -323,13 +320,10 @@ export function CreateLoanDialog({
               )}
             />
             <div className="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
-              Este préstamo queda por cobrar.{" "}
+              La cuota y el cronograma se calculan en el servidor con amortización francesa.{" "}
               <strong className="text-foreground">
-                No entra a caja hasta que pague.
+                Los cobros se registran solo en la cartera de préstamos.
               </strong>
-              {total > 0
-                ? ` Interés: ${money(interest)} · Total a recuperar: ${money(total)}.`
-                : ""}
             </div>
             {form.formState.errors.root?.server?.message ? (
               <p className="text-sm text-destructive" role="alert">

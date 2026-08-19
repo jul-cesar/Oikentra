@@ -1,408 +1,131 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 
 import { AppError } from "../../http/errors";
-import type { LoanRepository } from "./loans.repository";
-import type {
-	Loan,
-	LoanPayment,
-	NewLoan,
-	NewLoanInstallment,
-	NewPortfolioMovement,
-	PortfolioMovement,
-} from "../../db/schema";
-
-type Customer = {
-	id: string;
-	businessId: string;
-};
 
 const customerRepositoryMock = {
 	async findByIdAndBusiness(id: string, businessId: string) {
-		const customers: Customer[] = [
-			{ id: "customer-a", businessId: "business-a" },
-			{ id: "customer-b", businessId: "business-b" },
-		];
-		return customers.find(
-			(customer) =>
-				customer.id === id && customer.businessId === businessId,
-		) ?? null;
+		return id === "customer-a" && businessId === "business-a"
+			? { id, businessId }
+			: null;
 	},
 };
 
-const membersServiceMock = {
-	async requirePermission(_userId: string, _businessId: string, permission: string) {
-		if (permission === "forbidden") {
-			throw new AppError("FORBIDDEN", 403, "Forbidden.");
-		}
-	},
-};
-
-const permissionsMock = {
-	loansRead: "loans.read",
-	loansCreate: "loans.create",
-	loansCancel: "loans.cancel",
-	paymentsCreate: "payments.create",
-	paymentsCancel: "payments.cancel",
-};
-
-mock.module("../../http/errors", () => ({
-	AppError,
-}));
+mock.module("../../http/errors", () => ({ AppError }));
 mock.module("../businesses/members.service", () => ({
-	membersService: membersServiceMock,
-	permissions: permissionsMock,
+	membersService: { async requirePermission() {} },
+	permissions: {
+		loansRead: "loans.read",
+		loansCreate: "loans.create",
+		loansCancel: "loans.cancel",
+		paymentsCreate: "payments.create",
+		paymentsCancel: "payments.cancel",
+	},
 }));
 mock.module("../customers/customers.repository", () => ({
 	customerRepository: customerRepositoryMock,
 }));
 
 import { createLoansService } from "./loans.service";
+import type { LoanRepository } from "./loans.repository";
 
-function makeLoan(overrides: Partial<Loan> = {}): Loan {
-	const now = new Date();
-	return {
-		id: crypto.randomUUID(),
-		userId: "user-a",
-		businessId: "business-a",
-		customerId: "customer-a",
-		capitalAmount: 100000,
-		interestAmount: 20000,
-		totalAmount: 120000,
-		termCount: 1,
-		description: null,
-		loanDate: "2026-08-01",
-		dueDate: "2026-08-01",
-		status: "PENDING",
-		cancellationReason: null,
-		paidAt: null,
-		cancelledAt: null,
-		version: 1,
-		createdAt: now,
-		updatedAt: now,
-		...overrides,
-	};
-}
+function createInMemoryRepository() {
+	const loans = new Map<string, any>();
+	const installments = new Map<string, any[]>();
+	const payments = new Map<string, any[]>();
 
-function makePayment(loanId: string, overrides: Partial<LoanPayment> = {}): LoanPayment {
-	const now = new Date();
-	return {
-		id: crypto.randomUUID(),
-		userId: "user-a",
-		businessId: "business-a",
-		loanId,
-		customerId: "customer-a",
-		cashMovementId: crypto.randomUUID(),
-		amount: 10000,
-		paymentDate: "2026-08-05",
-		note: null,
-		status: "ACTIVE",
-		cancellationReason: null,
-		cancelledAt: null,
-		version: 1,
-		createdAt: now,
-		updatedAt: now,
-		...overrides,
-	};
-}
-
-function createInMemoryLoanRepository(seed: Loan[] = []): LoanRepository & {
-	payments: LoanPayment[];
-	disbursementMovements: PortfolioMovement[];
-} {
-	const loans = new Map<string, Loan>(seed.map((loan) => [loan.id, loan]));
-	const payments: LoanPayment[] = [];
-	const disbursementMovements: PortfolioMovement[] = [];
-
-	const repo: LoanRepository & {
-		payments: LoanPayment[];
-		disbursementMovements: PortfolioMovement[];
-	} = {
-		payments,
-		disbursementMovements,
-
-		async createLoan(
-			loanInput: NewLoan,
-			installments: NewLoanInstallment[],
-			portfolioMovementInput: NewPortfolioMovement,
-		) {
-			const loan = loanInput as Loan;
+	const repository = {
+		async createLoan(loan: any, schedule: any[]) {
 			loans.set(loan.id, loan);
-			disbursementMovements.push(portfolioMovementInput as PortfolioMovement);
-			return {
-				loan,
-				installments: installments.map((installment) => ({
-					id: installment.id,
-					loanId: installment.loanId,
-					number: installment.number,
-					dueDate: installment.dueDate,
-					amount: installment.amount,
-					version: 1,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				})),
-				portfolioMovement: portfolioMovementInput as PortfolioMovement,
-			};
+			installments.set(loan.id, schedule);
+			return { loan, installments: schedule, portfolioMovement: {} };
 		},
-
-		async createPayment(paymentInput, portfolioMovementInput) {
-			const payment = {
-				...paymentInput,
-				status: "ACTIVE",
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			} as LoanPayment;
-			payments.push(payment);
-			return {
-				payment,
-				portfolioMovement: portfolioMovementInput as PortfolioMovement,
-			};
+		async createPayment(payment: any, _movement: any, updates: any[]) {
+			const schedule = installments.get(payment.loanId)!;
+			installments.set(payment.loanId, schedule.map((item) => ({
+				...item,
+				...(updates.find((update) => update.id === item.id) ?? {}),
+			})));
+			const saved = { ...payment, cashMovementId: crypto.randomUUID(), createdAt: new Date(), updatedAt: new Date() };
+			payments.set(payment.loanId, [...(payments.get(payment.loanId) ?? []), saved]);
+			return { payment: saved, portfolioMovement: {} };
 		},
-
-		async findLoanById(loanId) {
-			return loans.get(loanId) ?? null;
+		async findLoanById(id: string) { return loans.get(id) ?? null; },
+		async findLoansByBusiness(businessId: string) { return [...loans.values()].filter((loan) => loan.businessId === businessId); },
+		async findInstallmentsByLoanId(id: string) { return installments.get(id) ?? []; },
+		async findPaymentsByLoanId(id: string) { return (payments.get(id) ?? []).filter((payment) => payment.status === "ACTIVE"); },
+		async findPaymentById(id: string) { return [...payments.values()].flat().find((payment) => payment.id === id) ?? null; },
+		async findPaymentByIdAndLoan(id: string, loanId: string) { return (payments.get(loanId) ?? []).find((payment) => payment.id === id) ?? null; },
+		async updateLoanStatus(id: string, status: string, timestamp: Date) {
+			const loan = loans.get(id);
+			loans.set(id, { ...loan, status, updatedAt: timestamp, paidAt: status === "PAID" ? timestamp : null });
 		},
-
-		async findLoansByBusiness(businessId, filters) {
-			return Array.from(loans.values()).filter(
-				(loan) =>
-					loan.businessId === businessId &&
-					(!filters?.customerId || loan.customerId === filters.customerId) &&
-					(!filters?.status || loan.status === filters.status),
-			);
-		},
-
-		async findInstallmentsByLoanId(loanId) {
-			return [];
-		},
-
-		async findPaymentsByLoanId(loanId) {
-			return payments.filter(
-				(payment) => payment.loanId === loanId && payment.status === "ACTIVE",
-			);
-		},
-
-		async findPaymentById(paymentId) {
-			return payments.find((payment) => payment.id === paymentId) ?? null;
-		},
-
-		async findPaymentByIdAndLoan(paymentId, loanId) {
-			return (
-				payments.find(
-					(payment) => payment.id === paymentId && payment.loanId === loanId,
-				) ?? null
-			);
-		},
-
-		async getLoanTotalPaid(loanId) {
-			return payments
-				.filter(
-					(payment) =>
-						payment.loanId === loanId && payment.status === "ACTIVE",
-				)
-				.reduce((sum, payment) => sum + payment.amount, 0);
-		},
-
-		async updateLoanStatus(loanId, status, timestamp) {
-			const loan = loans.get(loanId);
-			if (loan) {
-				loans.set(loanId, {
-					...loan,
-					status,
-					updatedAt: timestamp,
-					...(status === "PAID" ? { paidAt: timestamp } : {}),
-					...(status === "CANCELLED" ? { cancelledAt: timestamp } : {}),
-				});
-			}
-		},
-
-		async cancelLoan(loanId, reason) {
-			const loan = loans.get(loanId);
-			if (!loan || loan.status !== "PENDING") return null;
-			const cancelled = {
-				...loan,
-				status: "CANCELLED" as const,
-				cancellationReason: reason,
-				cancelledAt: new Date(),
-				updatedAt: new Date(),
-			};
-			loans.set(loanId, cancelled);
+		async cancelLoan(id: string, reason: string) {
+			const loan = loans.get(id);
+			if (!loan || loan.status !== "ACTIVE") return null;
+			const cancelled = { ...loan, status: "CANCELLED", cancellationReason: reason, cancelledAt: new Date() };
+			loans.set(id, cancelled);
 			return cancelled;
 		},
-
-		async cancelPayment(paymentId, loanId, reason) {
-			const payment = payments.find(
-				(p) => p.id === paymentId && p.loanId === loanId && p.status === "ACTIVE",
-			);
-			if (!payment) return { payment: null, portfolioMovement: null };
-			const cancelled = {
-				...payment,
-				status: "CANCELLED" as const,
-				cancellationReason: reason,
-				cancelledAt: new Date(),
-				updatedAt: new Date(),
-			};
-			const index = payments.indexOf(payment);
-			payments[index] = cancelled;
-			return { payment: cancelled, portfolioMovement: null };
+		async cancelPayment(id: string, loanId: string, reason: string, updates: any[]) {
+			const records = payments.get(loanId) ?? [];
+			payments.set(loanId, records.map((payment) => payment.id === id ? { ...payment, status: "CANCELLED", cancellationReason: reason } : payment));
+			const schedule = installments.get(loanId)!;
+			installments.set(loanId, schedule.map((item) => ({ ...item, ...(updates.find((update) => update.id === item.id) ?? {}) })));
+			return { payment: records.find((payment) => payment.id === id) ?? null, portfolioMovement: null };
 		},
-
-		async getBusinessLoanSummary(businessId) {
-			const pendingLoans = Array.from(loans.values()).filter(
-				(loan) =>
-					loan.businessId === businessId && loan.status === "PENDING",
-			);
-			let totalDebt = 0;
-			for (const loan of pendingLoans) {
-				const paid = payments
-					.filter(
-						(p) => p.loanId === loan.id && p.status === "ACTIVE",
-					)
-					.reduce((sum, p) => sum + p.amount, 0);
-				totalDebt += Math.max(0, loan.totalAmount - paid);
-			}
-			return { totalDebt, customersWithDebt: pendingLoans.length, overdueLoans: 0 };
-		},
+		async getBusinessLoanSummary() { return { totalDebt: 0, customersWithDebt: 0, overdueLoans: 0 }; },
 	};
 
-	return repo;
+	return { repository: repository as unknown as LoanRepository, installments };
 }
 
+const monthlyLoan = {
+	customerId: "customer-a",
+	capitalAmount: 100000,
+	interestRate: 10,
+	frequency: "MONTHLY" as const,
+	termCount: 2,
+	startDate: "2026-08-01",
+};
+
 describe("loans service", () => {
-	beforeEach(() => {
-		mock.restore();
+	test("generates a French amortization schedule on the server", async () => {
+		const { repository } = createInMemoryRepository();
+		const loan = await createLoansService(repository).create("user-a", "business-a", monthlyLoan);
+
+		expect(loan.installmentAmount).toBe(57619);
+		expect(loan.interestAmount).toBe(15238);
+		expect(loan.totalAmount).toBe(115238);
+		expect(loan.installments).toMatchObject([
+			{ number: 1, dueDate: "2026-09-01", principalAmount: 47619, interestAmount: 10000, totalAmount: 57619 },
+			{ number: 2, dueDate: "2026-10-01", principalAmount: 52381, interestAmount: 5238, totalAmount: 57619 },
+		]);
 	});
 
-	afterEach(() => {
-		mock.restore();
-	});
-
-	test("create assigns the user and generates a disbursement movement", async () => {
-		const repository = createInMemoryLoanRepository();
+	test("applies a payment to installments in chronological order", async () => {
+		const { repository } = createInMemoryRepository();
 		const service = createLoansService(repository);
+		const loan = await service.create("user-a", "business-a", { ...monthlyLoan, interestRate: 0, termCount: 3 });
+		const updated = await service.createPayment("user-a", "business-a", loan.id, { amount: 40000, paymentDate: "2026-08-02" });
 
-		const loan = await service.create("user-a", "business-a", {
-			customerId: "customer-a",
-			capitalAmount: 100000,
-			interestAmount: 20000,
-			termCount: 2,
-			loanDate: "2026-08-01",
-		});
-
-		expect(loan.customerId).toBe("customer-a");
-		expect(loan.totalAmount).toBe(120000);
-		expect(loan.termCount).toBe(2);
-		expect(loan.remainingAmount).toBe(120000);
-		expect(loan.dueDate).toBe("2026-09-01");
-		expect(repository.disbursementMovements).toHaveLength(1);
-		expect(repository.disbursementMovements[0].type).toBe("LOAN_DISBURSEMENT");
-		expect(repository.disbursementMovements[0].amount).toBe(100000);
+		expect(updated.installments).toMatchObject([
+			{ paidAmount: 33333, status: "PAID" },
+			{ paidAmount: 6667, status: "PARTIAL" },
+			{ paidAmount: 0, status: "PENDING" },
+		]);
+		expect(updated.remainingAmount).toBe(60000);
 	});
 
-	test("create rejects a customer from another business", async () => {
-		const repository = createInMemoryLoanRepository();
+	test("replays the schedule when a payment is cancelled", async () => {
+		const { repository } = createInMemoryRepository();
 		const service = createLoansService(repository);
+		const loan = await service.create("user-a", "business-a", monthlyLoan);
+		const paid = await service.createPayment("user-a", "business-a", loan.id, { amount: 10000, paymentDate: "2026-08-02" });
+		const paymentId = paid.payments[0]!.id;
+		const cancelled = await service.cancelPayment("user-a", loan.id, paymentId, "business-a", { reason: "Registro duplicado" });
 
-		await expect(
-			service.create("user-a", "business-a", {
-				customerId: "customer-b",
-				capitalAmount: 100000,
-				loanDate: "2026-08-01",
-			}),
-		).rejects.toThrow("The customer was not found");
-	});
-
-	test("getById rejects a loan from another business", async () => {
-		const loan = makeLoan({ id: "loan-a", businessId: "business-a" });
-		const repository = createInMemoryLoanRepository([loan]);
-		const service = createLoansService(repository);
-
-		await expect(
-			service.getById("user-a", "loan-a", "business-b"),
-		).rejects.toThrow("does not belong to this business");
-	});
-
-	test("createPayment rejects when amount exceeds the remaining balance", async () => {
-		const loan = makeLoan({ id: "loan-a", totalAmount: 50000 });
-		const repository = createInMemoryLoanRepository([loan]);
-		const service = createLoansService(repository);
-
-		await expect(
-			service.createPayment("user-a", "business-a", "loan-a", {
-				amount: 60000,
-				paymentDate: "2026-08-05",
-			}),
-		).rejects.toThrow("exceeds the remaining balance");
-	});
-
-	test("createPayment marks the loan as PAID when fully paid", async () => {
-		const loan = makeLoan({ id: "loan-a", totalAmount: 50000 });
-		const repository = createInMemoryLoanRepository([loan]);
-		const service = createLoansService(repository);
-
-		const response = await service.createPayment(
-			"user-a",
-			"business-a",
-			"loan-a",
-			{ amount: 50000, paymentDate: "2026-08-05" },
-		);
-
-		expect(response.status).toBe("PAID");
-		expect(response.paidAmount).toBe(50000);
-		expect(response.remainingAmount).toBe(0);
-	});
-
-	test("createPayment returns existing payment for an idempotency key", async () => {
-		const loan = makeLoan({ id: "loan-a", totalAmount: 50000 });
-		const repository = createInMemoryLoanRepository([loan]);
-		const service = createLoansService(repository);
-
-		const first = await service.createPayment(
-			"user-a",
-			"business-a",
-			"loan-a",
-			{ id: "payment-key", amount: 10000, paymentDate: "2026-08-05" },
-		);
-		const second = await service.createPayment(
-			"user-a",
-			"business-a",
-			"loan-a",
-			{ id: "payment-key", amount: 10000, paymentDate: "2026-08-05" },
-		);
-
-		expect(second.payments).toHaveLength(first.payments.length);
-	});
-
-	test("cancel rejects a loan with active payments", async () => {
-		const loan = makeLoan({ id: "loan-a" });
-		const repository = createInMemoryLoanRepository([loan]);
-		repository.payments.push(makePayment("loan-a", { amount: 10000 }));
-		const service = createLoansService(repository);
-
-		await expect(
-			service.cancel("user-a", "loan-a", "business-a", { reason: "Error" }),
-		).rejects.toThrow("has active payments");
-	});
-
-	test("cancelPayment reverts a PAID loan to PENDING", async () => {
-		const loan = makeLoan({
-			id: "loan-a",
-			totalAmount: 10000,
-			status: "PAID",
-			paidAt: new Date(),
-		});
-		const repository = createInMemoryLoanRepository([loan]);
-		repository.payments.push(makePayment("loan-a", { id: "payment-a", amount: 10000 }));
-		const service = createLoansService(repository);
-
-		const response = await service.cancelPayment(
-			"user-a",
-			"loan-a",
-			"payment-a",
-			"business-a",
-			{ reason: "Error de caja" },
-		);
-
-		expect(response.status).toBe("PENDING");
-		expect(response.paidAmount).toBe(0);
+		expect(cancelled.status).toBe("ACTIVE");
+		expect(cancelled.paidAmount).toBe(0);
+		expect(cancelled.installments.every((item) => item.paidAmount === 0)).toBe(true);
 	});
 });

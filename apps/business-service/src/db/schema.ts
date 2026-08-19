@@ -3,6 +3,7 @@ import {
 	date,
 	index,
 	integer,
+	numeric,
 	pgTable,
 	text,
 	timestamp,
@@ -514,9 +515,27 @@ export type NewCreditMovement = typeof creditMovements.$inferInsert;
 
 // ─── Loans (Préstamos) ───────────────────────────────────────
 
-export const loanStatuses = ["PENDING", "PAID", "CANCELLED"] as const;
+export const loanStatuses = ["ACTIVE", "PAID", "DEFAULT", "CANCELLED"] as const;
 
 export type LoanStatus = (typeof loanStatuses)[number];
+
+export const loanFrequencies = [
+	"DAILY",
+	"WEEKLY",
+	"BIWEEKLY",
+	"MONTHLY",
+] as const;
+
+export type LoanFrequency = (typeof loanFrequencies)[number];
+
+export const loanInstallmentStatuses = [
+	"PENDING",
+	"PARTIAL",
+	"PAID",
+	"OVERDUE",
+] as const;
+
+export type LoanInstallmentStatus = (typeof loanInstallmentStatuses)[number];
 
 export const loans = pgTable(
 	"loans",
@@ -526,6 +545,19 @@ export const loans = pgTable(
 		businessId: text("business_id").notNull(),
 		customerId: text("customer_id").notNull(),
 		capitalAmount: bigint("capital_amount", { mode: "number" }).notNull(),
+		interestRate: numeric("interest_rate", {
+			precision: 7,
+			scale: 4,
+			mode: "number",
+		})
+			.notNull()
+			.default(0),
+		frequency: text("frequency", { enum: loanFrequencies })
+			.notNull()
+			.default("MONTHLY"),
+		installmentAmount: bigint("installment_amount", { mode: "number" })
+			.notNull()
+			.default(0),
 		interestAmount: bigint("interest_amount", { mode: "number" })
 			.notNull()
 			.default(0),
@@ -536,7 +568,7 @@ export const loans = pgTable(
 		dueDate: date("due_date").notNull(),
 		status: text("status", { enum: loanStatuses })
 			.notNull()
-			.default("PENDING"),
+			.default("ACTIVE"),
 		cancellationReason: text("cancellation_reason"),
 		paidAt: timestamp("paid_at", { withTimezone: true }),
 		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
@@ -566,13 +598,25 @@ export const loanInstallments = pgTable(
 		loanId: text("loan_id").notNull(),
 		number: integer("number").notNull(),
 		dueDate: date("due_date").notNull(),
-		amount: bigint("amount", { mode: "number" }).notNull(),
+		principalAmount: bigint("principal_amount", { mode: "number" }).notNull(),
+		interestAmount: bigint("interest_amount", { mode: "number" }).notNull(),
+		totalAmount: bigint("total_amount", { mode: "number" }).notNull(),
+		paidAmount: bigint("paid_amount", { mode: "number" })
+			.notNull()
+			.default(0),
+		status: text("status", { enum: loanInstallmentStatuses })
+			.notNull()
+			.default("PENDING"),
 		version: integer("version").notNull().default(1),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 	},
 	(table) => [
 		index("loan_installments_loan_id_idx").on(table.loanId),
+		uniqueIndex("loan_installments_loan_id_number_unique").on(
+			table.loanId,
+			table.number,
+		),
 	],
 );
 

@@ -27,19 +27,23 @@ import { LoanDetail } from "./loan-detail";
 
 const STATUS_FILTERS: [Loan["status"] | "ALL", string][] = [
 	["ALL", "Todos"],
-	["PENDING", "Pendientes"],
+	["ACTIVE", "Activos"],
 	["PAID", "Pagados"],
 	["CANCELLED", "Anulados"],
 ];
 
 const STATUS_CONFIG = {
-	PENDING: {
-		label: "Pendiente",
+	ACTIVE: {
+		label: "Activo",
 		badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
 	},
 	PAID: {
 		label: "Pagado",
 		badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+	},
+	DEFAULT: {
+		label: "En mora",
+		badge: "bg-destructive/10 text-destructive",
 	},
 	CANCELLED: {
 		label: "Anulado",
@@ -401,8 +405,10 @@ function LoanRow({
 	onCancel: () => void;
 }) {
 	const config = STATUS_CONFIG[loan.status];
-	const pending = loan.status === "PENDING";
-	const overdue = pending && age(loan.dueDate) > 0;
+	const active = loan.status === "ACTIVE";
+	const overdue = active && loan.installments.some(
+		(installment) => installment.status === "OVERDUE",
+	);
 	return (
 		<div className="group relative flex flex-col gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-row sm:items-center sm:gap-5">
 			<button
@@ -413,7 +419,7 @@ function LoanRow({
 				<span
 					className={cn(
 						"grid size-11 shrink-0 place-items-center rounded-xl text-sm font-semibold ring-1 ring-inset",
-						pending
+						active
 							? "bg-primary/10 text-primary ring-primary/20"
 							: "bg-muted text-muted-foreground ring-border",
 					)}
@@ -444,7 +450,7 @@ function LoanRow({
 						{loan.description || "Sin nota"}
 					</span>
 					<span className="mt-0.5 block text-xs text-muted-foreground">
-						{loan.loanDate} · vence {loan.dueDate} · {loan.termCount} cuota
+						{loan.startDate} · vence {loan.dueDate} · {loan.termCount} cuota
 						{loan.termCount === 1 ? "" : "s"} · {loan.payments.length} abono
 						{loan.payments.length === 1 ? "" : "s"}
 					</span>
@@ -461,7 +467,7 @@ function LoanRow({
 					</p>
 				</div>
 				<div className="flex shrink-0 gap-2">
-					{pending ? (
+					{active ? (
 						<Button
 							size="sm"
 							className="rounded-xl"
@@ -475,7 +481,7 @@ function LoanRow({
 						Ver detalle
 						<HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
 					</Button>
-					{pending ? (
+					{active ? (
 						<Button
 							size="sm"
 							variant="ghost"

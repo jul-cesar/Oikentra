@@ -114,7 +114,7 @@ export const dashboardSummaryRepository: DashboardSummaryRepository = {
 			.select()
 			.from(loans)
 			.where(
-				and(eq(loans.businessId, businessId), eq(loans.status, "PENDING")),
+				and(eq(loans.businessId, businessId), eq(loans.status, "ACTIVE")),
 			);
 	},
 

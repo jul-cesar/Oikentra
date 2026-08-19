@@ -353,7 +353,7 @@ internalReportsRoutes.post('/data', async (c) => {
   const pendingLoans = await db
     .select()
     .from(loans)
-    .where(and(eq(loans.businessId, businessId), eq(loans.status, 'PENDING')))
+    .where(and(eq(loans.businessId, businessId), eq(loans.status, 'ACTIVE')))
 
   const pendingLoanIds = pendingLoans.map((l) => l.id)
   const activeLoanPayments = pendingLoanIds.length > 0
