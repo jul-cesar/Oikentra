@@ -1,13 +1,20 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// Headers de transporte/compresión que no deben reenviarse al cliente.
+// Cloudflare puede responder con Brotli (`content-encoding: br`); si Node.js
+// descomprime el body y el proxy reenvía ese header, el navegador falla con
+// `ERR_CONTENT_DECODING_FAILED`.
 const HOP_BY_HOP_HEADERS = new Set([
 	"connection",
+	"content-encoding",
 	"content-length",
 	"keep-alive",
 	"transfer-encoding",
 ]);
 
+// Headers que sí se reenvían al auth-service para validar sesión. No incluimos
+// `accept-encoding`, `host` ni `content-length`.
 const AUTH_REQUEST_HEADERS = [
 	"accept",
 	"authorization",
@@ -20,6 +27,8 @@ const AUTH_REQUEST_HEADERS = [
 	"x-client-version",
 ] as const;
 
+// Headers que sí se reenvían al AI service. No incluimos `accept-encoding`,
+// `host` ni `content-length`.
 const AI_REQUEST_HEADERS = [
 	"accept",
 	"content-type",

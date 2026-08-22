@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
+  "content-encoding",
   "content-length",
   "keep-alive",
   "transfer-encoding",
@@ -48,7 +49,11 @@ function getUpstreamUrl(
     path.map(encodeURIComponent).join("/"),
     `${baseUrl.toString().replace(/\/$/, "")}/`,
   );
-  url.search = new URL(request.url).search;
+  try {
+    url.search = new URL(request.url).search;
+  } catch {
+    // Invalid request URL; leave query string empty.
+  }
   return url;
 }
 
