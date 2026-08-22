@@ -18,6 +18,7 @@ export type DashboardSummaryResponse = {
 		averageSaleTicket: number;
 		totalDebt: number;
 		customersWithDebt: number;
+		activeCustomersCount: number;
 		oldDebts: number;
 		loanDebt: number;
 		loansWithDebt: number;

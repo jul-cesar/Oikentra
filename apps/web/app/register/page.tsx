@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
 	return (
 		<AuthEntryGate>
-			<BeamsBackground intensity="medium">
 				<main className="relative flex  w-full items-center justify-center px-5 sm:px-6 lg:px-8">
 
 
@@ -38,7 +37,6 @@ export default function RegisterPage() {
 						</div>
 					</div>
 				</main>
-			</BeamsBackground>
 		</AuthEntryGate>
 	);
 }

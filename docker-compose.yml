@@ -20,6 +20,24 @@ services:
       timeout: 3s
       retries: 20
 
+  migrations:
+    container_name: oikentra-migrations
+    build:
+      context: .
+      dockerfile: docker/migrations/Dockerfile
+    restart: "no"
+    cpus: 0.5
+    mem_limit: 384m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      AUTH_DATABASE: oikentra_auth
+      BUSINESS_DATABASE: oikentra_business
+
   auth:
     container_name: oikentra-auth
     build:
@@ -33,6 +51,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     secrets:
       - better_auth_secret
       - internal_auth_private_key_b64
@@ -59,7 +79,6 @@ services:
         PRIVATE_KEY_PATH=/run/secrets/internal_auth_private_key_b64
         export BETTER_AUTH_SECRET="$$(cat $$BETTER_AUTH_SECRET_PATH)"
         export INTERNAL_AUTH_PRIVATE_KEY_B64="$$(cat $$PRIVATE_KEY_PATH)"
-        bun run db:migrate
         exec bun run --hot src/index.ts
     ports:
       - "3001:3001"
@@ -77,6 +96,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
       auth:
         condition: service_started
     secrets:
@@ -101,7 +122,6 @@ services:
       - |
         PUBLIC_KEY_PATH=/run/secrets/internal_auth_public_key_b64
         export INTERNAL_AUTH_PUBLIC_KEY_B64="$$(cat $$PUBLIC_KEY_PATH)"
-        bun run db:migrate
         exec bun run --hot src/index.ts
     ports:
       - "3002:3000"

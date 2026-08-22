@@ -36,10 +36,12 @@ export function SiteHeader() {
 					<Button
 						variant="ghost"
 						className="hidden sm:inline-flex"
+						nativeButton={false}
 						render={<Link href="/login">Iniciar sesión</Link>}
 					/>
 					<Button
 						className="rounded-xl"
+						nativeButton={false}
 						render={<Link href="/register">Probar Oikentra</Link>}
 					/>
 				</div>

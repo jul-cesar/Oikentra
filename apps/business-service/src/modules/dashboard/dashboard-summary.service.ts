@@ -1,4 +1,5 @@
 import { membersService, permissions } from "../businesses/members.service";
+import { customerRepository } from "../customers/customers.repository";
 import {
 	dashboardSummaryRepository,
 	type DashboardSummaryRepository,
@@ -89,10 +90,7 @@ function calcLoanDebt(
 ) {
 	const paid = new Map<string, number>();
 	for (const payment of payments)
-		paid.set(
-			payment.loanId,
-			(paid.get(payment.loanId) ?? 0) + payment.amount,
-		);
+		paid.set(payment.loanId, (paid.get(payment.loanId) ?? 0) + payment.amount);
 
 	const customers = new Set<string>();
 	let totalDebt = 0;
@@ -100,10 +98,7 @@ function calcLoanDebt(
 	const today = new Date();
 
 	for (const loan of pendingLoans) {
-		const remaining = Math.max(
-			0,
-			loan.totalAmount - (paid.get(loan.id) ?? 0),
-		);
+		const remaining = Math.max(0, loan.totalAmount - (paid.get(loan.id) ?? 0));
 		if (!remaining) continue;
 		totalDebt += remaining;
 		customers.add(loan.customerId);
@@ -139,20 +134,25 @@ export function createDashboardSummaryService(
 				to: requestedRange.to ?? fallback.to,
 			};
 
-			const [movements, portfolioMovements, creditMovements, pendingCredits, pendingLoans] =
-				await Promise.all([
-					repository.findActiveMovementsByBusinessAndDateRange(businessId, range),
-					repository.findActivePortfolioMovementsByBusinessAndDateRange(
-						businessId,
-						range,
-					),
-					repository.findActiveCreditMovementsByBusinessAndDateRange(
-						businessId,
-						range,
-					),
-					repository.findPendingCreditsByBusiness(businessId),
-					repository.findPendingLoansByBusiness(businessId),
-				]);
+			const [
+				movements,
+				portfolioMovements,
+				creditMovements,
+				pendingCredits,
+				pendingLoans,
+			] = await Promise.all([
+				repository.findActiveMovementsByBusinessAndDateRange(businessId, range),
+				repository.findActivePortfolioMovementsByBusinessAndDateRange(
+					businessId,
+					range,
+				),
+				repository.findActiveCreditMovementsByBusinessAndDateRange(
+					businessId,
+					range,
+				),
+				repository.findPendingCreditsByBusiness(businessId),
+				repository.findPendingLoansByBusiness(businessId),
+			]);
 			const [payments, loanPayments] = await Promise.all([
 				repository.findActivePaymentsForCredits(
 					pendingCredits.map((credit) => credit.id),
@@ -163,6 +163,8 @@ export function createDashboardSummaryService(
 			]);
 			const debt = calcDebt(pendingCredits, payments);
 			const loanDebt = calcLoanDebt(pendingLoans, loanPayments);
+			const activeCustomersCount =
+				await customerRepository.countActiveByBusiness(businessId);
 
 			let salesAmount = 0;
 			let salesCount = 0;
@@ -344,6 +346,7 @@ export function createDashboardSummaryService(
 						: 0,
 					totalDebt: debt.totalDebt,
 					customersWithDebt: debt.customersWithDebt,
+					activeCustomersCount,
 					oldDebts: debt.oldDebts,
 					loanDebt: loanDebt.totalDebt,
 					loansWithDebt: loanDebt.customersWithDebt,
