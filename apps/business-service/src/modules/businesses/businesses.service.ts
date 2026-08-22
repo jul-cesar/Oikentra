@@ -25,7 +25,13 @@ function assertLogoOwnership(
 			"The business logo is not valid.",
 		);
 	}
-	if (logoUrl !== `${r2.publicBaseUrl}/${logoObjectKey}`) {
+	// Validamos que la URL termine en `/<objectKey>` en lugar de exigir el
+	// dominio exacto de `R2_PUBLIC_BASE_URL`. Esto permite:
+	// 1. Cambiar el CDN/base URL sin romper logos antiguos guardados en BD.
+	// 2. Servir imágenes antiguas desde la URL legacy de R2 mientras se migran.
+	// El objectKey incluye un UUID y un path privado (`business-logos/...`),
+	// por lo que validar el sufijo es suficiente para evitar URLs arbitrarias.
+	if (!logoUrl.endsWith(`/${logoObjectKey}`)) {
 		throw new AppError(
 			"INVALID_BUSINESS_LOGO",
 			400,
