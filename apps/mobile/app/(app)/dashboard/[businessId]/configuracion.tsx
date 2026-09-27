@@ -19,6 +19,7 @@ import {
   type BusinessSettingsValues,
 } from '@/lib/validation/onboarding-schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Redirect } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
@@ -52,6 +53,10 @@ export default function BusinessSettingsScreen() {
       timezone: business.timezone || 'America/Bogota',
     });
   }, [business, form]);
+
+  if (business.role !== 'OWNER' && business.role !== 'MANAGER') {
+    return <Redirect href={`/dashboard/${business.id}`} />;
+  }
 
   async function submit(values: BusinessSettingsValues) {
     setMessage('');
@@ -99,7 +104,9 @@ export default function BusinessSettingsScreen() {
                 <Select
                   value={{
                     value,
-                    label: BUSINESS_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? value,
+                    label:
+                      BUSINESS_TYPE_OPTIONS.find((option) => option.value === value)?.label ??
+                      value,
                   }}
                   onValueChange={(option) => onChange(option?.value)}>
                   <SelectTrigger>
@@ -171,7 +178,7 @@ export default function BusinessSettingsScreen() {
           </Button>
         </CardContent>
       </Card>
-      <CollaboratorsSettings businessId={business.id} />
+      {business.role === 'OWNER' ? <CollaboratorsSettings businessId={business.id} /> : null}
     </View>
   );
 }

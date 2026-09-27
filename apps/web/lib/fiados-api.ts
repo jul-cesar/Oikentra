@@ -36,6 +36,7 @@ export type Credit = {
 	remainingAmount: number;
 	description: string | null;
 	creditDate: string;
+	dueDate: string | null;
 	status: "PENDING" | "PAID" | "CANCELLED";
 	cancellationReason: string | null;
 	cancelledAt: string | null;
@@ -130,6 +131,7 @@ export function createCredit(
 		originalAmount: number;
 		description?: string;
 		creditDate: string;
+		dueDate?: string;
 	},
 ) {
 	return request<Credit>(`${base(businessId)}/credits`, {

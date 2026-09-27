@@ -35,13 +35,14 @@ import {
 } from "@/components/ui/message-scroller";
 import { cn } from "@/lib/utils";
 
-type Props = {
+export type OikentraChatProps = {
 	business: {
 		id: string;
 		name: string;
 		currencyCode?: string | null;
 		timezone?: string | null;
 	};
+	initiallyOpen?: boolean;
 };
 
 type StoredChatSession = {
@@ -225,9 +226,12 @@ function MessageBubble({
 	);
 }
 
-export function OikentraChat({ business }: Props) {
+export function OikentraChat({
+	business,
+	initiallyOpen = false,
+}: OikentraChatProps) {
 	const pathname = usePathname();
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(initiallyOpen);
 	const [message, setMessage] = useState("");
 	const [restoredSession] = useState(() => readStoredChatSession(business.id));
 

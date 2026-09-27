@@ -1,4 +1,6 @@
-FROM node:22-alpine AS base
+# syntax=docker/dockerfile:1
+
+FROM node:24-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -14,7 +16,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/location-catalog/package.json packages/location-catalog/package.json
 
-RUN pnpm install --frozen-lockfile --filter @oikentra/web...
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile --filter @oikentra/web...
 
 FROM base AS builder
 
@@ -34,9 +38,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 
-RUN pnpm --filter @oikentra/web build
+RUN --mount=type=cache,id=next-web,target=/app/apps/web/.next/cache,sharing=locked \
+    ./apps/web/node_modules/.bin/next build apps/web
 
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 LABEL org.opencontainers.image.vendor="Oikentra"
 

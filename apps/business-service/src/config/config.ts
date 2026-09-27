@@ -1,5 +1,9 @@
 function readRequiredEnv(
-	name: "DATABASE_URL" | "INTERNAL_AUTH_PUBLIC_KEY_B64",
+	name:
+		| "DATABASE_URL"
+		| "INTERNAL_AUTH_PUBLIC_KEY_B64"
+		| "RESEND_API_KEY"
+		| "REMINDER_EMAIL_FROM",
 ) {
 	const value = process.env[name]?.trim();
 
@@ -51,6 +55,7 @@ export function getConfig() {
 			userId:
 				process.env.INTERNAL_AUTH_DEV_USER_ID?.trim() || "local-test-user",
 			sessionId: "local-test-session",
+			email: process.env.INTERNAL_AUTH_DEV_USER_EMAIL?.trim() || undefined,
 		},
 		r2:
 			r2AccountId &&
@@ -67,6 +72,19 @@ export function getConfig() {
 					}
 				: null,
 		port: getPort(),
+	};
+}
+
+export function getReminderWorkerConfig() {
+	const rawPollInterval = readOptionalEnv("REMINDER_POLL_INTERVAL_MS");
+	const pollIntervalMs = rawPollInterval ? Number(rawPollInterval) : 30_000;
+	if (!Number.isInteger(pollIntervalMs) || pollIntervalMs < 1_000) {
+		throw new Error("REMINDER_POLL_INTERVAL_MS must be an integer of at least 1000");
+	}
+	return {
+		resendApiKey: readRequiredEnv("RESEND_API_KEY"),
+		reminderEmailFrom: readRequiredEnv("REMINDER_EMAIL_FROM"),
+		pollIntervalMs,
 	};
 }
 

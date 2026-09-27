@@ -16,7 +16,7 @@ afterEach(() => {
 
 describe('requireAuthHeaders development bypass', () => {
   test('sets local auth context without an internal assertion', async () => {
-    for (const name of ['DATABASE_URL', 'INTERNAL_AUTH_PUBLIC_KEY_B64', 'NODE_ENV', 'INTERNAL_AUTH_DEV_BYPASS']) {
+    for (const name of ['DATABASE_URL', 'INTERNAL_AUTH_PUBLIC_KEY_B64', 'NODE_ENV', 'INTERNAL_AUTH_DEV_BYPASS', 'INTERNAL_AUTH_DEV_USER_EMAIL']) {
       originalEnv.set(name, process.env[name])
     }
     Object.assign(process.env, {
@@ -24,6 +24,7 @@ describe('requireAuthHeaders development bypass', () => {
       INTERNAL_AUTH_PUBLIC_KEY_B64: 'test-key',
       NODE_ENV: 'development',
       INTERNAL_AUTH_DEV_BYPASS: 'true',
+      INTERNAL_AUTH_DEV_USER_EMAIL: 'owner@example.com',
     })
 
     const app = new Hono<AppBindings>()
@@ -33,6 +34,6 @@ describe('requireAuthHeaders development bypass', () => {
     const response = await app.request('/')
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ userId: 'local-test-user', sessionId: 'local-test-session' })
+    expect(await response.json()).toEqual({ userId: 'local-test-user', sessionId: 'local-test-session', email: 'owner@example.com' })
   })
 })

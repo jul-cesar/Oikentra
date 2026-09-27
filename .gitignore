@@ -31,3 +31,5 @@ graphify-out/
 docker/secrets/*.txt
 !docker/secrets/*.example
 !docker/secrets/.gitkeep
+
+_tmp*

@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 		template: "%s | Oikentra",
 	},
 	description: "Control simple de caja y fiados para pequeños negocios.",
+	icons: { icon: "/icons/icon.svg" },
 };
 
 export const viewport = {

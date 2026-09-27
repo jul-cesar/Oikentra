@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
 	ArrowRight01Icon,
 	ArrowUpDownIcon,
@@ -23,7 +24,6 @@ import type { Loan } from "@/lib/loans-api";
 import { CreateLoanDialog } from "./create-loan-dialog";
 import { CreatePaymentDialog } from "./create-payment-dialog";
 import { CancelDialog } from "./cancel-dialog";
-import { LoanDetail } from "./loan-detail";
 
 const STATUS_FILTERS: [Loan["status"] | "ALL", string][] = [
 	["ALL", "Todos"],
@@ -58,14 +58,6 @@ const money = (value: number) =>
 		maximumFractionDigits: 0,
 	}).format(value);
 
-const age = (date: string) =>
-	Math.max(
-		0,
-		Math.floor(
-			(Date.now() - new Date(`${date}T00:00:00Z`).getTime()) / 86400000,
-		),
-	);
-
 function initials(name: string) {
 	return name
 		.split(" ")
@@ -81,11 +73,11 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 	const customersQuery = useCustomers(businessId);
 	const summaryQuery = useLoanSummary(businessId);
 	const [search, setSearch] = useState("");
-	const [statusFilter, setStatusFilter] = useState<Loan["status"] | "ALL">("ALL");
+	const [statusFilter, setStatusFilter] = useState<Loan["status"] | "ALL">(
+		"ALL",
+	);
 	const [sort, setSort] = useState<"debt" | "name">("debt");
 	const [createOpen, setCreateOpen] = useState(false);
-	const [detail, setDetail] = useState<Loan | null>(null);
-	const [detailOpen, setDetailOpen] = useState(false);
 	const [paymentTarget, setPaymentTarget] = useState<Loan | null>(null);
 	const [cancelTarget, setCancelTarget] = useState<{
 		loanId: string;
@@ -136,7 +128,11 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 		[customerNames, customerPhones, loans, search, sort, statusFilter],
 	);
 
-	if (loansQuery.isLoading || customersQuery.isLoading || summaryQuery.isLoading)
+	if (
+		loansQuery.isLoading ||
+		customersQuery.isLoading ||
+		summaryQuery.isLoading
+	)
 		return (
 			<OikentraLoader label="Cargando préstamos" className="min-h-[60vh]" />
 		);
@@ -168,9 +164,7 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 		<div className="mx-auto max-w-5xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-4 sm:py-8">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
-					<p className="text-sm font-medium text-primary">
-						Control de cartera
-					</p>
+					<p className="text-sm font-medium text-primary">Control de cartera</p>
 					<h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
 						Préstamos
 					</h1>
@@ -178,7 +172,11 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 						Administra todos los préstamos de tu negocio en un solo lugar.
 					</p>
 				</div>
-				<Button size="lg" className="rounded-xl" onClick={() => setCreateOpen(true)}>
+				<Button
+					size="lg"
+					className="rounded-xl"
+					onClick={() => setCreateOpen(true)}
+				>
 					<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
 					Nuevo préstamo
 				</Button>
@@ -304,10 +302,7 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 							key={loan.id}
 							loan={loan}
 							customerName={customerNames.get(loan.customerId) ?? "Cliente"}
-							onOpen={() => {
-								setDetail(loan);
-								setDetailOpen(true);
-							}}
+							detailHref={`/dashboard/${businessId}/prestamos/${loan.id}`}
 							onPayment={() => setPaymentTarget(loan)}
 							onCancel={() => setCancelTarget({ loanId: loan.id })}
 						/>
@@ -339,15 +334,6 @@ export function PrestamosPage({ businessId }: { businessId: string }) {
 				onOpenChange={(value) => {
 					if (!value) setCancelTarget(null);
 				}}
-			/>
-			<LoanDetail
-				businessId={businessId}
-				loan={detail}
-				customerName={
-					detail ? customerNames.get(detail.customerId) ?? "Cliente" : ""
-				}
-				open={detailOpen}
-				onOpenChange={setDetailOpen}
 			/>
 		</div>
 	);
@@ -394,26 +380,25 @@ function MiniStat({
 function LoanRow({
 	loan,
 	customerName,
-	onOpen,
+	detailHref,
 	onPayment,
 	onCancel,
 }: {
 	loan: Loan;
 	customerName: string;
-	onOpen: () => void;
+	detailHref: string;
 	onPayment: () => void;
 	onCancel: () => void;
 }) {
 	const config = STATUS_CONFIG[loan.status];
 	const active = loan.status === "ACTIVE";
-	const overdue = active && loan.installments.some(
-		(installment) => installment.status === "OVERDUE",
-	);
+	const overdue =
+		active &&
+		loan.installments.some((installment) => installment.status === "OVERDUE");
 	return (
 		<div className="group relative flex flex-col gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-row sm:items-center sm:gap-5">
-			<button
-				type="button"
-				onClick={onOpen}
+			<Link
+				href={detailHref}
 				className="flex min-w-0 flex-1 items-center gap-3.5 text-left"
 			>
 				<span
@@ -455,7 +440,7 @@ function LoanRow({
 						{loan.payments.length === 1 ? "" : "s"}
 					</span>
 				</span>
-			</button>
+			</Link>
 
 			<div className="flex items-center justify-between gap-3 sm:justify-end">
 				<div className="text-right sm:min-w-28">
@@ -468,18 +453,27 @@ function LoanRow({
 				</div>
 				<div className="flex shrink-0 gap-2">
 					{active ? (
-						<Button
-							size="sm"
-							className="rounded-xl"
-							onClick={onPayment}
-						>
-							<HugeiconsIcon icon={HandCoinsIcon} size={16} aria-hidden="true" />
+						<Button size="sm" className="rounded-xl" onClick={onPayment}>
+							<HugeiconsIcon
+								icon={HandCoinsIcon}
+								size={16}
+								aria-hidden="true"
+							/>
 							Abonar
 						</Button>
 					) : null}
-					<Button size="sm" variant="outline" className="rounded-xl" onClick={onOpen}>
+					<Button
+						size="sm"
+						variant="outline"
+						className="rounded-xl"
+						render={<Link href={detailHref} />}
+					>
 						Ver detalle
-						<HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
+						<HugeiconsIcon
+							icon={ArrowRight01Icon}
+							size={16}
+							aria-hidden="true"
+						/>
 					</Button>
 					{active ? (
 						<Button

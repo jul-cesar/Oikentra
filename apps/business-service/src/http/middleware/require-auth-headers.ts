@@ -12,6 +12,7 @@ export const requireAuthHeaders = createMiddleware<AppBindings>(async (c, next) 
     c.set('auth', {
       userId: config.internalAuthDevBypass.userId,
       sessionId: config.internalAuthDevBypass.sessionId,
+      email: config.internalAuthDevBypass.email,
     })
     await next()
     return
@@ -29,7 +30,11 @@ export const requireAuthHeaders = createMiddleware<AppBindings>(async (c, next) 
       publicKeyBase64: config.internalAuthPublicKeyBase64,
       audience: config.internalAuthAudience,
     })
-    c.set('auth', { userId: assertion.userId, sessionId: assertion.sessionId })
+    c.set('auth', {
+      userId: assertion.userId,
+      sessionId: assertion.sessionId,
+      email: assertion.email,
+    })
   } catch {
     throw new AppError('UNAUTHENTICATED', 401, 'A valid authenticated session is required.')
   }

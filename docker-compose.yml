@@ -173,8 +173,7 @@ services:
       dockerfile: apps/web/Dockerfile
       target: deps
     restart: "no"
-    cpus: 1.0
-    mem_limit: 768m
+    mem_limit: 2g
     depends_on:
       auth:
         condition: service_started
@@ -194,7 +193,8 @@ services:
       - /app/apps/web/.next
       - ./packages/location-catalog:/app/packages/location-catalog
       - /app/packages/location-catalog/node_modules
-    command: ["pnpm", "--filter", "@oikentra/web", "dev"]
+    command:
+      ["node", "apps/web/node_modules/next/dist/bin/next", "dev", "apps/web"]
     ports:
       - "3000:3000"
 

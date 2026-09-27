@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { useCreditSummary, useCustomers } from "@/lib/queries/fiados";
 import type { Customer } from "@/lib/fiados-api";
 import { CreateCreditDialog } from "./create-credit-dialog";
-import { CustomerDetail } from "./customer-detail";
 
 const FILTERS = [
 	["all", "Todos"],
@@ -58,8 +57,6 @@ export function FiadosPage({ businessId }: { businessId: string }) {
 	const [filter, setFilter] = useState<FilterValue>("all");
 	const [sort, setSort] = useState<"debt" | "name">("debt");
 	const [createOpen, setCreateOpen] = useState(false);
-	const [detail, setDetail] = useState<Customer | null>(null);
-	const [detailOpen, setDetailOpen] = useState(false);
 	const [initialCustomer, setInitialCustomer] = useState<Customer | null>(null);
 	const customers = useMemo(
 		() => customersQuery.data ?? [],
@@ -92,11 +89,6 @@ export function FiadosPage({ businessId }: { businessId: string }) {
 		0,
 		...filtered.map((customer) => customer.totalDebt),
 	);
-
-	function openDetail(customer: Customer) {
-		setDetail(customer);
-		setDetailOpen(true);
-	}
 
 	function newCredit(customer?: Customer) {
 		setInitialCustomer(customer ?? null);
@@ -274,7 +266,7 @@ export function FiadosPage({ businessId }: { businessId: string }) {
 									key={customer.id}
 									customer={customer}
 									maxDebt={maxDebt}
-									onOpen={openDetail}
+									detailHref={`/dashboard/${businessId}/fiados/${customer.id}`}
 									onNewCredit={newCredit}
 								/>
 							))}
@@ -291,16 +283,6 @@ export function FiadosPage({ businessId }: { businessId: string }) {
 				onOpenChange={(open) => {
 					setCreateOpen(open);
 					if (!open) setInitialCustomer(null);
-				}}
-			/>
-			<CustomerDetail
-				businessId={businessId}
-				customer={detail}
-				open={detailOpen}
-				onOpenChange={setDetailOpen}
-				onNewCredit={() => {
-					setDetailOpen(false);
-					newCredit(detail ?? undefined);
 				}}
 			/>
 		</div>
@@ -348,12 +330,12 @@ function MiniStat({
 function CustomerRow({
 	customer,
 	maxDebt,
-	onOpen,
+	detailHref,
 	onNewCredit,
 }: {
 	customer: Customer;
 	maxDebt: number;
-	onOpen: (customer: Customer) => void;
+	detailHref: string;
 	onNewCredit: (customer: Customer) => void;
 }) {
 	const hasDebt = customer.totalDebt > 0;
@@ -363,9 +345,8 @@ function CustomerRow({
 
 	return (
 		<div className="group relative flex flex-col gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-row sm:items-center sm:gap-5">
-			<button
-				type="button"
-				onClick={() => onOpen(customer)}
+			<Link
+				href={detailHref}
 				className="flex min-w-0 flex-1 items-center gap-3.5 text-left"
 			>
 				<span
@@ -421,7 +402,7 @@ function CustomerRow({
 						</span>
 					) : null}
 				</span>
-			</button>
+			</Link>
 
 			<div className="flex items-center justify-between gap-3 sm:justify-end">
 				<div className="text-right sm:min-w-28">
@@ -442,7 +423,7 @@ function CustomerRow({
 					<Button
 						size="sm"
 						className="rounded-xl"
-						onClick={() => onOpen(customer)}
+						render={<Link href={detailHref} />}
 					>
 						Ver y abonar
 						<HugeiconsIcon

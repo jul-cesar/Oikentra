@@ -1,18 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { useCredits } from "@/lib/queries/fiados";
 import { usePublicUsers } from "@/lib/queries/members";
 import type { Customer, Credit } from "@/lib/fiados-api";
+import { CreateCreditDialog } from "./create-credit-dialog";
 import { CreatePaymentDialog } from "./create-payment-dialog";
 import { CancelDialog } from "./cancel-dialog";
 
@@ -44,28 +40,28 @@ function PaymentHistory({
 }) {
 	if (!credit.payments.length) return null;
 	return (
-		<details className="mt-3 rounded-md bg-muted/40 px-3 py-2 text-sm">
+		<details className="mt-3 rounded-xl bg-muted/40 px-4 py-3 text-sm">
 			<summary className="cursor-pointer font-medium">
 				Ver {credit.payments.length === 1 ? "abono" : "abonos"} (
 				{credit.payments.length})
 			</summary>
-			<div className="mt-2 space-y-2 border-t pt-2">
+			<div className="mt-3 space-y-3 border-t pt-3">
 				{credit.payments.map((payment) => (
 					<div
 						key={payment.id}
-						className="flex flex-col gap-1 text-xs sm:flex-row sm:items-start sm:justify-between sm:gap-3"
+						className="flex flex-col gap-1 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-4"
 					>
 						<div className="min-w-0">
 							<p>
 								{payment.paymentDate}
 								{payment.note ? ` · ${payment.note}` : ""}
 							</p>
-							<p className="text-muted-foreground">
+							<p className="text-xs text-muted-foreground">
 								Abono registrado {formatDateTime(payment.createdAt)} · por{" "}
 								{userNames.get(payment.userId) ?? "Usuario"}
 							</p>
 						</div>
-						<span className="shrink-0 font-medium">
+						<span className="shrink-0 font-medium tabular-nums">
 							{money(payment.amount)}
 						</span>
 					</div>
@@ -78,15 +74,9 @@ function PaymentHistory({
 export function CustomerDetail({
 	businessId,
 	customer,
-	open,
-	onOpenChange,
-	onNewCredit,
 }: {
 	businessId: string;
-	customer: Customer | null;
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	onNewCredit: () => void;
+	customer: Customer;
 }) {
 	const {
 		data: credits = [],
@@ -94,19 +84,23 @@ export function CustomerDetail({
 		error,
 		refetch,
 	} = useCredits(businessId);
+	const [createOpen, setCreateOpen] = useState(false);
 	const [paymentCredit, setPaymentCredit] = useState<Credit | null>(null);
 	const [cancelCredit, setCancelCredit] = useState<Credit | null>(null);
+	const customerCredits = credits.filter(
+		(credit) => credit.customerId === customer.id,
+	);
 	const creditUserIds = useMemo(
 		() =>
 			Array.from(
 				new Set(
-					credits.flatMap((credit) => [
+					customerCredits.flatMap((credit) => [
 						credit.userId,
 						...credit.payments.map((payment) => payment.userId),
 					]),
 				),
 			),
-		[credits],
+		[customerCredits],
 	);
 	const creditUsers = usePublicUsers(creditUserIds);
 	const creditUserNames = useMemo(
@@ -116,32 +110,58 @@ export function CustomerDetail({
 			),
 		[creditUsers.data],
 	);
-	const customerCredits = credits.filter(
-		(credit) => credit.customerId === customer?.id,
-	);
 	const pending = customerCredits.filter(
 		(credit) => credit.status === "PENDING",
 	);
 	const closed = customerCredits.filter(
 		(credit) => credit.status !== "PENDING",
 	);
+
 	return (
 		<>
-			<Dialog open={open} onOpenChange={onOpenChange}>
-				<DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl">
-					<DialogHeader>
-						<DialogTitle>{customer?.name}</DialogTitle>
-						<DialogDescription>
-							{customer?.phone || "Sin teléfono"} · Debe{" "}
-							{money(customer?.totalDebt ?? 0)}
-						</DialogDescription>
-					</DialogHeader>
+			<div className="mx-auto max-w-5xl space-y-5 py-2 sm:space-y-6 sm:py-4">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+					<div>
+						<Button
+							variant="ghost"
+							className="-ml-3 mb-2 rounded-xl"
+							render={<Link href={`/dashboard/${businessId}/fiados`} />}
+						>
+							<HugeiconsIcon
+								icon={ArrowLeft01Icon}
+								size={16}
+								aria-hidden="true"
+							/>
+							Volver a fiados
+						</Button>
+						<p className="text-sm font-medium text-primary">
+							Detalle del cliente
+						</p>
+						<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
+							{customer.name}
+						</h1>
+						<p className="mt-1.5 text-muted-foreground">
+							{customer.phone || "Sin teléfono"} · Debe{" "}
+							{money(customer.totalDebt)}
+						</p>
+					</div>
+					<Button
+						size="lg"
+						className="rounded-xl"
+						onClick={() => setCreateOpen(true)}
+					>
+						<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
+						Nuevo fiado para este cliente
+					</Button>
+				</div>
+
+				<div className="rounded-3xl border bg-card p-4 sm:p-6 lg:p-8">
 					{isLoading ? (
-						<p className="py-8 text-center text-sm text-muted-foreground">
+						<p className="py-16 text-center text-sm text-muted-foreground">
 							Cargando deudas…
 						</p>
 					) : error ? (
-						<div className="py-6 text-center">
+						<div className="py-12 text-center">
 							<p className="text-sm text-destructive">
 								No pudimos cargar el detalle.
 							</p>
@@ -154,27 +174,32 @@ export function CustomerDetail({
 							</Button>
 						</div>
 					) : (
-						<div className="max-h-[55vh] space-y-5 overflow-y-auto pr-1">
+						<div className="space-y-8">
 							<section>
-								<div className="mb-2 flex items-center justify-between">
-									<h3 className="font-medium">Pendientes</h3>
+								<div className="mb-3 flex items-center justify-between">
+									<h2 className="text-lg font-semibold tracking-tight">
+										Pendientes
+									</h2>
 									<span className="text-sm text-muted-foreground">
 										{pending.length}
 									</span>
 								</div>
 								{pending.length ? (
-									<div className="space-y-2">
+									<div className="space-y-3">
 										{pending.map((credit) => (
-											<div key={credit.id} className="rounded-lg border p-3">
-												<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+											<div
+												key={credit.id}
+												className="rounded-2xl border p-4 sm:p-5"
+											>
+												<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 													<div className="min-w-0">
-														<p className="font-medium">
+														<p className="text-lg font-semibold tabular-nums">
 															{money(credit.remainingAmount)}{" "}
 															<span className="text-xs font-normal text-muted-foreground">
 																pendiente
 															</span>
 														</p>
-														<p className="text-xs text-muted-foreground">
+														<p className="mt-1 text-sm text-muted-foreground">
 															{credit.description || "Sin nota"} · hace{" "}
 															{age(credit.creditDate)} días · creado{" "}
 															{formatDateTime(credit.createdAt)} · por{" "}
@@ -197,7 +222,7 @@ export function CustomerDetail({
 														</Button>
 													</div>
 												</div>
-												<p className="mt-2 text-xs text-muted-foreground">
+												<p className="mt-3 text-sm text-muted-foreground">
 													Original {money(credit.originalAmount)} · Abonado{" "}
 													{money(credit.paidAmount)}
 												</p>
@@ -209,28 +234,31 @@ export function CustomerDetail({
 										))}
 									</div>
 								) : (
-									<p className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+									<p className="rounded-2xl bg-muted/50 p-5 text-sm text-muted-foreground">
 										No tiene fiados pendientes.
 									</p>
 								)}
 							</section>
+
 							<section>
-								<h3 className="mb-2 font-medium">Historial</h3>
+								<h2 className="mb-3 text-lg font-semibold tracking-tight">
+									Historial
+								</h2>
 								{closed.length ? (
-									<div className="space-y-2">
+									<div className="space-y-3">
 										{closed.map((credit) => (
 											<div
 												key={credit.id}
-												className="rounded-lg border px-3 py-2 text-sm"
+												className="rounded-2xl border p-4 text-sm sm:p-5"
 											>
-												<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+												<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
 													<span className="min-w-0">
 														{credit.status === "PAID" ? "Pagado" : "Anulado"} ·{" "}
 														{credit.creditDate} ·{" "}
 														{formatDateTime(credit.createdAt)} · por{" "}
 														{creditUserNames.get(credit.userId) ?? "Usuario"}
 													</span>
-													<span className="shrink-0 text-muted-foreground">
+													<span className="shrink-0 font-medium tabular-nums">
 														{money(credit.originalAmount)}
 													</span>
 												</div>
@@ -251,14 +279,17 @@ export function CustomerDetail({
 							</section>
 						</div>
 					)}
-					<DialogFooter>
-						<Button variant="outline" onClick={() => onOpenChange(false)}>
-							Cerrar
-						</Button>
-						<Button onClick={onNewCredit}>Nuevo fiado para este cliente</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+				</div>
+			</div>
+
+			<CreateCreditDialog
+				key={String(createOpen)}
+				businessId={businessId}
+				customers={[customer]}
+				open={createOpen}
+				initialCustomer={customer}
+				onOpenChange={setCreateOpen}
+			/>
 			<CreatePaymentDialog
 				key={`${Boolean(paymentCredit)}-${paymentCredit?.id ?? "new"}`}
 				businessId={businessId}

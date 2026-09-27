@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 import { useBusinessContext } from '@/app/(app)/dashboard/[businessId]/_layout';
-import { Href, useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import * as React from 'react';
 import { View } from 'react-native';
 
@@ -40,14 +40,18 @@ export default function BusinessDashboardScreen() {
             <Button onPress={() => router.push(`/dashboard/${business.id}/ventas` as Href)}>
               <Text>Registrar una venta</Text>
             </Button>
-            <Button variant="outline" onPress={() => router.push(`/dashboard/${business.id}/fiados` as Href)}>
-              <Text>Registrar un fiado</Text>
-            </Button>
             <Button
               variant="outline"
-              onPress={() => router.push(`/dashboard/${business.id}/configuracion` as Href)}>
-              <Text>Configurar negocio</Text>
+              onPress={() => router.push(`/dashboard/${business.id}/fiados` as Href)}>
+              <Text>Registrar un fiado</Text>
             </Button>
+            {business.role === 'OWNER' || business.role === 'MANAGER' ? (
+              <Button
+                variant="outline"
+                onPress={() => router.push(`/dashboard/${business.id}/configuracion` as Href)}>
+                <Text>Configurar negocio</Text>
+              </Button>
+            ) : null}
           </CardContent>
         </Card>
       </View>
