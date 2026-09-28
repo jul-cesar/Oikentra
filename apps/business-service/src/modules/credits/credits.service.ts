@@ -76,6 +76,7 @@ export function createCreditsService(
 					originalAmount: input.originalAmount,
 					description: input.description ?? null,
 					creditDate: input.creditDate,
+					dueDate: input.dueDate ?? null,
 					status: "PENDING",
 					version: 1,
 					createdAt: now,
@@ -443,6 +444,7 @@ function toCreditResponse(
 		originalAmount: number;
 		description: string | null;
 		creditDate: string;
+		dueDate: string | null;
 		status: string;
 		cancellationReason: string | null;
 		cancelledAt: Date | null;
@@ -475,6 +477,7 @@ function toCreditResponse(
 		remainingAmount: Math.max(0, credit.originalAmount - totalPaid),
 		description: credit.description,
 		creditDate: credit.creditDate,
+		dueDate: credit.dueDate,
 		status: credit.status,
 		cancellationReason: credit.cancellationReason,
 		cancelledAt: credit.cancelledAt?.toISOString() ?? null,

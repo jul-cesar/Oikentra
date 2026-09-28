@@ -7,6 +7,7 @@ export const INTERNAL_AUTH_TOKEN_TTL_SECONDS = 60
 export type InternalAuthAssertion = {
   userId: string
   sessionId: string
+  email?: string
   audience: string | string[]
   issuedAt: number
   expiresAt: number
@@ -14,6 +15,7 @@ export type InternalAuthAssertion = {
 
 type AssertionPayload = {
   sid?: unknown
+  email?: unknown
 }
 
 function decodeBase64(value: string) {
@@ -32,6 +34,7 @@ export async function issueInternalAssertion({
   privateKeyBase64,
   userId,
   sessionId,
+  email,
   audience,
   now = Math.floor(Date.now() / 1000),
   ttlSeconds = INTERNAL_AUTH_TOKEN_TTL_SECONDS,
@@ -39,13 +42,14 @@ export async function issueInternalAssertion({
   privateKeyBase64: string
   userId: string
   sessionId: string
+  email?: string
   audience: string | string[]
   now?: number
   ttlSeconds?: number
 }) {
   const privateKey = await importPKCS8(base64PemToString(privateKeyBase64), INTERNAL_AUTH_ALGORITHM)
 
-  return new SignJWT({ sid: sessionId })
+  return new SignJWT({ sid: sessionId, ...(email ? { email } : {}) })
     .setProtectedHeader({ alg: INTERNAL_AUTH_ALGORITHM, typ: 'JWT' })
     .setSubject(userId)
     .setIssuer(INTERNAL_AUTH_ISSUER)
@@ -78,6 +82,7 @@ export async function verifyInternalAssertion({
     typeof payload.sub !== 'string' ||
     typeof payload.sid !== 'string' ||
     !(typeof payload.aud === 'string' || (Array.isArray(payload.aud) && payload.aud.every((value) => typeof value === 'string'))) ||
+    (payload.email !== undefined && typeof payload.email !== 'string') ||
     typeof payload.iat !== 'number' ||
     typeof payload.exp !== 'number'
   ) {
@@ -87,6 +92,7 @@ export async function verifyInternalAssertion({
   return {
     userId: payload.sub,
     sessionId: payload.sid,
+    ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
     audience: payload.aud,
     issuedAt: payload.iat,
     expiresAt: payload.exp,

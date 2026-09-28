@@ -1,5 +1,6 @@
 import {
 	bigint,
+	boolean,
 	date,
 	index,
 	integer,
@@ -52,6 +53,90 @@ export const businesses = pgTable(
 
 export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
+
+// ─── Business agenda ─────────────────────────────────────────
+
+export const businessEventStatuses = [
+	"SCHEDULED",
+	"COMPLETED",
+	"CANCELLED",
+] as const;
+
+export type BusinessEventStatus = (typeof businessEventStatuses)[number];
+
+export const businessEvents = pgTable(
+	"business_events",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id").notNull(),
+		businessId: text("business_id").notNull(),
+		title: text("title").notNull(),
+		description: text("description"),
+		startAt: timestamp("start_at", { withTimezone: true }).notNull(),
+		endAt: timestamp("end_at", { withTimezone: true }).notNull(),
+		allDay: boolean("all_day").notNull().default(false),
+		reminderAt: timestamp("reminder_at", { withTimezone: true }),
+		status: text("status", { enum: businessEventStatuses })
+			.notNull()
+			.default("SCHEDULED"),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("business_events_business_id_start_at_idx").on(
+			table.businessId,
+			table.startAt,
+		),
+		index("business_events_business_id_status_idx").on(
+			table.businessId,
+			table.status,
+		),
+	],
+);
+
+export type BusinessEvent = typeof businessEvents.$inferSelect;
+export type NewBusinessEvent = typeof businessEvents.$inferInsert;
+
+export const scheduledReminderStatuses = [
+	"PENDING",
+	"PROCESSING",
+	"SENT",
+	"FAILED",
+	"CANCELLED",
+] as const;
+
+export const scheduledEventReminders = pgTable(
+	"scheduled_event_reminders",
+	{
+		id: text("id").primaryKey(),
+		eventId: text("event_id")
+			.notNull()
+			.references(() => businessEvents.id, { onDelete: "cascade" }),
+		recipientEmail: text("recipient_email").notNull(),
+		scheduledAt: timestamp("scheduled_at", { withTimezone: true }).notNull(),
+		status: text("status", { enum: scheduledReminderStatuses })
+			.notNull()
+			.default("PENDING"),
+		attempts: integer("attempts").notNull().default(0),
+		nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull(),
+		lockedUntil: timestamp("locked_until", { withTimezone: true }),
+		sentAt: timestamp("sent_at", { withTimezone: true }),
+		lastError: text("last_error"),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		uniqueIndex("scheduled_event_reminders_event_id_unique").on(table.eventId),
+		index("scheduled_event_reminders_due_idx").on(
+			table.status,
+			table.nextAttemptAt,
+		),
+	],
+);
+
+export type ScheduledEventReminder =
+	typeof scheduledEventReminders.$inferSelect;
 
 // ─── Business members ────────────────────────────────────────
 
@@ -381,6 +466,7 @@ export const credits = pgTable(
 		originalAmount: bigint("original_amount", { mode: "number" }).notNull(),
 		description: text("description"),
 		creditDate: date("credit_date").notNull(),
+		dueDate: date("due_date"),
 		status: text("status", { enum: creditStatuses })
 			.notNull()
 			.default("PENDING"),
@@ -397,6 +483,10 @@ export const credits = pgTable(
 		index("credits_business_id_credit_date_idx").on(
 			table.businessId,
 			table.creditDate,
+		),
+		index("credits_business_id_due_date_idx").on(
+			table.businessId,
+			table.dueDate,
 		),
 	],
 );
@@ -566,9 +656,7 @@ export const loans = pgTable(
 		description: text("description"),
 		loanDate: date("loan_date").notNull(),
 		dueDate: date("due_date").notNull(),
-		status: text("status", { enum: loanStatuses })
-			.notNull()
-			.default("ACTIVE"),
+		status: text("status", { enum: loanStatuses }).notNull().default("ACTIVE"),
 		cancellationReason: text("cancellation_reason"),
 		paidAt: timestamp("paid_at", { withTimezone: true }),
 		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
@@ -601,9 +689,7 @@ export const loanInstallments = pgTable(
 		principalAmount: bigint("principal_amount", { mode: "number" }).notNull(),
 		interestAmount: bigint("interest_amount", { mode: "number" }).notNull(),
 		totalAmount: bigint("total_amount", { mode: "number" }).notNull(),
-		paidAmount: bigint("paid_amount", { mode: "number" })
-			.notNull()
-			.default(0),
+		paidAmount: bigint("paid_amount", { mode: "number" }).notNull().default(0),
 		status: text("status", { enum: loanInstallmentStatuses })
 			.notNull()
 			.default("PENDING"),

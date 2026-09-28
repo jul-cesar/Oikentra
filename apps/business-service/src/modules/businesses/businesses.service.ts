@@ -1,11 +1,12 @@
 import { getConfig } from "../../config/config";
-import type { Business } from "../../db/schema";
+import type { Business, MemberRole } from "../../db/schema";
 import { AppError } from "../../http/errors";
 import {
 	businessRepository,
 	type BusinessRepository,
 } from "./businesses.repository";
-import { memberRepository } from "./members.repository";
+import { memberRepository, type MemberRepository } from "./members.repository";
+import { createMembersService, permissions } from "./members.service";
 import type {
 	BusinessResponse,
 	CreateBusinessInput,
@@ -40,10 +41,14 @@ function assertLogoOwnership(
 	}
 }
 
-function toBusinessResponse(business: Business): BusinessResponse {
+function toBusinessResponse(
+	business: Business,
+	role: MemberRole,
+): BusinessResponse {
 	return {
 		id: business.id,
 		ownerUserId: business.ownerUserId,
+		role,
 		name: business.name,
 		businessType: business.businessType,
 		description: business.description,
@@ -61,7 +66,9 @@ function toBusinessResponse(business: Business): BusinessResponse {
 
 export function createBusinessesService(
 	repository: BusinessRepository = businessRepository,
+	membersRepository: MemberRepository = memberRepository,
 ) {
+	const membersService = createMembersService(membersRepository);
 	return {
 		async create(ownerUserId: string, input: CreateBusinessInput) {
 			const existingBusiness = await repository.findByNameAndOwner(
@@ -97,7 +104,7 @@ export function createBusinessesService(
 			});
 
 			if (repository === businessRepository) {
-				await memberRepository.create({
+				await membersRepository.create({
 					id: crypto.randomUUID(),
 					businessId: business.id,
 					userId: ownerUserId,
@@ -108,42 +115,39 @@ export function createBusinessesService(
 				});
 			}
 
-			return toBusinessResponse(business);
+			return toBusinessResponse(business, "OWNER");
 		},
 
 		async list(ownerUserId: string) {
 			const owned = await repository.findManyByOwner(ownerUserId);
-			if (repository !== businessRepository || !repository.findById)
-				return owned.map(toBusinessResponse);
-			const memberships = await memberRepository.listByUser(ownerUserId);
+			const memberships = await membersRepository.listByUser(ownerUserId);
 			const memberRecords = await Promise.all(
 				memberships
 					.filter(
 						(member) =>
 							member.userId === ownerUserId && member.status === "ACTIVE",
 					)
-					.map((member) => repository.findById!(member.businessId)),
+					.map(async (member) => ({
+						business: await repository.findById(member.businessId),
+						role: member.role,
+					})),
 			);
-			const records = [
-				...owned,
-				...memberRecords.filter((business): business is Business =>
-					Boolean(business && !owned.some((item) => item.id === business.id)),
-				),
+			return [
+				...owned.map((business) => toBusinessResponse(business, "OWNER")),
+				...memberRecords
+					.filter(
+						(record) =>
+							record.business &&
+							!owned.some((business) => business.id === record.business?.id),
+					)
+					.map((record) =>
+						toBusinessResponse(record.business as Business, record.role),
+					),
 			];
-			return records.map(toBusinessResponse);
 		},
 
-		async get(ownerUserId: string, businessId: string) {
-			const business =
-				repository === businessRepository
-					? (await memberRepository.findActiveByBusinessAndUser(
-							businessId,
-							ownerUserId,
-						)) && repository.findById
-						? await repository.findById(businessId)
-						: null
-					: await repository.findByIdAndOwner(businessId, ownerUserId);
-
+		async get(userId: string, businessId: string) {
+			const business = await repository.findById(businessId);
 			if (!business) {
 				throw new AppError(
 					"BUSINESS_NOT_FOUND",
@@ -151,8 +155,19 @@ export function createBusinessesService(
 					"The business was not found.",
 				);
 			}
+			const member = await membersRepository.findActiveByBusinessAndUser(
+				businessId,
+				userId,
+			);
+			if (!member) {
+				throw new AppError(
+					"BUSINESS_ACCESS_DENIED",
+					403,
+					"You do not have access to this business.",
+				);
+			}
 
-			return toBusinessResponse(business);
+			return toBusinessResponse(business, member.role);
 		},
 
 		async softDelete(ownerUserId: string, businessId: string) {
@@ -169,18 +184,32 @@ export function createBusinessesService(
 				);
 			}
 
-			return toBusinessResponse(business);
+			return toBusinessResponse(business, "OWNER");
 		},
 
 		async update(
-			ownerUserId: string,
+			userId: string,
 			businessId: string,
 			input: UpdateBusinessInput,
 		) {
+			const existing = await repository.findById(businessId);
+			if (!existing) {
+				throw new AppError(
+					"BUSINESS_NOT_FOUND",
+					404,
+					"The business was not found.",
+				);
+			}
+			const member = await membersService.requirePermission(
+				userId,
+				businessId,
+				permissions.businessUpdate,
+			);
+
 			if (input.name) {
 				const existingBusiness = await repository.findByNameAndOwner(
 					input.name,
-					ownerUserId,
+					existing.ownerUserId,
 					businessId,
 				);
 
@@ -195,15 +224,11 @@ export function createBusinessesService(
 
 			assertLogoOwnership(input.logoUrl, input.logoObjectKey);
 
-			const business = await repository.updateByIdAndOwner(
-				businessId,
-				ownerUserId,
-				{
-					...input,
-					description: input.description?.trim() || input.description,
-					logoObjectKey: input.logoObjectKey?.trim() || input.logoObjectKey,
-				},
-			);
+			const business = await repository.updateById(businessId, {
+				...input,
+				description: input.description?.trim() || input.description,
+				logoObjectKey: input.logoObjectKey?.trim() || input.logoObjectKey,
+			});
 
 			if (!business) {
 				throw new AppError(
@@ -213,7 +238,7 @@ export function createBusinessesService(
 				);
 			}
 
-			return toBusinessResponse(business);
+			return toBusinessResponse(business, member.role);
 		},
 	};
 }

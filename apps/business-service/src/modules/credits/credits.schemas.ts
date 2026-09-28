@@ -5,6 +5,10 @@ export const createCreditSchema = z.object({
 	originalAmount: z.number().int().positive(),
 	description: z.string().trim().max(500).optional(),
 	creditDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD"),
+	dueDate: z
+		.string()
+		.regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD")
+		.optional(),
 });
 
 export const creditIdParamsSchema = z.object({

@@ -11,6 +11,7 @@ export type Profile = {
 
 export type Business = {
 	id: string;
+	role: "OWNER" | "MANAGER" | "OPERATOR";
 	name: string;
 	businessType?: string | null;
 	description?: string | null;

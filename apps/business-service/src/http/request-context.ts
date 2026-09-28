@@ -1,6 +1,7 @@
 export type AuthContext = {
   userId: string
   sessionId: string
+  email?: string
 }
 
 export type BusinessContext = {

@@ -77,6 +77,14 @@ function BusinessSettingsContent() {
 	});
 
 	const fetchErrorMessage = error ? "No pudimos cargar este negocio." : "";
+	const canManageBusiness =
+		business?.role === "OWNER" || business?.role === "MANAGER";
+
+	useEffect(() => {
+		if (business && !canManageBusiness) {
+			router.replace(`/dashboard/${businessId}`);
+		}
+	}, [business, businessId, canManageBusiness, router]);
 
 	useEffect(() => {
 		if (business) {
@@ -196,6 +204,7 @@ function BusinessSettingsContent() {
 				</Button>
 			</div>
 		);
+	if (!canManageBusiness) return null;
 	return (
 		<DashboardShell business={business} user={user}>
 			<div className="mx-auto max-w-5xl space-y-6">
@@ -380,7 +389,9 @@ function BusinessSettingsContent() {
 					</CardContent>
 				</Card>
 				<PaymentMethodsSettings businessId={businessId} />
-				<CollaboratorsSettings businessId={businessId} />
+				{business.role === "OWNER" ? (
+					<CollaboratorsSettings businessId={businessId} />
+				) : null}
 			</div>
 		</DashboardShell>
 	);

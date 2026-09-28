@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { Business, BusinessStatus } from "../../../db/schema";
+import type { Business, BusinessStatus, MemberRole } from "../../../db/schema";
 import type {
 	createBusinessSchema,
 	updateBusinessSchema,
@@ -12,6 +12,7 @@ export type UpdateBusinessInput = z.infer<typeof updateBusinessSchema>;
 export type BusinessResponse = {
 	id: string;
 	ownerUserId: string;
+	role: MemberRole;
 	name: string;
 	businessType: string | null;
 	description: string | null;

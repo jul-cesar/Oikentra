@@ -3,7 +3,7 @@ const RESPONSE_HEADERS = {
   "Content-Type": "application/json",
 } as const;
 
-function json(body: object, status: number) {
+function json(body: Record<string, unknown>, status: number) {
   return new Response(JSON.stringify(body), { status, headers: RESPONSE_HEADERS });
 }
 
@@ -15,7 +15,11 @@ function getPublicOrigin(request: Request) {
     return `${forwardedProto}://${forwardedHost}`;
   }
 
-  return new URL(request.url).origin;
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return null;
+  }
 }
 
 function generateRequestId() {
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
   const requestOrigin = getPublicOrigin(request);
   const origin = request.headers.get("origin");
 
-  if (!origin || origin !== requestOrigin) {
+  if (!requestOrigin || !origin || origin !== requestOrigin) {
     return json({ code: "INVALID_ORIGIN", requestId }, 403);
   }
 
@@ -37,7 +41,7 @@ export async function POST(request: Request) {
   const token = body?.token;
   const newPassword = body?.newPassword;
 
-  if (typeof token !== "string" || token.length < 32 || token.length > 4096) {
+  if (typeof token !== "string" || token.length === 0 || token.length > 4096) {
     return json({ code: "INVALID_TOKEN", requestId }, 400);
   }
 

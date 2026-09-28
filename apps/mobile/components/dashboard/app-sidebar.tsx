@@ -37,7 +37,7 @@ import {
   Wallet,
   DollarSign,
 } from 'lucide-react-native';
-import { Href, usePathname, useRouter } from 'expo-router';
+import { type Href, usePathname, useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
@@ -95,13 +95,16 @@ function SidebarContent({
   const router = useRouter();
   const pathname = usePathname();
   const base = `/dashboard/${business.id}`;
+  const canManageBusiness = business.role === 'OWNER' || business.role === 'MANAGER';
 
   const navItems = [
     { label: 'Resumen', href: base, icon: LayoutDashboard },
     { label: 'Clientes', href: `${base}/clientes`, icon: Users },
     { label: 'Ventas', href: `${base}/ventas`, icon: DollarSign },
     { label: 'Fiados', href: `${base}/fiados`, icon: Wallet },
-    { label: 'Configurar negocio', href: `${base}/configuracion`, icon: Settings },
+    ...(canManageBusiness
+      ? [{ label: 'Configurar negocio', href: `${base}/configuracion`, icon: Settings }]
+      : []),
   ];
 
   function navigate(href: string) {

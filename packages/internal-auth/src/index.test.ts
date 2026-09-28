@@ -23,6 +23,7 @@ describe('internal auth assertions', () => {
       ...keys,
       userId: 'user-1',
       sessionId: 'session-1',
+      email: 'owner@example.com',
       audience: 'business-service',
       now: 1_000,
     })
@@ -37,6 +38,7 @@ describe('internal auth assertions', () => {
     ).resolves.toEqual({
       userId: 'user-1',
       sessionId: 'session-1',
+      email: 'owner@example.com',
       audience: 'business-service',
       issuedAt: 1_000,
       expiresAt: 1_060,

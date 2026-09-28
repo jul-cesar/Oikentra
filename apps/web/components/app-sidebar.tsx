@@ -11,6 +11,7 @@ import {
 	Dollar01Icon,
 	BankIcon,
 	ChartLineData01Icon,
+	Calendar03Icon,
 } from "@hugeicons/core-free-icons";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -40,8 +41,11 @@ export function AppSidebar({
 }) {
 	const pathname = usePathname();
 	const base = `/dashboard/${business.id}`;
+	const canManageBusiness =
+		business.role === "OWNER" || business.role === "MANAGER";
 	const items = [
 		{ title: "Dashboard", url: base, icon: ChartLineData01Icon },
+		{ title: "Agenda", url: `${base}/agenda`, icon: Calendar03Icon },
 		{ title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
 		{ title: "Ventas", url: `${base}/ventas`, icon: Dollar01Icon },
 		{ title: "Préstamos", url: `${base}/prestamos`, icon: BankIcon },
@@ -70,21 +74,23 @@ export function AppSidebar({
 						))}
 					</SidebarMenu>
 				</SidebarGroup>
-				<SidebarGroup>
-					<SidebarGroupLabel>Configuración</SidebarGroupLabel>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								isActive={pathname === `${base}/configuracion`}
-								tooltip="Configurar negocio"
-								render={<Link href={`${base}/configuracion`} />}
-							>
-								<HugeiconsIcon icon={Settings01Icon} strokeWidth={2} />
-								<span>Configurar negocio</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
-				</SidebarGroup>
+				{canManageBusiness ? (
+					<SidebarGroup>
+						<SidebarGroupLabel>Configuración</SidebarGroupLabel>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									isActive={pathname === `${base}/configuracion`}
+									tooltip="Configurar negocio"
+									render={<Link href={`${base}/configuracion`} />}
+								>
+									<HugeiconsIcon icon={Settings01Icon} strokeWidth={2} />
+									<span>Configurar negocio</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarGroup>
+				) : null}
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser

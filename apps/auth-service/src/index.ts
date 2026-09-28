@@ -80,6 +80,7 @@ app.get("/internal/session/validate", async (c) => {
 			privateKeyBase64: getConfig().internalAuthPrivateKeyBase64,
 			userId: session.user.id,
 			sessionId: session.session.id,
+			email: session.user.email,
 			audience: getConfig().internalAuthAudience,
 			ttlSeconds: getConfig().internalAuthTokenTtlSeconds,
 		}),
