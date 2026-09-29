@@ -118,7 +118,7 @@ jobs:
             affected=true
             services="$catalog"
           else
-            selected=$(pnpm --filter "...[$base]" list --depth -1 --json | jq -c '[.[].name]')
+            selected=$(pnpm --filter "...[$base]" --filter "!oikentra" list --depth -1 --json | jq -c '[.[].name]')
             affected=$(jq -r 'length > 0' <<< "$selected")
             services=$(jq -c --argjson selected "$selected" \
               '[.[] | select(.package as $package | $selected | index($package))]' \
@@ -165,7 +165,7 @@ jobs:
           if [[ "$VALIDATE_ALL" == "true" ]]; then
             pnpm install --frozen-lockfile
           else
-            pnpm --filter "...[$BASE_SHA]..." install --frozen-lockfile
+            pnpm --filter "...[$BASE_SHA]..." --filter "!oikentra" install --frozen-lockfile
           fi
 
       - name: Typecheck, lint, and test affected workspaces
@@ -178,9 +178,9 @@ jobs:
 
           run_check() {
             if [[ "$VALIDATE_ALL" == "true" ]]; then
-              pnpm -r --if-present run "$1"
+              pnpm --filter "./apps/**" --filter "./packages/**" --if-present run "$1"
             else
-              pnpm --filter "...[$BASE_SHA]" --if-present run "$1"
+              pnpm --filter "...[$BASE_SHA]" --filter "!oikentra" --if-present run "$1"
             fi
           }
 
