@@ -18,187 +18,129 @@ concurrency:
 
 jobs:
   detect-changes:
+    name: Detect affected workspaces
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
-      projects: ${{ steps.matrix.outputs.projects }}
-      services: ${{ steps.matrix.outputs.services }}
+      base: ${{ steps.plan.outputs.base }}
+      all: ${{ steps.plan.outputs.all }}
+      affected: ${{ steps.plan.outputs.affected }}
+      services: ${{ steps.plan.outputs.services }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect changed projects
-        if: >-
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/'))
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            auth:
-              - 'apps/auth-service/**'
-            business:
-              - 'apps/business-service/**'
-            sync:
-              - 'apps/sync-service/**'
-            reports:
-              - 'apps/reports-service/**'
-            employees:
-              - 'apps/employees-service/**'
-            ai:
-              - 'apps/ai-service/**'
-            web:
-              - 'apps/web/**'
-            shared:
-              - 'packages/**'
-              - 'package.json'
-              - 'pnpm-workspace.yaml'
-            lockfile:
-              - 'pnpm-lock.yaml'
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: Create job matrices
-        id: matrix
+      - name: Create deployment plan
+        id: plan
         shell: bash
         env:
-          AUTH_CHANGED: ${{ steps.filter.outputs.auth }}
-          BUSINESS_CHANGED: ${{ steps.filter.outputs.business }}
-          SYNC_CHANGED: ${{ steps.filter.outputs.sync }}
-          REPORTS_CHANGED: ${{ steps.filter.outputs.reports }}
-          EMPLOYEES_CHANGED: ${{ steps.filter.outputs.employees }}
-          AI_CHANGED: ${{ steps.filter.outputs.ai }}
-          WEB_CHANGED: ${{ steps.filter.outputs.web }}
-          SHARED_CHANGED: ${{ steps.filter.outputs.shared }}
-          LOCKFILE_CHANGED: ${{ steps.filter.outputs.lockfile }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
         run: |
-          projects='[]'
-          services='[]'
-          deploy_all=false
+          set -euo pipefail
+
           owner="${GITHUB_REPOSITORY_OWNER,,}"
+          base=""
+          all=false
 
-          add_project() {
-            local name="$1"
-            local package="$2"
-            projects=$(jq -c \
-              --arg name "$name" \
-              --arg package "$package" \
-              '. + [{"name":$name,"package":$package}]' \
-              <<< "$projects")
-          }
-
-          add_service() {
-            local name="$1"
-            local image="$2"
-            local dockerfile="$3"
-            services=$(jq -c \
-              --arg name "$name" \
-              --arg image "$image" \
-              --arg dockerfile "$dockerfile" \
-              '. + [{"name":$name,"image":$image,"dockerfile":$dockerfile}]' \
-              <<< "$services")
-          }
-
-          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" \
-            || "${GITHUB_REF}" == refs/tags/* ]]; then
-            deploy_all=true
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" || "$GITHUB_REF" == refs/tags/* ]]; then
+            all=true
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+          else
+            base="$PUSH_BASE_SHA"
           fi
 
-          if [[ "$LOCKFILE_CHANGED" == "true" \
-            && "$AUTH_CHANGED" != "true" \
-            && "$BUSINESS_CHANGED" != "true" \
-            && "$SYNC_CHANGED" != "true" \
-            && "$REPORTS_CHANGED" != "true" \
-            && "$EMPLOYEES_CHANGED" != "true" \
-            && "$AI_CHANGED" != "true" \
-            && "$WEB_CHANGED" != "true" \
-            && "$SHARED_CHANGED" != "true" ]]; then
-            deploy_all=true
+          if [[ "$all" == "false" && ( -z "$base" || "$base" =~ ^0+$ ) ]]; then
+            all=true
           fi
 
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$AUTH_CHANGED" == "true" ]]; then
-            add_project "auth-service" "@oikentra/auth-service"
-            add_service \
-              "auth-service" \
-              "ghcr.io/$owner/oikentra-auth-service" \
-              "apps/auth-service/Dockerfile"
+          if [[ "$all" == "false" ]] && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            all=true
           fi
 
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$BUSINESS_CHANGED" == "true" ]]; then
-            add_project "business-service" "@oikentra/business-service"
-            add_service \
-              "business-service" \
-              "ghcr.io/$owner/oikentra-business-service" \
-              "apps/business-service/Dockerfile"
+          if [[ "$all" == "false" ]] && git diff --name-only "$base" HEAD | grep -Eq \
+            '^(\.dockerignore$|package.json$|pnpm-lock.yaml$|pnpm-workspace.yaml$)'; then
+            all=true
           fi
 
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$SYNC_CHANGED" == "true" ]]; then
-            add_project "sync-service" "@oikentra/sync-service"
-            add_service \
-              "sync-service" \
-              "ghcr.io/$owner/oikentra-sync-service" \
-              "apps/sync-service/Dockerfile"
+          catalog=$(jq -cn --arg owner "$owner" '[
+            {
+              name: "auth-service",
+              package: "@oikentra/auth-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-auth-service"),
+              dockerfile: "apps/auth-service/Dockerfile"
+            },
+            {
+              name: "business-service",
+              package: "@oikentra/business-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-business-service"),
+              dockerfile: "apps/business-service/Dockerfile"
+            },
+            {
+              name: "sync-service",
+              package: "@oikentra/sync-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-sync-service"),
+              dockerfile: "apps/sync-service/Dockerfile"
+            },
+            {
+              name: "reports-service",
+              package: "@oikentra/reports-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-reports-service"),
+              dockerfile: "apps/reports-service/Dockerfile"
+            },
+            {
+              name: "employees-service",
+              package: "@oikentra/employees-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-employees-service"),
+              dockerfile: "apps/employees-service/Dockerfile"
+            },
+            {
+              name: "ai-service",
+              package: "@oikentra/ai-service",
+              image: ("ghcr.io/" + $owner + "/oikentra-ai-service"),
+              dockerfile: "apps/ai-service/Dockerfile"
+            },
+            {
+              name: "web",
+              package: "@oikentra/web",
+              image: ("ghcr.io/" + $owner + "/oikentra-web"),
+              dockerfile: "apps/web/Dockerfile"
+            }
+          ]')
+
+          if [[ "$all" == "true" ]]; then
+            affected=true
+            services="$catalog"
+          else
+            selected=$(pnpm --filter "...[$base]" list --depth -1 --json | jq -c '[.[].name]')
+            affected=$(jq -r 'length > 0' <<< "$selected")
+            services=$(jq -c --argjson selected "$selected" \
+              '[.[] | select(.package as $package | $selected | index($package))]' \
+              <<< "$catalog")
           fi
 
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$REPORTS_CHANGED" == "true" ]]; then
-            add_project "reports-service" "@oikentra/reports-service"
-            add_service \
-              "reports-service" \
-              "ghcr.io/$owner/oikentra-reports-service" \
-              "apps/reports-service/Dockerfile"
-          fi
-
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$EMPLOYEES_CHANGED" == "true" ]]; then
-            add_project "employees-service" "@oikentra/employees-service"
-            add_service \
-              "employees-service" \
-              "ghcr.io/$owner/oikentra-employees-service" \
-              "apps/employees-service/Dockerfile"
-          fi
-
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$AI_CHANGED" == "true" ]]; then
-            add_project "ai-service" "@oikentra/ai-service"
-            add_service \
-              "ai-service" \
-              "ghcr.io/$owner/oikentra-ai-service" \
-              "apps/ai-service/Dockerfile"
-          fi
-
-          if [[ "$deploy_all" == "true" \
-            || "$SHARED_CHANGED" == "true" \
-            || "$WEB_CHANGED" == "true" ]]; then
-            add_project "web" "@oikentra/web"
-            add_service \
-              "web" \
-              "ghcr.io/$owner/oikentra-web" \
-              "apps/web/Dockerfile"
-          fi
-
-          echo "projects=$projects" >> "$GITHUB_OUTPUT"
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "all=$all" >> "$GITHUB_OUTPUT"
+          echo "affected=$affected" >> "$GITHUB_OUTPUT"
           echo "services=$services" >> "$GITHUB_OUTPUT"
 
   validate:
+    name: Validate affected workspaces
     needs: detect-changes
-    if: needs.detect-changes.outputs.projects != '[]'
+    if: needs.detect-changes.outputs.affected == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -214,35 +156,90 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install affected dependencies
+        shell: bash
+        env:
+          BASE_SHA: ${{ needs.detect-changes.outputs.base }}
+          VALIDATE_ALL: ${{ needs.detect-changes.outputs.all }}
+        run: |
+          if [[ "$VALIDATE_ALL" == "true" ]]; then
+            pnpm install --frozen-lockfile
+          else
+            pnpm --filter "...[$BASE_SHA]..." install --frozen-lockfile
+          fi
 
-      - name: Typecheck
-        run: pnpm --filter "${{ matrix.project.package }}" run typecheck
+      - name: Typecheck, lint, and test affected workspaces
+        shell: bash
+        env:
+          BASE_SHA: ${{ needs.detect-changes.outputs.base }}
+          VALIDATE_ALL: ${{ needs.detect-changes.outputs.all }}
+        run: |
+          set -euo pipefail
 
-      - name: Lint
-        run: pnpm --filter "${{ matrix.project.package }}" --if-present run lint
+          run_check() {
+            if [[ "$VALIDATE_ALL" == "true" ]]; then
+              pnpm -r --if-present run "$1"
+            else
+              pnpm --filter "...[$BASE_SHA]" --if-present run "$1"
+            fi
+          }
 
-      - name: Test
-        run: pnpm --filter "${{ matrix.project.package }}" --if-present run test
+          run_check typecheck
+          run_check lint
+          run_check test
 
   deploy:
+    name: Deploy ${{ matrix.service.name }}
     needs: [detect-changes, validate]
     if: >-
       github.event_name != 'pull_request' &&
       needs.detect-changes.outputs.services != '[]' &&
       needs.validate.result == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        id: dokploy
+        shell: bash
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          AUTH_APP_ID: ${{ secrets.DOKPLOY_AUTH_APPLICATION_ID }}
+          BUSINESS_APP_ID: ${{ secrets.DOKPLOY_BUSINESS_APPLICATION_ID }}
+          SYNC_APP_ID: ${{ secrets.DOKPLOY_SYNC_APPLICATION_ID }}
+          REPORTS_APP_ID: ${{ secrets.DOKPLOY_REPORTS_APPLICATION_ID }}
+          EMPLOYEES_APP_ID: ${{ secrets.DOKPLOY_EMPLOYEES_APPLICATION_ID }}
+          AI_APP_ID: ${{ secrets.DOKPLOY_AI_APPLICATION_ID }}
+          WEB_APP_ID: ${{ secrets.DOKPLOY_WEB_APPLICATION_ID }}
+        run: |
+          case "${{ matrix.service.name }}" in
+            auth-service) application_id="$AUTH_APP_ID" ;;
+            business-service) application_id="$BUSINESS_APP_ID" ;;
+            sync-service) application_id="$SYNC_APP_ID" ;;
+            reports-service) application_id="$REPORTS_APP_ID" ;;
+            employees-service) application_id="$EMPLOYEES_APP_ID" ;;
+            ai-service) application_id="$AI_APP_ID" ;;
+            web) application_id="$WEB_APP_ID" ;;
+            *) echo "Unknown service" >&2; exit 1 ;;
+          esac
+
+          if [[ -z "$DOKPLOY_URL" || -z "$DOKPLOY_API_KEY" || -z "$application_id" ]]; then
+            echo "Dokploy is not fully configured for ${{ matrix.service.name }}" >&2
+            exit 1
+          fi
+
+          echo "application_id=$application_id" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -283,37 +280,6 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
 
-      - name: Resolve Dokploy application id
-        id: dokploy
-        shell: bash
-        env:
-          AUTH_APP_ID: ${{ secrets.DOKPLOY_AUTH_APPLICATION_ID }}
-          BUSINESS_APP_ID: ${{ secrets.DOKPLOY_BUSINESS_APPLICATION_ID }}
-          SYNC_APP_ID: ${{ secrets.DOKPLOY_SYNC_APPLICATION_ID }}
-          REPORTS_APP_ID: ${{ secrets.DOKPLOY_REPORTS_APPLICATION_ID }}
-          EMPLOYEES_APP_ID: ${{ secrets.DOKPLOY_EMPLOYEES_APPLICATION_ID }}
-          AI_APP_ID: ${{ secrets.DOKPLOY_AI_APPLICATION_ID }}
-          WEB_APP_ID: ${{ secrets.DOKPLOY_WEB_APPLICATION_ID }}
-        run: |
-          case "${{ matrix.service.name }}" in
-            auth-service) application_id="$AUTH_APP_ID" ;;
-            business-service) application_id="$BUSINESS_APP_ID" ;;
-            sync-service) application_id="$SYNC_APP_ID" ;;
-            reports-service) application_id="$REPORTS_APP_ID" ;;
-            employees-service) application_id="$EMPLOYEES_APP_ID" ;;
-            ai-service) application_id="$AI_APP_ID" ;;
-            web) application_id="$WEB_APP_ID" ;;
-            *) echo "Unknown service" >&2; exit 1 ;;
-          esac
-
-          if [[ -z "$application_id" ]]; then
-            echo "Dokploy application id is not configured" \
-              "for ${{ matrix.service.name }}" >&2
-            exit 1
-          fi
-
-          echo "application_id=$application_id" >> "$GITHUB_OUTPUT"
-
       - name: Trigger Dokploy deployment
         env:
           DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
@@ -321,6 +287,8 @@ jobs:
           APPLICATION_ID: ${{ steps.dokploy.outputs.application_id }}
         run: |
           curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 90 \
             --request POST "$DOKPLOY_URL/api/application.deploy" \
             --header "accept: application/json" \
             --header "x-api-key: $DOKPLOY_API_KEY" \

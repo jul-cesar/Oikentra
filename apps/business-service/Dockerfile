@@ -41,4 +41,4 @@ ENV NODE_ENV=production
 EXPOSE 3000
 
 USER 1000
-CMD ["bun", "run", "src/index.ts"]
+CMD ["sh", "-c", "bun run src/db/migrate-on-startup.ts && exec bun run src/index.ts"]
