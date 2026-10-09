@@ -373,19 +373,19 @@ git commit -m "feat(web): add task kanban board"
 - Consume: API y permisos calculados por backend.
 - Produce: detalle enlazable, conversación cronológica y carga/descarga privada.
 
-- [ ] **Paso 1: Crear vista de detalle**
+- [x] **Paso 1: Crear vista de detalle**
 
 Mostrar datos, responsable, prioridad, vencimiento, estado y acciones permitidas. Ante `TASK_VERSION_CONFLICT`, recargar la tarea y avisar que otro integrante la modificó.
 
-- [ ] **Paso 2: Crear comentarios**
+- [x] **Paso 2: Crear comentarios**
 
 Mostrar autor, fecha y contenido; agregar formulario de comentario sin edición ni hilos.
 
-- [ ] **Paso 3: Crear adjuntos**
+- [x] **Paso 3: Crear adjuntos**
 
 Usar `<input type="file">` con JPEG, PNG, WebP y PDF. Validar tamaño antes de solicitar la carga, subir a la URL firmada y confirmar después. Mostrar miniatura para imágenes y enlace para PDF; descargar siempre mediante URL firmada solicitada al abrir.
 
-- [ ] **Paso 4: Manejar fallos de carga**
+- [x] **Paso 4: Manejar fallos de carga**
 
 Una carga fallida o sin confirmar no debe aparecer. Mostrar error accionable y permitir reintentar sin duplicar metadatos.
 
@@ -398,7 +398,7 @@ pnpm --filter @oikentra/web lint
 
 Comprobación manual con dos usuarios: comentar, adjuntar, descargar, cambiar estado y confirmar actualización del tablero.
 
-- [ ] **Paso 6: Commit**
+- [x] **Paso 6: Commit**
 
 ```bash
 git add apps/web/app/dashboard/[businessId]/tareas/[taskId]/page.tsx apps/web/components/dashboard/tasks
