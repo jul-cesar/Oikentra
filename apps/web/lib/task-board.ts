@@ -115,3 +115,20 @@ export function assignableMembers<T extends { id: string }>({
 		? members.filter((member) => member.id === memberId)
 		: members;
 }
+
+export function taskErrorMessage(error: Error & { code?: string }) {
+	return error.code === "TASK_VERSION_CONFLICT"
+		? "Otro integrante modificó esta tarea. Recargamos la información más reciente."
+		: error.message;
+}
+
+// Conversation reads oldest first, like a chat.
+export function sortTaskComments<T extends { createdAt: string }>(comments: T[]) {
+	return [...comments].sort((a, b) =>
+		a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0,
+	);
+}
+
+export function canDeleteTaskAttachment(role: Role) {
+	return role !== "OPERATOR";
+}

@@ -119,3 +119,49 @@ test("la página ofrece reintento, nueva tarea y filtros", () => {
 	}
 	assert.match(read("components/dashboard/tasks/create-task-dialog.tsx"), /Sin asignar/);
 });
+
+test("el detalle avisa del conflicto de versión y ordena la conversación", () => {
+	const conflict = Object.assign(new Error("x"), { code: "TASK_VERSION_CONFLICT" });
+	assert.match(board.taskErrorMessage(conflict), /otro integrante/i);
+	assert.equal(board.taskErrorMessage(new Error("Falló")), "Falló");
+	assert.deepEqual(
+		board
+			.sortTaskComments([
+				{ id: "b", createdAt: "2026-01-02T00:00:00.000Z" },
+				{ id: "a", createdAt: "2026-01-01T00:00:00.000Z" },
+			])
+			.map((comment) => comment.id),
+		["a", "b"],
+	);
+	assert.equal(board.canDeleteTaskAttachment("OWNER"), true);
+	assert.equal(board.canDeleteTaskAttachment("MANAGER"), true);
+	assert.equal(board.canDeleteTaskAttachment("OPERATOR"), false);
+});
+
+test("el detalle es enlazable y reúne datos, comentarios y adjuntos", () => {
+	assert.equal(existsSync(pathFromWeb("app/dashboard/[businessId]/tareas/[taskId]/page.tsx")), true);
+	assert.match(read("app/dashboard/[businessId]/tareas/[taskId]/page.tsx"), /Cargando tarea/);
+	const detail = read("components/dashboard/tasks/task-detail.tsx");
+	assert.match(detail, /<TaskComments\b/);
+	assert.match(detail, /<TaskAttachments\b/);
+	assert.match(detail, /useChangeTaskStatus/);
+	assert.match(detail, /canChangeTaskStatus/);
+	assert.match(detail, /taskErrorMessage/);
+	const comments = read("components/dashboard/tasks/task-comments.tsx");
+	assert.match(comments, /useCreateTaskComment/);
+	assert.match(comments, /sortTaskComments/);
+	assert.doesNotMatch(comments, /Editar|Responder/);
+});
+
+test("los adjuntos validan antes de subir, reintentan y descargan con URL firmada al abrir", () => {
+	const attachments = read("components/dashboard/tasks/task-attachments.tsx");
+	assert.match(attachments, /type="file"/);
+	assert.match(attachments, /accept=\{TASK_ATTACHMENT_TYPES\.join\(","\)\}/);
+	assert.ok(
+		attachments.indexOf("validateTaskAttachment") < attachments.indexOf(".mutate("),
+	);
+	assert.match(attachments, /Reintentar/);
+	assert.match(attachments, /useTaskAttachmentDownload/);
+	assert.match(attachments, /<img\b/);
+	assert.match(attachments, /canDeleteTaskAttachment/);
+});
