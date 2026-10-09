@@ -9,7 +9,6 @@ import {
 	Settings01Icon,
 	Wallet01Icon,
 	Dollar01Icon,
-	BankIcon,
 	ChartLineData01Icon,
 	Calendar03Icon,
 } from "@hugeicons/core-free-icons";
@@ -48,8 +47,7 @@ export function AppSidebar({
 		{ title: "Agenda", url: `${base}/agenda`, icon: Calendar03Icon },
 		{ title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
 		{ title: "Ventas", url: `${base}/ventas`, icon: Dollar01Icon },
-		{ title: "Préstamos", url: `${base}/prestamos`, icon: BankIcon },
-		{ title: "Fiados", url: `${base}/fiados`, icon: Wallet01Icon },
+		{ title: "Cartera", url: `${base}/cartera`, icon: Wallet01Icon },
 	];
 	return (
 		<Sidebar collapsible="icon" {...props}>
