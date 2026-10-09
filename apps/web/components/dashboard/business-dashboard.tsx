@@ -171,7 +171,7 @@ function BusinessDashboardContent() {
 							render={<Link href={`/dashboard/${business.id}/ventas`} />}
 						>
 							<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
-							Nueva venta
+							Ir a caja
 						</Button>
 					</div>
 				</div>

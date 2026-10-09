@@ -23,7 +23,7 @@ function VentasContent() {
 	const router = useRouter();
 	const { data: business, isLoading, error } = useBusiness(businessId);
 	if (isLoading)
-		return <OikentraLoader label="Cargando ventas" className="min-h-[60vh]" />;
+		return <OikentraLoader label="Cargando caja" className="min-h-[60vh]" />;
 	if (error || !business || !user)
 		return (
 			<div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">

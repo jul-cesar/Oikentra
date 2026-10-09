@@ -62,7 +62,7 @@ export default function VentasScreen() {
   }
 
   return <ScrollView className="flex-1" contentContainerClassName="pb-10">
-    <DashboardHeader eyebrow="Caja diaria" title="Ventas y movimientos" subtitle="Registra ventas y revisa el historial con filtros." />
+    <DashboardHeader eyebrow="Ventas y gastos" title="Caja" subtitle="Registra ventas y gastos, y revisa todos tus movimientos." />
     <Card><CardHeader><CardTitle>Registrar movimiento</CardTitle><CardDescription>La hora se guarda automáticamente.</CardDescription></CardHeader><CardContent className="gap-4">
       <View className="gap-2"><Label>Tipo</Label><Select value={{ value: kind, label: kind === 'SALE' ? 'Venta' : 'Gasto' }} onValueChange={(option) => setKind(option?.value as Kind)}><SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger><SelectContent><SelectItem value="SALE" label="Venta" /><SelectItem value="EXPENSE" label="Gasto" /></SelectContent></Select></View>
       <View className="gap-2"><Label>Monto</Label><Input value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0" /></View>
@@ -70,10 +70,10 @@ export default function VentasScreen() {
       {kind === 'EXPENSE' ? <View className="gap-2"><Label>Categoría</Label><Input value={category} onChangeText={setCategory} placeholder="Ej. mercado" /></View> : null}
       <View className="gap-2"><Label>Nota</Label><Input value={note} onChangeText={setNote} placeholder="Detalle corto" /></View>
       {message ? <Text variant="muted">{message}</Text> : null}
-      <Button onPress={() => void save()}><Text>Guardar</Text></Button>
+      <Button onPress={() => void save()}><Text>{kind === 'SALE' ? 'Registrar venta' : 'Registrar gasto'}</Text></Button>
     </CardContent></Card>
 
-    <Card className="mt-4"><CardHeader><CardTitle>Historial</CardTitle><CardDescription>{rows.length} movimientos encontrados.</CardDescription></CardHeader><CardContent className="gap-3">
+    <Card className="mt-4"><CardHeader><CardTitle>Movimientos</CardTitle><CardDescription>{rows.length} movimientos encontrados.</CardDescription></CardHeader><CardContent className="gap-3">
       <Input placeholder="Buscar nota, categoría o usuario" value={query} onChangeText={setQuery} />
       <View className="flex-col gap-3 sm:flex-row">
         <Select value={{ value: typeFilter, label: typeFilter === 'ALL' ? 'Todos' : typeLabel[typeFilter as CashMovementType] }} onValueChange={(option) => setTypeFilter(option?.value ?? 'ALL')}><SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger><SelectContent><SelectItem value="ALL" label="Todos" /><SelectItem value="SALE" label="Ventas" /><SelectItem value="EXPENSE" label="Gastos" /><SelectItem value="CREDIT_PAYMENT" label="Abonos" /></SelectContent></Select>
