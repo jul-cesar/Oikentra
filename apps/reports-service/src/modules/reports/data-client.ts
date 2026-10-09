@@ -8,6 +8,7 @@ export type ReportDataResponse = {
     currencyCode: string
     timezone: string
   }
+  paymentMethods: Array<{ name: string; amount: number; count: number; share: number }>
   dailySummaries: Array<{
     date: string
     salesTotal: number
@@ -47,21 +48,24 @@ export async function fetchReportData(
   from?: string,
   to?: string,
   customerId?: string,
+  assertion?: string,
 ): Promise<ReportDataResponse> {
   const config = getConfig()
-  const url = `${config.businessServiceUrl}/internal/reports/data`
+  const url = new URL("/internal/reports/data", config.businessServiceUrl).toString()
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Internal-Service': 'reports-service',
+      ...(assertion ? { 'X-Internal-Auth': assertion } : {}),
     },
     body: JSON.stringify({ businessId, reportType, from, to, customerId }),
     signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {
+    if (response.status === 401) throw new AppError('UNAUTHENTICATED', 401, 'A valid session is required.')
+    if (response.status === 403) throw new AppError('BUSINESS_ACCESS_DENIED', 403, 'You do not have access to this business.')
     if (response.status === 404) {
       throw new AppError('BUSINESS_NOT_FOUND', 404, 'The business was not found.')
     }

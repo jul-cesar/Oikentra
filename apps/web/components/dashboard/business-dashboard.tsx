@@ -7,6 +7,7 @@ import {
 	ArrowDownLeft01Icon,
 	ArrowUpRight01Icon,
 	ChartLineData01Icon,
+	Download01Icon,
 	CreditCardIcon,
 	PlusSignIcon,
 	UserWarning01Icon,
@@ -28,6 +29,7 @@ import {
 
 import { AuthGuard } from "@/components/auth-guard";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -114,6 +116,8 @@ function BusinessDashboardContent() {
 	const params = useParams<{ businessId: string }>();
 	const router = useRouter();
 	const [period, setPeriod] = useState<Period>("7d");
+	const [exportOpen, setExportOpen] = useState(false);
+	const [paymentExportOpen, setPaymentExportOpen] = useState(false);
 	const range = useMemo(() => periodRange(period), [period]);
 	const { data: business, isLoading, error } = useBusiness(params.businessId);
 	const summaryQuery = useDashboardSummary(params.businessId, range);
@@ -166,6 +170,10 @@ function BusinessDashboardContent() {
 								{label}
 							</button>
 						))}
+						<Button size="sm" variant="outline" onClick={() => setExportOpen(true)} disabled={summaryQuery.isLoading}>
+							<HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
+							Descargar resumen
+						</Button>
 						<Button
 							size="sm"
 							render={<Link href={`/dashboard/${business.id}/ventas`} />}
@@ -212,7 +220,7 @@ function BusinessDashboardContent() {
 
 						<div className="grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
 							<CashFlowChart data={summary.dailyCashFlow} />
-							<PaymentMethodsChart data={summary.paymentMethods} />
+							<PaymentMethodsChart data={summary.paymentMethods} onExport={() => setPaymentExportOpen(true)} />
 						</div>
 
 						<div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
@@ -226,6 +234,8 @@ function BusinessDashboardContent() {
 					</>
 				)}
 			</div>
+			<ExportReportDialog businessId={business.id} open={exportOpen} onOpenChange={setExportOpen} fixedReportType="WEEKLY_SUMMARY" initialFrom={range.from} initialTo={range.to} />
+			<ExportReportDialog businessId={business.id} open={paymentExportOpen} onOpenChange={setPaymentExportOpen} fixedReportType="PAYMENT_METHODS" initialFrom={range.from} initialTo={range.to} />
 		</DashboardShell>
 	);
 }
@@ -356,8 +366,10 @@ function CashFlowChart({
 
 function PaymentMethodsChart({
 	data,
+	onExport,
 }: {
 	data: { name: string; amount: number; count: number; share: number }[];
+	onExport: () => void;
 }) {
 	const chartData = data.map((item, index) => ({
 		...item,
@@ -372,12 +384,18 @@ function PaymentMethodsChart({
 
 	return (
 		<Card className="overflow-hidden">
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<HugeiconsIcon icon={CreditCardIcon} size={18} />
-					Medios de pago
-				</CardTitle>
-				<CardDescription>Participación por monto vendido.</CardDescription>
+			<CardHeader className="flex flex-row items-start justify-between gap-3">
+				<div className="space-y-1.5">
+					<CardTitle className="flex items-center gap-2">
+						<HugeiconsIcon icon={CreditCardIcon} size={18} />
+						Medios de pago
+					</CardTitle>
+					<CardDescription>Participación por monto vendido. El reporte incluye todos los medios.</CardDescription>
+				</div>
+				<Button size="sm" variant="outline" onClick={onExport} aria-label="Descargar reporte de medios de pago">
+					<HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
+					<span className="hidden sm:inline">Reporte</span>
+				</Button>
 			</CardHeader>
 			<CardContent>
 				{chartData.length ? (

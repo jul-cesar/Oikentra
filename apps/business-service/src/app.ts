@@ -15,6 +15,7 @@ import { invitationsRoutes } from "./modules/businesses/invitations.routes";
 import { paymentMethodsRoutes } from "./modules/businesses/payment-methods.routes";
 import { customersRoutes } from "./modules/customers/customers.routes";
 import { dashboardSummaryRoutes } from "./modules/dashboard/dashboard-summary.routes";
+import { internalReportsRoutes } from "./modules/reports/internal-reports.routes";
 import { cashMovementsRoutes } from "./modules/cash-movements/cash-movements.routes";
 import { cashMovementCategoriesRoutes } from "./modules/cash-movements/cash-movement-categories.routes";
 import { creditsRoutes } from "./modules/credits/credits.routes";
@@ -69,6 +70,7 @@ app.route("/api/business/businesses/:businessId/credits", creditsRoutes);
 app.route("/api/business/businesses/:businessId/loans", loansRoutes);
 app.route("/api/business/businesses/:businessId/agenda", agendaRoutes);
 app.route("/api/business/businesses/:businessId/tasks", tasksRoutes);
+app.route("/internal/reports", internalReportsRoutes);
 
 app.onError((error, c) => {
   const requestId = c.get("requestId") ?? crypto.randomUUID();

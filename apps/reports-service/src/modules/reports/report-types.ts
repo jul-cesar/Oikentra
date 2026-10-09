@@ -1,6 +1,7 @@
 export const reportTypes = [
   'DAILY_SUMMARY',
   'WEEKLY_SUMMARY',
+  'PAYMENT_METHODS',
   'RECEIVABLES',
   'AGED_DEBTS',
   'CUSTOMER_STATEMENT',
@@ -9,6 +10,6 @@ export const reportTypes = [
 
 export type ReportType = (typeof reportTypes)[number]
 
-export const reportFormats = ['PDF', 'CSV'] as const
+export const reportFormats = ['PDF', 'CSV', 'XLSX'] as const
 
 export type ReportFormat = (typeof reportFormats)[number]
