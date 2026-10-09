@@ -102,14 +102,16 @@ export function LoanDetail({
 						<Button
 							variant="ghost"
 							className="-ml-3 mb-2 rounded-xl"
-							render={<Link href={`/dashboard/${businessId}/prestamos`} />}
+							render={
+								<Link href={`/dashboard/${businessId}/cartera?tipo=prestamos`} />
+							}
 						>
 							<HugeiconsIcon
 								icon={ArrowLeft01Icon}
 								size={16}
 								aria-hidden="true"
 							/>
-							Volver a préstamos
+							Volver a Cartera
 						</Button>
 						<p className="text-sm font-medium text-primary">
 							Detalle del préstamo

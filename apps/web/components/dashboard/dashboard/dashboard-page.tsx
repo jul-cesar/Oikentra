@@ -371,9 +371,9 @@ export function DashboardPage({ businessId }: { businessId: string }) {
 										<span className="text-muted-foreground">
 											Clientes con saldo
 										</span>
-										<strong className="tabular-nums">
-											{summary.kpis.customersWithDebt +
-												summary.kpis.loansWithDebt}
+										<strong className="text-right text-xs tabular-nums">
+											{summary.kpis.customersWithDebt} fiados ·{" "}
+											{summary.kpis.loansWithDebt} préstamos
 										</strong>
 									</div>
 								</div>
@@ -381,7 +381,7 @@ export function DashboardPage({ businessId }: { businessId: string }) {
 									variant="outline"
 									className="w-full"
 									size="sm"
-									render={<Link href={`/dashboard/${businessId}/fiados`} />}
+									render={<Link href={`/dashboard/${businessId}/cartera`} />}
 								>
 									Ver cartera completa
 								</Button>

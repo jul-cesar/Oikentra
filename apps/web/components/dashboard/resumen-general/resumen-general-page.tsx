@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
 	ArrowRight01Icon,
-	BankIcon,
 	ChartLineData01Icon,
 	Dollar01Icon,
 	Wallet01Icon,
@@ -93,7 +92,7 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 				<div>
 					<p className="text-sm font-medium text-primary">Resumen general</p>
 					<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
-						Ventas, fiados y préstamos
+						Ventas y cartera
 					</h1>
 					<p className="mt-1.5 max-w-xl text-muted-foreground text-pretty">
 						Un vistazo al movimiento de tu negocio en el período seleccionado.
@@ -124,7 +123,7 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 				/>
 			) : (
 				<>
-					<div className="grid gap-4 md:grid-cols-3">
+					<div className="grid gap-4 md:grid-cols-2">
 						<AreaCard
 							icon={<HugeiconsIcon icon={Dollar01Icon} size={16} />}
 							title="Ventas"
@@ -162,67 +161,37 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 						/>
 						<AreaCard
 							icon={<HugeiconsIcon icon={Wallet01Icon} size={16} />}
-							title="Fiados"
-							description="Cartera de fiados y sus abonos."
-							href={`/dashboard/${businessId}/fiados`}
-							actionLabel="Ver fiados"
-							mainLabel="Cartera pendiente"
-							mainValue={currencyFormatter.format(summary.kpis.totalDebt)}
-							mainTone={summary.kpis.oldDebts ? "warning" : "default"}
+							title="Cartera"
+							description="Fiados y préstamos por cobrar."
+							href={`/dashboard/${businessId}/cartera`}
+							actionLabel="Ver cartera"
+							mainLabel="Total por cobrar"
+							mainValue={currencyFormatter.format(
+								summary.kpis.totalDebt + summary.kpis.loanDebt,
+							)}
+							mainTone={
+								summary.kpis.oldDebts || summary.kpis.overdueLoans
+									? "warning"
+									: "default"
+							}
 							rows={[
 								{
-									label: "Clientes con saldo",
-									value: String(summary.kpis.customersWithDebt),
+									label: "Fiados",
+									value: currencyFormatter.format(summary.kpis.totalDebt),
 								},
 								{
-									label: "Deudas antiguas (+15 días)",
+									label: "Préstamos",
+									value: currencyFormatter.format(summary.kpis.loanDebt),
+								},
+								{
+									label: "Deudas antiguas",
 									value: String(summary.kpis.oldDebts),
 									tone: summary.kpis.oldDebts ? "warning" : "default",
-								},
-								{
-									label: "Abonos del período",
-									value: currencyFormatter.format(
-										summary.kpis.creditPaymentsAmount,
-									),
-								},
-								{
-									label: "Fiados otorgados",
-									value: currencyFormatter.format(
-										summary.kpis.creditDisbursementsAmount,
-									),
-								},
-							]}
-						/>
-						<AreaCard
-							icon={<HugeiconsIcon icon={BankIcon} size={16} />}
-							title="Préstamos"
-							description="Cartera de préstamos y sus abonos."
-							href={`/dashboard/${businessId}/prestamos`}
-							actionLabel="Ver préstamos"
-							mainLabel="Por cobrar"
-							mainValue={currencyFormatter.format(summary.kpis.loanDebt)}
-							mainTone={summary.kpis.overdueLoans ? "warning" : "default"}
-							rows={[
-								{
-									label: "Clientes con deuda",
-									value: String(summary.kpis.loansWithDebt),
 								},
 								{
 									label: "Préstamos vencidos",
 									value: String(summary.kpis.overdueLoans),
 									tone: summary.kpis.overdueLoans ? "warning" : "default",
-								},
-								{
-									label: "Abonos del período",
-									value: currencyFormatter.format(
-										summary.kpis.loanPaymentsAmount,
-									),
-								},
-								{
-									label: "Desembolsos del período",
-									value: currencyFormatter.format(
-										summary.kpis.loanDisbursementsAmount,
-									),
 								},
 							]}
 						/>
