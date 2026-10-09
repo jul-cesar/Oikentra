@@ -326,6 +326,62 @@ describe("tasks service permissions and domain rules", () => {
 		).rejects.toMatchObject({ code: "TASK_VERSION_CONFLICT", status: 409 });
 	});
 
+	test("rejects an input version that differs from the authorized snapshot", async () => {
+		const context = createContext();
+		const operator = context.members.find(
+			(member) => member.userId === "operator-a",
+		)!;
+		const membersService = createMembersService(
+			createMemberRepository(context.members),
+		);
+		// A manager's concurrent change moved each stored row to v3 after the operator's v2 snapshot was read.
+		const snapshots = new Map<string, Task>();
+		const racingService = createTasksService({
+			repository: {
+				...context.repository,
+				findByIdAndBusiness: async (taskId) => snapshots.get(taskId) ?? null,
+			},
+			now: () => now,
+			authorize: ({ userId, businessId, permission }) =>
+				membersService.requirePermission(userId, businessId, permission),
+		});
+		async function stale(input: Partial<Task>) {
+			const stored = await context.repository.create(
+				task({ ...input, version: 3 }) as NewTask,
+			);
+			snapshots.set(stored.id, { ...stored, version: 2 });
+			return stored;
+		}
+		const own = await stale({ createdByUserId: "operator-a" });
+		const assigned = await stale({ assigneeMemberId: operator.id });
+		const unassigned = await stale({});
+
+		await expect(
+			racingService.update({
+				userId: "operator-a",
+				businessId,
+				taskId: own.id,
+				input: { version: 3, title: "Carrera" },
+			}),
+		).rejects.toMatchObject({ code: "TASK_VERSION_CONFLICT", status: 409 });
+		await expect(
+			racingService.changeStatus({
+				userId: "operator-a",
+				businessId,
+				taskId: assigned.id,
+				input: { version: 3, status: "DONE" },
+			}),
+		).rejects.toMatchObject({ code: "TASK_VERSION_CONFLICT", status: 409 });
+		await expect(
+			racingService.assign({
+				userId: "operator-a",
+				businessId,
+				taskId: unassigned.id,
+				input: { version: 3, assigneeMemberId: operator.id },
+			}),
+		).rejects.toMatchObject({ code: "TASK_VERSION_CONFLICT", status: 409 });
+	});
+
 	test("requires tasks.manage to remove a task", async () => {
 		const context = createContext();
 		const created = await context.forUser("manager-a").create({

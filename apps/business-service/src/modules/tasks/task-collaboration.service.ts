@@ -442,8 +442,9 @@ export function createTaskCollaborationService({
 		}) {
 			await listFor(permissions.tasksManage, { userId, businessId, taskId });
 			for (const attachment of await repository.listAttachments(taskId, businessId)) {
-				await deleteAttachmentRecord(attachment);
+				await deleteObject(attachment.objectKey);
 			}
+			// FK cascade removes comments and attachment metadata in the same statement.
 			await repository.remove(taskId, businessId);
 		},
 	};

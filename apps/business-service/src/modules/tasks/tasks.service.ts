@@ -206,6 +206,8 @@ export function createTasksService({
 				permission: permissions.tasksRead,
 			});
 			const task = await requireTask(businessId, taskId);
+			// Write only against the version that was authorized, not a client-chosen newer one.
+			if (input.version !== task.version) throw versionConflict();
 			if (isManager(member)) {
 				await authorize({
 					userId,
@@ -255,6 +257,8 @@ export function createTasksService({
 				permission: permissions.tasksRead,
 			});
 			const task = await requireTask(businessId, taskId);
+			// Write only against the version that was authorized, not a client-chosen newer one.
+			if (input.version !== task.version) throw versionConflict();
 			if (isManager(member)) {
 				await authorize({
 					userId,
@@ -300,6 +304,8 @@ export function createTasksService({
 				permission: permissions.tasksRead,
 			});
 			const task = await requireTask(businessId, taskId);
+			// Write only against the version that was authorized, not a client-chosen newer one.
+			if (input.version !== task.version) throw versionConflict();
 			if (isManager(member)) {
 				await authorize({
 					userId,

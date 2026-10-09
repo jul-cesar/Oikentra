@@ -727,6 +727,31 @@ describe("task removal with private attachments", () => {
 		expect(context.attachments).toHaveLength(0);
 	});
 
+	test("keeps every attachment record when R2 fails partway through", async () => {
+		const context = createContext();
+		for (let i = 0; i < 2; i++) {
+			await (
+				await uploadAndConfirm(context, { contentType: "image/png", bytes: PNG })
+			).confirm();
+		}
+		const originalDelete = context.fake.storage.delete;
+		let calls = 0;
+		context.fake.storage.delete = async (key) => {
+			if (++calls === 2) throw new Error("R2 down");
+			return originalDelete(key);
+		};
+		await expectCode(
+			context.service.removeTask({
+				userId: "manager-a",
+				businessId,
+				taskId: context.current.id,
+			}),
+			"TASK_ATTACHMENT_STORAGE_FAILED",
+		);
+		expect(context.tasks.has(context.current.id)).toBe(true);
+		expect(context.attachments).toHaveLength(2);
+	});
+
 	test("requires tasks.manage", async () => {
 		const { service, current } = createContext();
 		await expectCode(
