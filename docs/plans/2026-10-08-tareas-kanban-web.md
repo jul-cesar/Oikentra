@@ -51,7 +51,7 @@
 - Produce: tablas `tasks`, `task_comments`, `task_attachments` y configuración opcional `r2PrivateBucket`.
 - Consume: credenciales R2 existentes `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
 
-- [ ] **Paso 1: Escribir pruebas fallidas de configuración**
+- [x] **Paso 1: Escribir pruebas fallidas de configuración**
 
 Agregar casos que demuestren:
 
@@ -59,7 +59,7 @@ Agregar casos que demuestren:
 - la configuración privada no depende de `R2_PUBLIC_BASE_URL`;
 - la configuración de logos conserva su comportamiento actual.
 
-- [ ] **Paso 2: Ejecutar las pruebas para comprobar que fallan**
+- [x] **Paso 2: Ejecutar las pruebas para comprobar que fallan**
 
 ```bash
 bun test apps/business-service/src/config/config.test.ts
@@ -67,7 +67,7 @@ bun test apps/business-service/src/config/config.test.ts
 
 Resultado esperado: fallan los casos nuevos porque `r2PrivateBucket` aún no existe.
 
-- [ ] **Paso 3: Definir tablas, enums e índices**
+- [x] **Paso 3: Definir tablas, enums e índices**
 
 En `schema.ts`, agregar:
 
@@ -81,15 +81,15 @@ En `schema.ts`, agregar:
 
 `assigneeMemberId` debe referenciar `business_members.id` y usar `ON DELETE SET NULL`.
 
-- [ ] **Paso 4: Crear migración Drizzle**
+- [x] **Paso 4: Crear migración Drizzle**
 
 Generar o escribir `0014_tasks.sql` con las tres tablas, restricciones e índices. No modificar migraciones anteriores.
 
-- [ ] **Paso 5: Implementar configuración del bucket privado**
+- [x] **Paso 5: Implementar configuración del bucket privado**
 
 Leer `R2_PRIVATE_BUCKET` sin reutilizar el bucket público como fallback. Cuando falte, las funciones de adjuntos deberán poder responder después con `503 TASK_ATTACHMENTS_NOT_CONFIGURED` sin impedir el resto del módulo de tareas.
 
-- [ ] **Paso 6: Verificar persistencia y configuración**
+- [x] **Paso 6: Verificar persistencia y configuración**
 
 ```bash
 bun test apps/business-service/src/config/config.test.ts
@@ -98,7 +98,7 @@ pnpm --filter @oikentra/business-service typecheck
 
 Resultado esperado: pruebas y typecheck pasan.
 
-- [ ] **Paso 7: Commit**
+- [x] **Paso 7: Commit**
 
 ```bash
 git add apps/business-service/src/db/schema.ts apps/business-service/drizzle/0014_tasks.sql apps/business-service/src/config/config.ts apps/business-service/src/config/config.test.ts
