@@ -268,11 +268,11 @@ git commit -m "feat(tasks): add comments and private attachments"
 - Produce API base `/api/business/businesses/:businessId/tasks`.
 - Produce hooks TanStack Query para tareas, detalle, comentarios y adjuntos.
 
-- [ ] **Paso 1: Escribir pruebas fallidas de registro de rutas**
+- [x] **Paso 1: Escribir pruebas fallidas de registro de rutas**
 
 Agregar casos de humo para confirmar que las rutas de tareas están montadas, requieren autenticación interna y devuelven el sobre estándar `{ data }` o errores con código.
 
-- [ ] **Paso 2: Implementar rutas REST**
+- [x] **Paso 2: Implementar rutas REST**
 
 Incluir:
 
@@ -286,11 +286,11 @@ Incluir:
 - `GET /:taskId/attachments/:attachmentId/download`;
 - `DELETE /:taskId/attachments/:attachmentId`.
 
-- [ ] **Paso 3: Implementar cliente y hooks web**
+- [x] **Paso 3: Implementar cliente y hooks web**
 
 Usar claves de consulta bajo `tasks`. Toda mutación debe invalidar lista, detalle y Agenda cuando cambie estado o fecha límite. Comentarios y adjuntos invalidan únicamente el detalle relacionado. La mutación de estado debe admitir el tablero optimista y, ante error, invalidar y recargar en lugar de restaurar una instantánea que pueda sobrescribir un movimiento posterior.
 
-- [ ] **Paso 4: Ejecutar verificaciones**
+- [x] **Paso 4: Ejecutar verificaciones**
 
 ```bash
 bun test apps/business-service/src/index.test.ts
@@ -298,7 +298,7 @@ pnpm --filter @oikentra/business-service typecheck
 pnpm --filter @oikentra/web typecheck
 ```
 
-- [ ] **Paso 5: Commit**
+- [x] **Paso 5: Commit**
 
 ```bash
 git add apps/business-service/src/modules/tasks/tasks.routes.ts apps/business-service/src/app.ts apps/business-service/src/index.test.ts apps/web/lib/tasks-api.ts apps/web/lib/queries/tasks.ts apps/web/lib/validation/tasks-schemas.ts
