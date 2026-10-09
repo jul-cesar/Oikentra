@@ -11,6 +11,7 @@ import {
 	Dollar01Icon,
 	ChartLineData01Icon,
 	Calendar03Icon,
+	Task01Icon,
 } from "@hugeicons/core-free-icons";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -45,6 +46,7 @@ export function AppSidebar({
 	const items = [
 		{ title: "Dashboard", url: base, icon: ChartLineData01Icon },
 		{ title: "Agenda", url: `${base}/agenda`, icon: Calendar03Icon },
+		{ title: "Tareas", url: `${base}/tareas`, icon: Task01Icon },
 		{ title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
 		{ title: "Caja", url: `${base}/ventas`, icon: Dollar01Icon },
 		{ title: "Cartera", url: `${base}/cartera`, icon: Wallet01Icon },
