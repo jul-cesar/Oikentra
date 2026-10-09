@@ -2,7 +2,7 @@
 
 > **Para agentes de implementación:** SUB-SKILL REQUERIDA: usar `superpowers:subagent-driven-development` (recomendado) o `superpowers:executing-plans` para ejecutar este plan tarea por tarea. Las casillas `- [ ]` registran el avance.
 
-**Estado:** Aprobado
+**Estado:** En curso
 
 **Objetivo:** Unificar fiados y préstamos en una experiencia web llamada «Cartera», con un total combinado y desglose por tipo, sin migrar ni fusionar sus entidades, tablas, APIs o reglas financieras.
 
@@ -80,7 +80,11 @@
 
 `PortfolioSummary` debe incluir: `totalDebt`, `creditDebt`, `loanDebt`, `creditCustomers`, `loanCustomers`, `oldCredits` y `overdueLoans`. No debe producir un total combinado de clientes.
 
+<<<<<<< HEAD
 - [ ] **Paso 1: Escribir pruebas fallidas para la normalización**
+=======
+- [x] **Paso 1: Escribir pruebas fallidas para la normalización**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Cubrir como mínimo:
 
@@ -91,7 +95,11 @@ Cubrir como mínimo:
 - los enlaces resultantes usan `/fiados/{customerId}` para fiados y `/prestamos/{loanId}` para préstamos;
 - el total combinado es `creditSummary.totalDebt + loanSummary.totalDebt` y mantiene ambos desgloses.
 
+<<<<<<< HEAD
 - [ ] **Paso 2: Ejecutar las pruebas para comprobar que fallan**
+=======
+- [x] **Paso 2: Ejecutar las pruebas para comprobar que fallan**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 cd apps/web && bun test components/dashboard/cartera/cartera-model.test.ts
@@ -99,11 +107,19 @@ cd apps/web && bun test components/dashboard/cartera/cartera-model.test.ts
 
 Resultado esperado: falla porque `cartera-model.ts` todavía no implementa las interfaces.
 
+<<<<<<< HEAD
 - [ ] **Paso 3: Implementar la proyección mínima**
 
 Implementar las firmas definidas en `cartera-model.ts` sin modificar los tipos originales ni duplicar reglas financieras. Usar `today` como argumento para que la clasificación de vencimientos sea determinista.
 
 - [ ] **Paso 4: Ejecutar las pruebas para comprobar que pasan**
+=======
+- [x] **Paso 3: Implementar la proyección mínima**
+
+Implementar las firmas definidas en `cartera-model.ts` sin modificar los tipos originales ni duplicar reglas financieras. Usar `today` como argumento para que la clasificación de vencimientos sea determinista.
+
+- [x] **Paso 4: Ejecutar las pruebas para comprobar que pasan**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 cd apps/web && bun test components/dashboard/cartera/cartera-model.test.ts
@@ -111,7 +127,11 @@ cd apps/web && bun test components/dashboard/cartera/cartera-model.test.ts
 
 Resultado esperado: todas las pruebas pasan.
 
+<<<<<<< HEAD
 - [ ] **Paso 5: Commit**
+=======
+- [x] **Paso 5: Commit**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 git add apps/web/components/dashboard/cartera/cartera-model.ts apps/web/components/dashboard/cartera/cartera-model.test.ts
@@ -130,11 +150,19 @@ git commit -m "feat(web): add portfolio read model"
 - Consume: `useCustomers`, `useCredits`, `useCreditSummary`, `useLoans`, `useLoanSummary`, `buildPortfolioItems`, `buildPortfolioSummary`, `CreateCreditDialog` y `CreateLoanDialog`.
 - Produce: ruta `/dashboard/[businessId]/cartera` y filtros por query string `?tipo=fiados|prestamos`.
 
+<<<<<<< HEAD
 - [ ] **Paso 1: Crear el contenedor de ruta**
 
 Seguir el patrón de autenticación, carga de negocio y `DashboardShell` de las rutas actuales. El estado de carga debe decir `Cargando cartera`.
 
 - [ ] **Paso 2: Crear el encabezado y las acciones**
+=======
+- [x] **Paso 1: Crear el contenedor de ruta**
+
+Seguir el patrón de autenticación, carga de negocio y `DashboardShell` de las rutas actuales. El estado de carga debe decir `Cargando cartera`.
+
+- [x] **Paso 2: Crear el encabezado y las acciones**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Mostrar:
 
@@ -143,7 +171,11 @@ Mostrar:
 - descripción: `Fiados y préstamos pendientes de tus clientes.`;
 - acciones: `Nuevo fiado` y `Nuevo préstamo`, cada una abriendo su diálogo existente.
 
+<<<<<<< HEAD
 - [ ] **Paso 3: Crear el resumen combinado**
+=======
+- [x] **Paso 3: Crear el resumen combinado**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Mostrar una tarjeta principal `Total por cobrar` con `summary.totalDebt` y dos tarjetas de desglose:
 
@@ -152,7 +184,11 @@ Mostrar una tarjeta principal `Total por cobrar` con `summary.totalDebt` y dos t
 
 No mostrar un número combinado de clientes.
 
+<<<<<<< HEAD
 - [ ] **Paso 4: Crear búsqueda, filtros y listado**
+=======
+- [x] **Paso 4: Crear búsqueda, filtros y listado**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Agregar:
 
@@ -166,7 +202,11 @@ Agregar:
 
 El query string `tipo=fiados` selecciona Fiados, `tipo=prestamos` selecciona Préstamos y cualquier otro valor selecciona Todos.
 
+<<<<<<< HEAD
 - [ ] **Paso 5: Manejar carga, error y estado vacío**
+=======
+- [x] **Paso 5: Manejar carga, error y estado vacío**
+>>>>>>> feature/cartera-fiados-prestamos
 
 No renderizar saldos hasta que todas las consultas requeridas estén completas. Ante cualquier error, mostrar un único estado de error con `Reintentar` que vuelva a solicitar clientes, créditos, préstamos y ambos resúmenes.
 
@@ -189,7 +229,11 @@ Comprobación manual:
 4. Abrir el detalle de un fiado y de un préstamo.
 5. Simular el fallo de una consulta y confirmar que no aparece un resumen parcial.
 
+<<<<<<< HEAD
 - [ ] **Paso 7: Commit**
+=======
+- [x] **Paso 7: Commit**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 git add apps/web/components/dashboard/cartera apps/web/app/dashboard/[businessId]/cartera/page.tsx
@@ -211,6 +255,7 @@ git commit -m "feat(web): add unified portfolio page"
 - Consume: ruta `/dashboard/[businessId]/cartera` creada en la Tarea 2.
 - Produce: una sola entrada principal y retornos consistentes hacia Cartera.
 
+<<<<<<< HEAD
 - [ ] **Paso 1: Reemplazar las entradas del menú**
 
 En `apps/web/components/app-sidebar.tsx`, reemplazar las entradas independientes `Fiados` y `Préstamos` por una sola entrada `Cartera` que apunte a `${base}/cartera`. No modificar `Clientes`.
@@ -220,6 +265,17 @@ En `apps/web/components/app-sidebar.tsx`, reemplazar las entradas independientes
 En `apps/web/components/dashboard/dashboard/dashboard-page.tsx`, cambiar el enlace `Ver cartera completa` para que apunte a `/dashboard/${businessId}/cartera`. Conservar las métricas actuales.
 
 - [ ] **Paso 3: Unificar el resumen general**
+=======
+- [x] **Paso 1: Reemplazar las entradas del menú**
+
+En `apps/web/components/app-sidebar.tsx`, reemplazar las entradas independientes `Fiados` y `Préstamos` por una sola entrada `Cartera` que apunte a `${base}/cartera`. No modificar `Clientes`.
+
+- [x] **Paso 2: Actualizar accesos desde Dashboard**
+
+En `apps/web/components/dashboard/dashboard/dashboard-page.tsx`, cambiar el enlace `Ver cartera completa` para que apunte a `/dashboard/${businessId}/cartera`. Conservar las métricas actuales.
+
+- [x] **Paso 3: Unificar el resumen general**
+>>>>>>> feature/cartera-fiados-prestamos
 
 En `apps/web/components/dashboard/resumen-general/resumen-general-page.tsx`:
 
@@ -229,7 +285,11 @@ En `apps/web/components/dashboard/resumen-general/resumen-general-page.tsx`:
 - usar `Ver cartera` como acción y enlazar a `/cartera`;
 - no alterar la tarjeta ni las métricas de Caja.
 
+<<<<<<< HEAD
 - [ ] **Paso 4: Actualizar retornos desde detalles**
+=======
+- [x] **Paso 4: Actualizar retornos desde detalles**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Cambiar únicamente los enlaces de regreso:
 
@@ -251,7 +311,11 @@ Resultado esperado: ambos comandos terminan con código `0`.
 
 Comprobación manual: recorrer menú → Cartera → detalle → regreso para ambos tipos y confirmar que el filtro correspondiente se conserva.
 
+<<<<<<< HEAD
 - [ ] **Paso 6: Commit**
+=======
+- [x] **Paso 6: Commit**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 git add apps/web/components/app-sidebar.tsx apps/web/components/dashboard/dashboard/dashboard-page.tsx apps/web/components/dashboard/resumen-general/resumen-general-page.tsx apps/web/components/dashboard/fiados/customer-detail.tsx apps/web/components/dashboard/prestamos/loan-detail.tsx
@@ -274,7 +338,11 @@ git commit -m "feat(web): unify debt navigation under portfolio"
 - Consume: `/cartera?tipo=fiados|prestamos`.
 - Produce: compatibilidad para enlaces antiguos sin mantener tres listados equivalentes.
 
+<<<<<<< HEAD
 - [ ] **Paso 1: Convertir rutas antiguas en redirecciones**
+=======
+- [x] **Paso 1: Convertir rutas antiguas en redirecciones**
+>>>>>>> feature/cartera-fiados-prestamos
 
 Redirigir:
 
@@ -284,6 +352,7 @@ Redirigir:
 
 Conservar las rutas de detalle bajo `/fiados/[customerId]` y `/prestamos/[loanId]`.
 
+<<<<<<< HEAD
 - [ ] **Paso 2: Verificar referencias antes de eliminar**
 
 Confirmar que `FiadosPage`, `PrestamosPage` y los componentes de `components/dashboard/creditos/` ya no se importan desde rutas activas. Los diálogos ubicados en `fiados/` y `prestamos/` sí se conservan porque Cartera los reutiliza.
@@ -293,6 +362,17 @@ Confirmar que `FiadosPage`, `PrestamosPage` y los componentes de `components/das
 Eliminar `fiados-page.tsx`, `prestamos-page.tsx` y el directorio duplicado `creditos/` únicamente después de que la búsqueda del Paso 2 confirme cero consumidores.
 
 - [ ] **Paso 4: Ejecutar la verificación final**
+=======
+- [x] **Paso 2: Verificar referencias antes de eliminar**
+
+Confirmar que `FiadosPage`, `PrestamosPage` y los componentes de `components/dashboard/creditos/` ya no se importan desde rutas activas. Los diálogos ubicados en `fiados/` y `prestamos/` sí se conservan porque Cartera los reutiliza.
+
+- [x] **Paso 3: Eliminar solo los listados sin uso**
+
+Eliminar `fiados-page.tsx`, `prestamos-page.tsx` y el directorio duplicado `creditos/` únicamente después de que la búsqueda del Paso 2 confirme cero consumidores.
+
+- [x] **Paso 4: Ejecutar la verificación final**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 cd apps/web && bun test components/dashboard/cartera/cartera-model.test.ts
@@ -306,7 +386,11 @@ Resultado esperado: pruebas, tipos y lint terminan con código `0`.
 
 Abrir directamente las tres URLs antiguas y confirmar que llegan a Cartera con el filtro esperado. Después, abrir ambos tipos de detalle y completar un abono de prueba.
 
+<<<<<<< HEAD
 - [ ] **Paso 6: Commit**
+=======
+- [x] **Paso 6: Commit**
+>>>>>>> feature/cartera-fiados-prestamos
 
 ```bash
 git add -A apps/web/app/dashboard/[businessId] apps/web/components/dashboard/fiados apps/web/components/dashboard/prestamos apps/web/components/dashboard/creditos

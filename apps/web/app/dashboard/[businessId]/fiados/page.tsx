@@ -1,36 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { AuthGuard } from "@/components/auth-guard";
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { FiadosPage } from "@/components/dashboard/fiados/fiados-page";
-import { OikentraLoader } from "@/components/ui/oikentra-loader";
-import { useSession } from "@/hooks/use-session";
-import { useBusiness } from "@/lib/queries/onboarding";
+import { redirect, useParams } from "next/navigation";
 
 export default function Page() {
-  return (
-    <AuthGuard>
-      <FiadosRoute />
-    </AuthGuard>
-  );
-}
-
-function FiadosRoute() {
-  const { user } = useSession();
   const { businessId } = useParams<{ businessId: string }>();
-  const { data: business, isLoading, error } = useBusiness(businessId);
-  if (isLoading || !business || !user)
-    return <OikentraLoader label="Cargando fiados" className="min-h-[60vh]" />;
-  if (error)
-    return (
-      <p className="mx-auto max-w-lg py-20 text-center text-muted-foreground">
-        No pudimos cargar este negocio.
-      </p>
-    );
-  return (
-    <DashboardShell business={business} user={user}>
-      <FiadosPage businessId={businessId} />
-    </DashboardShell>
-  );
+  redirect(`/dashboard/${businessId}/cartera?tipo=fiados`);
 }

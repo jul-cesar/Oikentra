@@ -1,48 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { AuthGuard } from "@/components/auth-guard";
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { CreditosPage } from "@/components/dashboard/creditos/creditos-page";
-import { Button } from "@/components/ui/button";
-import { OikentraLoader } from "@/components/ui/oikentra-loader";
-import { useSession } from "@/hooks/use-session";
-import { useBusiness } from "@/lib/queries/onboarding";
+import { redirect, useParams } from "next/navigation";
 
-export default function CreditosRoute() {
-	return (
-		<AuthGuard>
-			<CreditosContent />
-		</AuthGuard>
-	);
-}
-
-function CreditosContent() {
-	const { user } = useSession();
-	const { businessId } = useParams<{ businessId: string }>();
-	const router = useRouter();
-	const { data: business, isLoading, error } = useBusiness(businessId);
-	if (isLoading)
-		return (
-			<OikentraLoader
-				label="Cargando créditos"
-				className="min-h-[60vh]"
-			/>
-		);
-	if (error || !business || !user)
-		return (
-			<div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">
-				<p className="text-muted-foreground">
-					No pudimos cargar esta pantalla.
-				</p>
-				<Button onClick={() => router.push("/dashboard")}>
-					Volver a mis negocios
-				</Button>
-			</div>
-		);
-	return (
-		<DashboardShell business={business} user={user}>
-			<CreditosPage businessId={businessId} />
-		</DashboardShell>
-	);
+export default function Page() {
+  const { businessId } = useParams<{ businessId: string }>();
+  redirect(`/dashboard/${businessId}/cartera?tipo=fiados`);
 }

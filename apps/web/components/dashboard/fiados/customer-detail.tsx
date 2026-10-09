@@ -125,14 +125,16 @@ export function CustomerDetail({
 						<Button
 							variant="ghost"
 							className="-ml-3 mb-2 rounded-xl"
-							render={<Link href={`/dashboard/${businessId}/fiados`} />}
+							render={
+								<Link href={`/dashboard/${businessId}/cartera?tipo=fiados`} />
+							}
 						>
 							<HugeiconsIcon
 								icon={ArrowLeft01Icon}
 								size={16}
 								aria-hidden="true"
 							/>
-							Volver a fiados
+							Volver a Cartera
 						</Button>
 						<p className="text-sm font-medium text-primary">
 							Detalle del cliente
