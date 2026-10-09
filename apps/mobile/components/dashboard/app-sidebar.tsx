@@ -100,7 +100,7 @@ function SidebarContent({
   const navItems = [
     { label: 'Resumen', href: base, icon: LayoutDashboard },
     { label: 'Clientes', href: `${base}/clientes`, icon: Users },
-    { label: 'Ventas', href: `${base}/ventas`, icon: DollarSign },
+    { label: 'Caja', href: `${base}/ventas`, icon: DollarSign },
     { label: 'Fiados', href: `${base}/fiados`, icon: Wallet },
     ...(canManageBusiness
       ? [{ label: 'Configurar negocio', href: `${base}/configuracion`, icon: Settings }]
