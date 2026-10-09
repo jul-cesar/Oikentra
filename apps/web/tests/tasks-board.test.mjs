@@ -165,3 +165,51 @@ test("los adjuntos validan antes de subir, reintentan y descargan con URL firmad
 	assert.match(attachments, /<img\b/);
 	assert.match(attachments, /canDeleteTaskAttachment/);
 });
+
+test("edición, toma y gestión de tareas dependen del rol y del estado", () => {
+	const own = task("a", { createdByUserId: "u1" });
+	assert.equal(board.canEditTask({ role: "OWNER", userId: "x", task: task("a", { status: "DONE" }) }), true);
+	assert.equal(board.canEditTask({ role: "MANAGER", userId: "x", task: own }), true);
+	assert.equal(board.canEditTask({ role: "OPERATOR", userId: "u1", task: own }), true);
+	assert.equal(board.canEditTask({ role: "OPERATOR", userId: "u1", task: { ...own, status: "DONE" } }), false);
+	assert.equal(board.canEditTask({ role: "OPERATOR", userId: "u2", task: own }), false);
+
+	assert.equal(board.canTakeTask({ role: "OPERATOR", memberId: "m1", task: task("a") }), true);
+	assert.equal(board.canTakeTask({ role: "OPERATOR", memberId: "m1", task: task("a", { assigneeMemberId: "m2" }) }), false);
+	assert.equal(board.canTakeTask({ role: "OPERATOR", memberId: undefined, task: task("a") }), false);
+	assert.equal(board.canTakeTask({ role: "MANAGER", memberId: "m1", task: task("a") }), false);
+
+	assert.equal(board.canManageTasks("OWNER"), true);
+	assert.equal(board.canManageTasks("MANAGER"), true);
+	assert.equal(board.canManageTasks("OPERATOR"), false);
+});
+
+test("la fecha límite viaja como fin de día en la zona del negocio y vuelve igual", () => {
+	const timeZone = "America/Bogota";
+	const iso = board.endOfDayInZone({ date: "2026-05-01", timeZone });
+	assert.equal(new Date(iso).toISOString(), "2026-05-02T04:59:00.000Z");
+	assert.equal(board.dueDateInZone({ value: iso, timeZone }), "2026-05-01");
+	assert.equal(board.dueDateInZone({ value: null, timeZone }), "");
+});
+
+test("el detalle ofrece tomar, reasignar, editar y eliminar", () => {
+	const detail = read("components/dashboard/tasks/task-detail.tsx");
+	for (const part of [
+		"useAssignTask",
+		"useDeleteTask",
+		"EditTaskDialog",
+		"Tomarla",
+		"canEditTask",
+		"canManageTasks",
+		"canTakeTask",
+	]) {
+		assert.match(detail, new RegExp(part));
+	}
+	assert.match(read("components/dashboard/tasks/edit-task-dialog.tsx"), /useUpdateTask/);
+	assert.match(read("components/dashboard/tasks/edit-task-dialog.tsx"), /taskFormSchema/);
+	assert.match(detail, /disabled=\{changeStatus\.isPending\}/);
+});
+
+test("las tarjetas sin permiso de mover no se atenúan", () => {
+	assert.match(read("components/dashboard/tasks/task-board.tsx"), /data-\[disabled=true\]:opacity-100/);
+});

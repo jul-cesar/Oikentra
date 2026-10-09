@@ -2,7 +2,7 @@
 
 > **Para agentes de implementación:** SUB-SKILL REQUERIDA: usar `superpowers:subagent-driven-development` (recomendado) o `superpowers:executing-plans` para ejecutar este plan tarea por tarea. Las casillas `- [ ]` registran el avance.
 
-**Estado:** Completado
+**Estado:** En curso
 
 **Objetivo:** Crear un módulo web de tareas compartidas con tablero Kanban, responsable único opcional, comentarios, adjuntos privados y proyección de vencimientos en Agenda.
 
@@ -458,7 +458,7 @@ Resultado esperado: todos los comandos terminan con código `0`.
 
 Comprobación manual: crear tarea con vencimiento, verla en Agenda, completarla, cambiar la fecha y eliminarla; Agenda debe reflejar cada cambio sin registros duplicados.
 
-- [x] **Paso 6: Actualizar estado documental**
+- [ ] **Paso 6: Actualizar estado documental**
 
 Cambiar este plan y `docs/plans/README.md` a **Completado** después de verificar todos los criterios.
 

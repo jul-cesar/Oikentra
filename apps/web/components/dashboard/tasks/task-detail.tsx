@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { TaskAttachments } from "@/components/dashboard/tasks/task-attachments";
+import { EditTaskDialog } from "@/components/dashboard/tasks/edit-task-dialog";
 import { TaskComments } from "@/components/dashboard/tasks/task-comments";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,9 +18,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { useMembers, usePublicUsers } from "@/lib/queries/members";
-import { useChangeTaskStatus, useTask } from "@/lib/queries/tasks";
+import {
+	useAssignTask,
+	useChangeTaskStatus,
+	useDeleteTask,
+	useTask,
+} from "@/lib/queries/tasks";
 import {
 	canChangeTaskStatus,
+	canEditTask,
+	canManageTasks,
+	canTakeTask,
 	taskErrorMessage,
 	taskPriorityLabels,
 	taskStatusLabels,
@@ -47,7 +57,11 @@ export function TaskDetail({
 	timeZone: string;
 }) {
 	const task = useTask({ businessId, taskId });
+	const router = useRouter();
 	const changeStatus = useChangeTaskStatus(businessId);
+	const assign = useAssignTask(businessId);
+	const remove = useDeleteTask(businessId);
+	const [editing, setEditing] = useState(false);
 	const members = useMembers(businessId);
 	const users = usePublicUsers(
 		(members.data ?? []).map((member) => member.userId),
@@ -108,6 +122,9 @@ export function TaskDetail({
 
 	const data = task.data;
 	const canChange = canChangeTaskStatus({ role, memberId, task: data });
+	const canEdit = canEditTask({ role, userId, task: data });
+	const canManage = canManageTasks(role);
+	const canTake = canTakeTask({ role, memberId, task: data });
 	const overdue =
 		data.status !== "DONE" &&
 		data.dueAt !== null &&
@@ -129,6 +146,35 @@ export function TaskDetail({
 		);
 	}
 
+	function fail(title: string) {
+		return (error: Error) => {
+			toast.add({
+				type: "error",
+				title,
+				description: taskErrorMessage(error),
+				priority: "high",
+			});
+			void task.refetch();
+		};
+	}
+
+	function assignTo(assigneeMemberId: string | null) {
+		assign.mutate(
+			{ taskId: data.id, version: data.version, assigneeMemberId },
+			{ onError: fail("No pudimos asignar la tarea") },
+		);
+	}
+
+	function deleteTask() {
+		if (!window.confirm("¿Eliminar esta tarea con sus comentarios y adjuntos?")) {
+			return;
+		}
+		remove.mutate(data.id, {
+			onSuccess: () => router.push(backHref),
+			onError: fail("No pudimos eliminar la tarea"),
+		});
+	}
+
 	return (
 		<div className="mx-auto max-w-3xl space-y-8">
 			<div>
@@ -146,6 +192,32 @@ export function TaskDetail({
 						{data.description}
 					</p>
 				) : null}
+				{canEdit || canManage || canTake ? (
+					<div className="mt-4 flex flex-wrap gap-2">
+						{canTake ? (
+							<Button
+								disabled={assign.isPending}
+								onClick={() => assignTo(memberId!)}
+							>
+								Tomarla
+							</Button>
+						) : null}
+						{canEdit ? (
+							<Button variant="outline" onClick={() => setEditing(true)}>
+								Editar
+							</Button>
+						) : null}
+						{canManage ? (
+							<Button
+								variant="destructive"
+								disabled={remove.isPending}
+								onClick={deleteTask}
+							>
+								Eliminar
+							</Button>
+						) : null}
+					</div>
+				) : null}
 			</div>
 			<dl className="grid gap-4 rounded-xl border p-4 text-sm sm:grid-cols-2">
 				<div>
@@ -158,7 +230,10 @@ export function TaskDetail({
 									if (value !== data.status) move(value as TaskStatus);
 								}}
 							>
-								<SelectTrigger aria-label="Cambiar estado de la tarea">
+								<SelectTrigger
+									aria-label="Cambiar estado de la tarea"
+									disabled={changeStatus.isPending}
+								>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -181,9 +256,34 @@ export function TaskDetail({
 				<div>
 					<dt className="text-muted-foreground">Responsable</dt>
 					<dd className="mt-1">
-						{data.assigneeMemberId
-							? (names.get(data.assigneeMemberId) ?? "Integrante")
-							: "Sin asignar"}
+						{canManage ? (
+							<Select
+								value={data.assigneeMemberId ?? "NONE"}
+								onValueChange={(value) => {
+									const next = value === "NONE" ? null : value;
+									if (next !== data.assigneeMemberId) assignTo(next);
+								}}
+							>
+								<SelectTrigger
+									aria-label="Cambiar responsable de la tarea"
+									disabled={assign.isPending}
+								>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="NONE">Sin asignar</SelectItem>
+									{(members.data ?? []).map((member) => (
+										<SelectItem key={member.id} value={member.id}>
+											{names.get(member.id) ?? "Integrante"}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						) : data.assigneeMemberId ? (
+							(names.get(data.assigneeMemberId) ?? "Integrante")
+						) : (
+							"Sin asignar"
+						)}
 					</dd>
 				</div>
 				<div>
@@ -201,6 +301,16 @@ export function TaskDetail({
 					</p>
 				) : null}
 			</dl>
+			{canEdit ? (
+				<EditTaskDialog
+					businessId={businessId}
+					task={data}
+					timeZone={timeZone}
+					open={editing}
+					onOpenChange={setEditing}
+					onConflict={() => void task.refetch()}
+				/>
+			) : null}
 			<TaskAttachments businessId={businessId} taskId={taskId} role={role} />
 			<TaskComments
 				businessId={businessId}

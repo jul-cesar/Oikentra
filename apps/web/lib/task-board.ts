@@ -1,3 +1,5 @@
+import { TZDate } from "@date-fns/tz";
+
 import type {
 	Task,
 	TaskFilters,
@@ -131,4 +133,69 @@ export function sortTaskComments<T extends { createdAt: string }>(comments: T[])
 
 export function canDeleteTaskAttachment(role: Role) {
 	return role !== "OPERATOR";
+}
+
+export function canManageTasks(role: Role) {
+	return role !== "OPERATOR";
+}
+
+// Mirrors the backend rule: managers edit anything, operators their own unfinished tasks.
+export function canEditTask({
+	role,
+	userId,
+	task,
+}: {
+	role: Role;
+	userId: string | undefined;
+	task: Pick<Task, "createdByUserId" | "status">;
+}) {
+	return (
+		canManageTasks(role) ||
+		(userId !== undefined &&
+			task.createdByUserId === userId &&
+			task.status !== "DONE")
+	);
+}
+
+export function canTakeTask({
+	role,
+	memberId,
+	task,
+}: {
+	role: Role;
+	memberId: string | undefined;
+	task: Pick<Task, "assigneeMemberId">;
+}) {
+	return (
+		role === "OPERATOR" && memberId !== undefined && task.assigneeMemberId === null
+	);
+}
+
+// A due date without a time means the end of that day in the business zone.
+export function endOfDayInZone({
+	date,
+	timeZone,
+}: {
+	date: string;
+	timeZone: string;
+}) {
+	const [year, month, day] = date.split("-").map(Number);
+	return new TZDate(year!, month! - 1, day!, 23, 59, 0, timeZone).toISOString();
+}
+
+// YYYY-MM-DD of the due date in the business zone, as the date picker expects.
+export function dueDateInZone({
+	value,
+	timeZone,
+}: {
+	value: string | null;
+	timeZone: string;
+}) {
+	if (!value) return "";
+	const date = new TZDate(value, timeZone);
+	return [
+		String(date.getFullYear()).padStart(4, "0"),
+		String(date.getMonth() + 1).padStart(2, "0"),
+		String(date.getDate()).padStart(2, "0"),
+	].join("-");
 }

@@ -115,6 +115,8 @@ export function TaskBoard({
 									key={task.id}
 									value={task.id}
 									disabled={!canChange(task)}
+									// Cards the member cannot drag stay readable; the missing handle already blocks dragging.
+									className="data-[disabled=true]:opacity-100"
 									role="group"
 									aria-label={task.title}
 									tabIndex={-1}

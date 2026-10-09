@@ -32,69 +32,91 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
-import { endOfDayInZone, taskPriorityLabels } from "@/lib/task-board";
-import { useCreateTask } from "@/lib/queries/tasks";
-import { taskPriorities } from "@/lib/tasks-api";
+import { useUpdateTask } from "@/lib/queries/tasks";
+import {
+	dueDateInZone,
+	endOfDayInZone,
+	taskErrorMessage,
+	taskPriorityLabels,
+} from "@/lib/task-board";
+import { taskPriorities, type Task } from "@/lib/tasks-api";
 import { taskFormSchema } from "@/lib/validation/tasks-schemas";
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
 
-const emptyForm: TaskFormValues = {
-	title: "",
-	description: "",
-	priority: "MEDIUM",
-	assigneeMemberId: "",
-	dueAt: "",
-};
-
-export function CreateTaskDialog({
+export function EditTaskDialog({
 	businessId,
-	members,
+	task,
 	timeZone,
 	open,
 	onOpenChange,
+	onConflict,
 }: {
 	businessId: string;
-	members: { id: string; name: string }[];
+	task: Task;
 	timeZone: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	onConflict: () => void;
 }) {
-	const create = useCreateTask(businessId);
+	const update = useUpdateTask(businessId);
+	const initialDate = dueDateInZone({ value: task.dueAt, timeZone });
 	const form = useForm<TaskFormValues>({
 		resolver: zodResolver(taskFormSchema),
-		defaultValues: emptyForm,
+		defaultValues: {
+			title: task.title,
+			description: task.description ?? "",
+			priority: task.priority,
+			assigneeMemberId: "",
+			dueAt: initialDate,
+		},
 	});
 
 	useEffect(() => {
-		if (open) form.reset(emptyForm);
-	}, [form, open]);
+		if (open) {
+			form.reset({
+				title: task.title,
+				description: task.description ?? "",
+				priority: task.priority,
+				assigneeMemberId: "",
+				dueAt: initialDate,
+			});
+		}
+	}, [form, open, task, initialDate]);
 
 	async function onSubmit(values: TaskFormValues) {
 		try {
-			await create.mutateAsync({
-				title: values.title,
-				description: values.description || null,
-				priority: values.priority,
-				assigneeMemberId: values.assigneeMemberId || null,
-				dueAt: values.dueAt ? endOfDayInZone({ date: values.dueAt, timeZone }) : null,
+			await update.mutateAsync({
+				taskId: task.id,
+				input: {
+					version: task.version,
+					title: values.title,
+					description: values.description || null,
+					priority: values.priority,
+					// An untouched date keeps its original time instead of snapping to end of day.
+					...(values.dueAt === initialDate
+						? {}
+						: {
+								dueAt: values.dueAt
+									? endOfDayInZone({ date: values.dueAt, timeZone })
+									: null,
+							}),
+				},
 			});
 			onOpenChange(false);
-			toast.add({
-				type: "success",
-				title: "Tarea creada",
-				description: "La tarea quedó en la columna Pendiente.",
-			});
+			toast.add({ type: "success", title: "Tarea actualizada" });
 		} catch (cause) {
-			const message =
-				cause instanceof Error ? cause.message : "No pudimos crear la tarea.";
+			const error =
+				cause instanceof Error ? cause : new Error("No pudimos guardar la tarea.");
+			const message = taskErrorMessage(error);
 			form.setError("root.server", { message });
 			toast.add({
 				type: "error",
-				title: "No pudimos crear la tarea",
+				title: "No pudimos guardar la tarea",
 				description: message,
 				priority: "high",
 			});
+			onConflict();
 		}
 	}
 
@@ -102,10 +124,9 @@ export function CreateTaskDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Nueva tarea</DialogTitle>
+					<DialogTitle>Editar tarea</DialogTitle>
 					<DialogDescription>
-						Describe el trabajo y, si quieres, asígnalo y define una fecha
-						límite.
+						Cambia el título, la descripción, la prioridad o la fecha límite.
 					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
@@ -117,11 +138,7 @@ export function CreateTaskDialog({
 								<FormItem>
 									<FormLabel>Título</FormLabel>
 									<FormControl>
-										<Input
-											{...field}
-											autoFocus
-											placeholder="Ej. Pedir inventario"
-										/>
+										<Input {...field} autoFocus />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -151,10 +168,7 @@ export function CreateTaskDialog({
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Prioridad</FormLabel>
-										<Select
-											value={field.value}
-											onValueChange={field.onChange}
-										>
+										<Select value={field.value} onValueChange={field.onChange}>
 											<SelectTrigger aria-label="Prioridad">
 												<SelectValue placeholder="Prioridad" />
 											</SelectTrigger>
@@ -172,48 +186,20 @@ export function CreateTaskDialog({
 							/>
 							<FormField
 								control={form.control}
-								name="assigneeMemberId"
+								name="dueAt"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Responsable (opcional)</FormLabel>
-										<Select
-											value={field.value || "NONE"}
-											onValueChange={(value) =>
-												field.onChange(value === "NONE" ? "" : value)
-											}
-										>
-											<SelectTrigger aria-label="Responsable">
-												<SelectValue placeholder="Sin asignar" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="NONE">Sin asignar</SelectItem>
-												{members.map((member) => (
-													<SelectItem key={member.id} value={member.id}>
-														{member.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+										<FormLabel>Fecha límite (opcional)</FormLabel>
+										<DatePicker
+											value={field.value}
+											onChange={field.onChange}
+											placeholder="Sin fecha límite"
+										/>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
 						</div>
-						<FormField
-							control={form.control}
-							name="dueAt"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Fecha límite (opcional)</FormLabel>
-									<DatePicker
-										value={field.value}
-										onChange={field.onChange}
-										placeholder="Sin fecha límite"
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 						{form.formState.errors.root?.server?.message ? (
 							<p className="text-sm text-destructive" role="alert">
 								{form.formState.errors.root.server.message}
@@ -227,8 +213,8 @@ export function CreateTaskDialog({
 							>
 								Cancelar
 							</Button>
-							<Button type="submit" disabled={create.isPending}>
-								{create.isPending ? "Guardando…" : "Crear tarea"}
+							<Button type="submit" disabled={update.isPending}>
+								{update.isPending ? "Guardando…" : "Guardar cambios"}
 							</Button>
 						</DialogFooter>
 					</form>
