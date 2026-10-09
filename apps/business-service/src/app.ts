@@ -20,6 +20,7 @@ import { cashMovementCategoriesRoutes } from "./modules/cash-movements/cash-move
 import { creditsRoutes } from "./modules/credits/credits.routes";
 import { loansRoutes } from "./modules/loans/loans.routes";
 import { agendaRoutes } from "./modules/agenda/agenda.routes";
+import { tasksRoutes } from "./modules/tasks/tasks.routes";
 
 export const app = new Hono<AppBindings>();
 
@@ -67,6 +68,7 @@ app.route(
 app.route("/api/business/businesses/:businessId/credits", creditsRoutes);
 app.route("/api/business/businesses/:businessId/loans", loansRoutes);
 app.route("/api/business/businesses/:businessId/agenda", agendaRoutes);
+app.route("/api/business/businesses/:businessId/tasks", tasksRoutes);
 
 app.onError((error, c) => {
   const requestId = c.get("requestId") ?? crypto.randomUUID();

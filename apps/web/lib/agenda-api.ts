@@ -1,6 +1,6 @@
 export type AgendaItem = {
 	id: string;
-	source: "EVENT" | "CREDIT" | "LOAN_INSTALLMENT";
+	source: "EVENT" | "CREDIT" | "LOAN_INSTALLMENT" | "TASK";
 	title: string;
 	description: string | null;
 	start: string;
@@ -11,6 +11,7 @@ export type AgendaItem = {
 	reminderAt: string | null;
 	customerId?: string;
 	loanId?: string;
+	taskId?: string;
 	amount?: number;
 };
 

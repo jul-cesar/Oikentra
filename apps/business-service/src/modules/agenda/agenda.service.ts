@@ -6,11 +6,12 @@ import {
 	type AgendaRepository,
 	type CreditDue,
 	type LoanInstallmentDue,
+	type TaskDue,
 } from "./agenda.repository";
 
 export type AgendaItem = {
 	id: string;
-	source: "EVENT" | "CREDIT" | "LOAN_INSTALLMENT";
+	source: "EVENT" | "CREDIT" | "LOAN_INSTALLMENT" | "TASK";
 	title: string;
 	description: string | null;
 	start: string;
@@ -21,6 +22,7 @@ export type AgendaItem = {
 	reminderAt: string | null;
 	customerId?: string;
 	loanId?: string;
+	taskId?: string;
 	amount?: number;
 };
 
@@ -108,6 +110,41 @@ function toLoanInstallmentItem({
 	};
 }
 
+function toTaskItem({
+	record,
+	now,
+}: {
+	record: TaskDue;
+	now: Date;
+}): AgendaItem | null {
+	const { task, timeZone } = record;
+	if (!task.dueAt) return null;
+	const day = new Intl.DateTimeFormat("en-CA", {
+		timeZone,
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	}).format(task.dueAt);
+	return {
+		id: task.id,
+		source: "TASK",
+		title: task.title,
+		description: task.description,
+		start: day,
+		end: nextDate(day),
+		allDay: true,
+		status:
+			task.status === "DONE"
+				? "COMPLETED"
+				: task.dueAt < now
+					? "OVERDUE"
+					: "SCHEDULED",
+		readOnly: true,
+		reminderAt: null,
+		taskId: task.id,
+	};
+}
+
 type AgendaAuthorize = (input: {
 	userId: string;
 	businessId: string;
@@ -143,7 +180,7 @@ export function createAgendaService({
 				start: range.start.slice(0, 10),
 				end: range.end.slice(0, 10),
 			};
-			const [events, credits, installments] = await Promise.all([
+			const [events, credits, installments, taskDues] = await Promise.all([
 				repository.findEventsByBusinessAndRange({
 					businessId,
 					range: {
@@ -159,6 +196,13 @@ export function createAgendaService({
 					businessId,
 					range: dateRange,
 				}),
+				repository.findTasksDueByBusinessAndRange({
+					businessId,
+					range: {
+						start: new Date(range.start),
+						end: new Date(range.end),
+					},
+				}),
 			]);
 			const payments = await repository.findActiveCreditPayments(
 				credits.map(({ credit }) => credit.id),
@@ -170,7 +214,8 @@ export function createAgendaService({
 					(paidByCredit.get(payment.creditId) ?? 0) + payment.amount,
 				);
 			}
-			const today = now().toISOString().slice(0, 10);
+			const current = now();
+			const today = current.toISOString().slice(0, 10);
 			const creditItems = credits
 				.map((record) =>
 					toCreditItem({
@@ -186,6 +231,9 @@ export function createAgendaService({
 				...installments.map((record) =>
 					toLoanInstallmentItem({ record, today }),
 				),
+				...taskDues
+					.map((record) => toTaskItem({ record, now: current }))
+					.filter((item): item is AgendaItem => item !== null),
 			];
 			return items.sort((...pair) =>
 				pair[0].start.localeCompare(pair[1].start),

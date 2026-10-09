@@ -1,8 +1,9 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { getDb } from "../../db/client";
 import {
   businessInvitations,
   businessMembers,
+  tasks,
   type BusinessInvitation,
   type BusinessMember,
   type NewBusinessInvitation,
@@ -98,12 +99,29 @@ export const memberRepository: MemberRepository = {
     return member ?? null;
   },
   async deactivate(id) {
-    const [member] = await getDb()
-      .update(businessMembers)
-      .set({ status: "INACTIVE", updatedAt: new Date() })
-      .where(eq(businessMembers.id, id))
-      .returning();
-    return member ?? null;
+    return getDb().transaction(async (tx) => {
+      const updatedAt = new Date();
+      const [member] = await tx
+        .update(businessMembers)
+        .set({ status: "INACTIVE", updatedAt })
+        .where(eq(businessMembers.id, id))
+        .returning();
+      if (!member) return null;
+      await tx
+        .update(tasks)
+        .set({
+          assigneeMemberId: null,
+          updatedAt,
+          version: sql`${tasks.version} + 1`,
+        })
+        .where(
+          and(
+            eq(tasks.businessId, member.businessId),
+            eq(tasks.assigneeMemberId, member.id),
+          ),
+        );
+      return member;
+    });
   },
   async createInvitation(input) {
     const [invitation] = await getDb()

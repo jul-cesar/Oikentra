@@ -21,7 +21,13 @@ export const permissions = {
 	cashRead: "cash.read",
 	cashCreate: "cash.create",
 	cashCancel: "cash.cancel",
+	membersRead: "members.read",
 	membersManage: "members.manage",
+	tasksRead: "tasks.read",
+	tasksCreate: "tasks.create",
+	tasksComment: "tasks.comment",
+	tasksAttach: "tasks.attach",
+	tasksManage: "tasks.manage",
 	businessUpdate: "business.update",
 	reportsRead: "reports.read",
 } as const;
@@ -43,6 +49,11 @@ const rolePermissions: Record<MemberRole, readonly string[]> = {
 		permissions.paymentsCreate,
 		permissions.cashRead,
 		permissions.cashCreate,
+		permissions.membersRead,
+		permissions.tasksRead,
+		permissions.tasksCreate,
+		permissions.tasksComment,
+		permissions.tasksAttach,
 	],
 };
 
@@ -93,7 +104,7 @@ export function createMembersService(
 			await this.requirePermission(
 				userId,
 				businessId,
-				permissions.membersManage,
+				permissions.membersRead,
 			);
 			return (await repository.listByBusiness(businessId)).map(toResponse);
 		},

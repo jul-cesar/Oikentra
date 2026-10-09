@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-- **Estado:** Diseño aprobado, pendiente de revisión escrita
+- **Estado:** Diseño aprobado
 - **Plataforma inicial:** Web
 - **Aplicación móvil:** En standby y fuera de este alcance
 - **Servicio propietario:** `business-service`
@@ -25,6 +25,8 @@ El módulo debe permitir colaboración real mediante comentarios y archivos adju
 - Propietarios y administradores podrán asignar tareas a cualquier integrante y eliminar tareas.
 - Los operadores podrán crear tareas sin asignar, asignárselas a sí mismos y cambiar el estado de las tareas que tengan asignadas.
 - La primera versión será exclusivamente web.
+- Las tarjetas podrán moverse entre columnas mediante drag-and-drop para cambiar de estado, con actualización optimista y persistencia al finalizar el movimiento.
+- El menú accesible para cambiar estado se conservará como alternativa al drag-and-drop.
 
 ## 3. Alcance funcional
 
@@ -46,7 +48,7 @@ Cada tarjeta mostrará como mínimo:
 - cantidad de comentarios;
 - cantidad de adjuntos.
 
-La primera versión permitirá cambiar el estado desde una acción accesible en la tarjeta. Arrastrar y soltar y ordenar manualmente las tarjetas quedan fuera del alcance inicial; el tablero seguirá siendo Kanban por su organización visual y flujo entre estados.
+La primera versión permitirá cambiar el estado arrastrando una tarjeta entre columnas y desde una acción accesible en la tarjeta. El tablero actualizará su estado de forma optimista y persistirá el cambio una sola vez al finalizar el movimiento. No se permitirá reordenar columnas ni conservar un orden manual dentro de una columna.
 
 ### 3.2 Datos de una tarea
 
@@ -119,7 +121,7 @@ El tablero ofrecerá:
 - filtro por prioridad;
 - búsqueda por título y descripción.
 
-Las tareas se ordenarán dentro de cada columna por fecha límite ascendente y luego por fecha de creación descendente. No habrá orden manual en la primera versión.
+Las tareas se ordenarán dentro de cada columna por fecha límite ascendente y luego por fecha de creación descendente. No habrá orden manual en la primera versión: un movimiento dentro de la misma columna se descartará y restaurará el orden canónico.
 
 ## 4. Permisos
 
@@ -261,7 +263,8 @@ La pantalla tendrá:
 - tres columnas Kanban;
 - estados de carga, error y vacío;
 - tarjetas accesibles por teclado;
-- acción explícita para mover una tarea entre estados.
+- drag-and-drop accesible para mover una tarea entre estados;
+- acción explícita alternativa para cambiar el estado sin arrastrar.
 
 ### 8.3 Detalle
 
@@ -282,6 +285,7 @@ El detalle mostrará:
 
 - Una asignación a un integrante inactivo o de otro negocio debe rechazarse.
 - Una actualización con versión obsoleta debe devolver conflicto y pedir recargar.
+- El drag-and-drop actualizará el tablero de forma optimista; ante rechazo, conflicto o fallo de red, el cliente invalidará y recargará las consultas para recuperar el estado canónico sin sobrescribir movimientos posteriores.
 - Una tarea eliminada no debe seguir apareciendo en Agenda.
 - Un adjunto no confirmado no debe aparecer en la tarea.
 - Un archivo con tipo, tamaño o clave inválidos debe rechazarse.
@@ -307,8 +311,7 @@ La interfaz web se verificará además con typecheck, lint y pruebas manuales de
 ## 11. Fuera de alcance inicial
 
 - aplicación móvil;
-- arrastrar y soltar;
-- orden manual de tarjetas;
+- orden manual de tarjetas o columnas;
 - múltiples responsables;
 - subtareas;
 - comentarios anidados;

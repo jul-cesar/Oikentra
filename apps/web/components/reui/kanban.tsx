@@ -68,6 +68,7 @@ interface KanbanContextProps<T> {
   modifiers?: Modifiers
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const KanbanContext = createContext<KanbanContextProps<any>>({
   columns: {},
   setColumns: () => {},

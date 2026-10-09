@@ -41,6 +41,7 @@ export function getConfig() {
 	const r2AccessKeyId = readOptionalEnv("R2_ACCESS_KEY_ID");
 	const r2SecretAccessKey = readOptionalEnv("R2_SECRET_ACCESS_KEY");
 	const r2PublicBaseUrl = readOptionalEnv("R2_PUBLIC_BASE_URL");
+	const r2PrivateBucket = readOptionalEnv("R2_PRIVATE_BUCKET");
 
 	return {
 		databaseUrl: readRequiredEnv("DATABASE_URL"),
@@ -69,6 +70,15 @@ export function getConfig() {
 						accessKeyId: r2AccessKeyId,
 						secretAccessKey: r2SecretAccessKey,
 						publicBaseUrl: r2PublicBaseUrl.replace(/\/$/, ""),
+					}
+				: null,
+		r2PrivateBucket:
+			r2AccountId && r2PrivateBucket && r2AccessKeyId && r2SecretAccessKey
+				? {
+						accountId: r2AccountId,
+						bucket: r2PrivateBucket,
+						accessKeyId: r2AccessKeyId,
+						secretAccessKey: r2SecretAccessKey,
 					}
 				: null,
 		port: getPort(),

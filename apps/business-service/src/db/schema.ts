@@ -174,6 +174,88 @@ export const businessMembers = pgTable(
 export type BusinessMember = typeof businessMembers.$inferSelect;
 export type NewBusinessMember = typeof businessMembers.$inferInsert;
 
+// ─── Tasks ───────────────────────────────────────────────────
+
+export const taskStatuses = ["TODO", "IN_PROGRESS", "DONE"] as const;
+export type TaskStatus = (typeof taskStatuses)[number];
+
+export const taskPriorities = ["LOW", "MEDIUM", "HIGH"] as const;
+export type TaskPriority = (typeof taskPriorities)[number];
+
+export const tasks = pgTable(
+	"tasks",
+	{
+		id: text("id").primaryKey(),
+		businessId: text("business_id").notNull(),
+		createdByUserId: text("created_by_user_id").notNull(),
+		assigneeMemberId: text("assignee_member_id").references(
+			() => businessMembers.id,
+			{ onDelete: "set null" },
+		),
+		title: text("title").notNull(),
+		description: text("description"),
+		status: text("status", { enum: taskStatuses }).notNull().default("TODO"),
+		priority: text("priority", { enum: taskPriorities })
+			.notNull()
+			.default("MEDIUM"),
+		dueAt: timestamp("due_at", { withTimezone: true }),
+		completedAt: timestamp("completed_at", { withTimezone: true }),
+		version: integer("version").notNull().default(1),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [
+		index("tasks_business_id_status_idx").on(table.businessId, table.status),
+		index("tasks_business_id_assignee_member_id_idx").on(
+			table.businessId,
+			table.assigneeMemberId,
+		),
+		index("tasks_business_id_due_at_idx").on(table.businessId, table.dueAt),
+	],
+);
+
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
+
+export const taskComments = pgTable(
+	"task_comments",
+	{
+		id: text("id").primaryKey(),
+		businessId: text("business_id").notNull(),
+		taskId: text("task_id")
+			.notNull()
+			.references(() => tasks.id, { onDelete: "cascade" }),
+		authorUserId: text("author_user_id").notNull(),
+		body: text("body").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [index("task_comments_task_id_idx").on(table.taskId)],
+);
+
+export type TaskComment = typeof taskComments.$inferSelect;
+export type NewTaskComment = typeof taskComments.$inferInsert;
+
+export const taskAttachments = pgTable(
+	"task_attachments",
+	{
+		id: text("id").primaryKey(),
+		businessId: text("business_id").notNull(),
+		taskId: text("task_id")
+			.notNull()
+			.references(() => tasks.id, { onDelete: "cascade" }),
+		uploadedByUserId: text("uploaded_by_user_id").notNull(),
+		objectKey: text("object_key").notNull(),
+		fileName: text("file_name").notNull(),
+		contentType: text("content_type").notNull(),
+		sizeBytes: integer("size_bytes").notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+	},
+	(table) => [index("task_attachments_task_id_idx").on(table.taskId)],
+);
+
+export type TaskAttachment = typeof taskAttachments.$inferSelect;
+export type NewTaskAttachment = typeof taskAttachments.$inferInsert;
+
 export const invitationIdentifierTypes = ["EMAIL", "PHONE"] as const;
 export type InvitationIdentifierType =
 	(typeof invitationIdentifierTypes)[number];

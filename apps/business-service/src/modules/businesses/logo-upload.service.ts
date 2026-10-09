@@ -1,8 +1,9 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { getConfig } from "../../config/config";
 import { AppError } from "../../http/errors";
+import { getR2Client } from "../../storage/r2-client";
 
 const ALLOWED_LOGO_TYPES = new Set([
 	"image/png",
@@ -27,9 +28,7 @@ function extensionForContentType(contentType: string) {
 	}
 }
 
-let client: S3Client | null = null;
-
-function getR2Client() {
+function getLogoR2Client() {
 	const config = getConfig();
 	if (!config.r2) {
 		throw new AppError(
@@ -39,16 +38,7 @@ function getR2Client() {
 		);
 	}
 
-	client ??= new S3Client({
-		region: "auto",
-		endpoint: `https://${config.r2.accountId}.r2.cloudflarestorage.com`,
-		credentials: {
-			accessKeyId: config.r2.accessKeyId,
-			secretAccessKey: config.r2.secretAccessKey,
-		},
-	});
-
-	return { client, r2: config.r2 };
+	return { client: getR2Client(config.r2), r2: config.r2 };
 }
 
 export async function createBusinessLogoUpload(
@@ -63,7 +53,7 @@ export async function createBusinessLogoUpload(
 		);
 	}
 
-	const { client, r2 } = getR2Client();
+	const { client, r2 } = getLogoR2Client();
 	const objectKey = `business-logos/${ownerUserId}/${crypto.randomUUID()}.${extensionForContentType(contentType)}`;
 	const command = new PutObjectCommand({
 		Bucket: r2.bucket,

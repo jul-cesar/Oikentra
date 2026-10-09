@@ -6,6 +6,8 @@ const agendaModule = await import(agendaServicePath).catch(() => null);
 function createRepository() {
 	const events = new Map<string, any>();
 	const reminders = new Map<string, any>();
+	const tasks: any[] = [];
+	const taskQueries: any[] = [];
 	const repository = {
 		async createEvent(input: any, reminder?: any) {
 			events.set(input.id, input);
@@ -48,6 +50,10 @@ function createRepository() {
 				},
 			];
 		},
+		async findTasksDueByBusinessAndRange(input: any) {
+			taskQueries.push(input);
+			return tasks;
+		},
 		async updateEvent({ eventId, businessId, patch }: any) {
 			const current = events.get(eventId);
 			if (!current || current.businessId !== businessId) return null;
@@ -63,7 +69,7 @@ function createRepository() {
 			return updated;
 		},
 	};
-	return { repository, events, reminders };
+	return { repository, events, reminders, tasks, taskQueries };
 }
 
 describe("agenda service", () => {
@@ -181,5 +187,99 @@ describe("agenda service", () => {
 
 		expect(updated.title).toBe("Llamar proveedor principal");
 		expect(cancelled.status).toBe("CANCELLED");
+	});
+
+	test("projects dated tasks once as read-only all-day items in the business day", async () => {
+		expect(agendaModule).not.toBeNull();
+		if (!agendaModule) return;
+		const { repository, tasks, taskQueries } = createRepository();
+		const task = (id: string, status: string, dueAt: string) => ({
+			task: {
+				id,
+				businessId: "business-a",
+				title: `Tarea ${id}`,
+				description: `Detalle ${id}`,
+				status,
+				dueAt: new Date(dueAt),
+			},
+			timeZone: "America/Bogota",
+		});
+		tasks.push(
+			task("todo", "TODO", "2026-04-20T03:00:00.000Z"),
+			task("progress", "IN_PROGRESS", "2026-04-25T12:00:00.000Z"),
+			task("late", "TODO", "2026-04-12T11:00:00.000Z"),
+			task("done", "DONE", "2026-04-05T12:00:00.000Z"),
+		);
+		const service = agendaModule.createAgendaService({
+			repository: repository as never,
+			now: () => new Date("2026-04-12T12:00:00.000Z"),
+			authorize: async () => undefined,
+		});
+
+		const items = await service.list({
+			userId: "user-a",
+			businessId: "business-a",
+			range: {
+				start: "2026-04-01T00:00:00.000Z",
+				end: "2026-05-01T00:00:00.000Z",
+			},
+		});
+		const taskItems = items.filter(
+			(item: { source: string }) => item.source === "TASK",
+		);
+
+		expect(taskQueries).toEqual([
+			{
+				businessId: "business-a",
+				range: {
+					start: new Date("2026-04-01T00:00:00.000Z"),
+					end: new Date("2026-05-01T00:00:00.000Z"),
+				},
+			},
+		]);
+		expect(taskItems).toHaveLength(4);
+		expect(
+			taskItems.map((item: any) => [item.taskId, item.status, item.start]),
+		).toEqual([
+			["done", "COMPLETED", "2026-04-05"],
+			["late", "OVERDUE", "2026-04-12"],
+			["todo", "SCHEDULED", "2026-04-19"],
+			["progress", "SCHEDULED", "2026-04-25"],
+		]);
+		expect(taskItems[2]).toMatchObject({
+			id: "todo",
+			title: "Tarea todo",
+			description: "Detalle todo",
+			end: "2026-04-20",
+			allDay: true,
+			readOnly: true,
+			reminderAt: null,
+		});
+	});
+
+	test("does not project tasks without a due date", async () => {
+		expect(agendaModule).not.toBeNull();
+		if (!agendaModule) return;
+		const { repository, tasks } = createRepository();
+		tasks.push({
+			task: { id: "none", title: "Sin fecha", status: "TODO", dueAt: null },
+			timeZone: "America/Bogota",
+		});
+		const service = agendaModule.createAgendaService({
+			repository: repository as never,
+			now: () => new Date("2026-04-12T12:00:00.000Z"),
+			authorize: async () => undefined,
+		});
+
+		const items = await service.list({
+			userId: "user-a",
+			businessId: "business-a",
+			range: {
+				start: "2026-04-01T00:00:00.000Z",
+				end: "2026-05-01T00:00:00.000Z",
+			},
+		});
+
+		expect(items.some((item: any) => item.source === "TASK")).toBe(false);
 	});
 });

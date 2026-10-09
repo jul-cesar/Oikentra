@@ -9,6 +9,7 @@ import type {
 import { createBusinessesService } from "./businesses.service";
 import type { BusinessRepository } from "./businesses.repository";
 import type { MemberRepository } from "./members.repository";
+import { createMembersService } from "./members.service";
 import type { UpdateBusinessInput } from "./types/businesses.types";
 
 function createInMemoryBusinessRepository(
@@ -144,6 +145,9 @@ function createMemberRepository(
 				? member
 				: null;
 		},
+		async listByBusiness(candidateBusinessId) {
+			return member && candidateBusinessId === businessId ? [member] : [];
+		},
 		async listByUser(candidateUserId) {
 			return member && candidateUserId === userId ? [member] : [];
 		},
@@ -172,6 +176,14 @@ function makeBusiness(overrides: Partial<Business> = {}): Business {
 }
 
 describe("businesses service owner scoping", () => {
+	test("allows active operators to list active members without members.manage", async () => {
+		const service = createMembersService(
+			createMemberRepository("business-a", "operator-a", "OPERATOR"),
+		);
+
+		await expect(service.list("operator-a", "business-a")).resolves.toHaveLength(1);
+	});
+
 	test("create assigns the requesting user as owner", async () => {
 		const service = createBusinessesService(createInMemoryBusinessRepository());
 

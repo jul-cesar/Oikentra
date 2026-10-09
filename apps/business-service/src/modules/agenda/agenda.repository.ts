@@ -22,9 +22,11 @@ import {
   loanInstallments,
   loans,
   scheduledEventReminders,
+  tasks,
   type BusinessEvent,
   type Credit,
   type NewBusinessEvent,
+  type Task,
 } from "../../db/schema";
 import type { DueReminder, ReminderWorkerRepository } from "./reminder.worker";
 
@@ -47,6 +49,8 @@ export type LoanInstallmentDue = {
   customerName: string;
 };
 
+export type TaskDue = { task: Task; timeZone: string };
+
 export type AgendaRepository = ReminderWorkerRepository & {
   createEvent(
     input: NewBusinessEvent,
@@ -67,6 +71,10 @@ export type AgendaRepository = ReminderWorkerRepository & {
     businessId: string;
     range: { start: string; end: string };
   }): Promise<LoanInstallmentDue[]>;
+  findTasksDueByBusinessAndRange(input: {
+    businessId: string;
+    range: { start: Date; end: Date };
+  }): Promise<TaskDue[]>;
   updateEvent(input: {
     eventId: string;
     businessId: string;
@@ -161,6 +169,20 @@ export const agendaRepository: AgendaRepository = {
           inArray(loanInstallments.status, ["PENDING", "PARTIAL", "OVERDUE"]),
           gte(loanInstallments.dueDate, range.start),
           lt(loanInstallments.dueDate, range.end),
+        ),
+      );
+  },
+
+  async findTasksDueByBusinessAndRange({ businessId, range }) {
+    return getDb()
+      .select({ task: tasks, timeZone: businesses.timezone })
+      .from(tasks)
+      .innerJoin(businesses, eq(businesses.id, tasks.businessId))
+      .where(
+        and(
+          eq(tasks.businessId, businessId),
+          gte(tasks.dueAt, range.start),
+          lt(tasks.dueAt, range.end),
         ),
       );
   },
