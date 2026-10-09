@@ -21,7 +21,9 @@
 - Todos los integrantes activos pueden ver el tablero, crear, comentar y adjuntar.
 - Solo `OWNER` y `MANAGER` pueden asignar a otras personas o eliminar tareas.
 - Un `OPERATOR` solo puede autoasignarse una tarea sin responsable y cambiar el estado de sus tareas.
-- No agregar arrastrar y soltar, orden manual, subtareas, recurrencia, menciones ni notificaciones.
+- Usar el componente existente `apps/web/components/reui/kanban.tsx` para mover tarjetas entre columnas mediante drag-and-drop.
+- El drag-and-drop solo cambia el estado: no agregar reordenamiento manual de tarjetas o columnas, subtareas, recurrencia, menciones ni notificaciones.
+- Mantener una acción accesible alternativa para cambiar estado sin arrastrar.
 - Los adjuntos deben almacenarse en un bucket privado; nunca usar `R2_PUBLIC_BASE_URL` para servirlos.
 - No aceptar SVG, ejecutables, archivos mayores de 10 MB ni más de 10 adjuntos por tarea.
 - No agregar dependencias de interfaz nuevas.
@@ -30,6 +32,7 @@
 
 - Un `memberId` de otro negocio o inactivo debe rechazarse en creación, edición y asignación.
 - Dos actualizaciones con la misma versión deben producir un conflicto en la segunda, no sobrescribir silenciosamente.
+- El tablero debe actualizarse optimísticamente durante el movimiento y recargar el estado canónico ante rechazo, conflicto o error de red.
 - Los operadores no deben poder asignar a terceros, editar tareas ajenas ni cambiar estados de tareas no asignadas a ellos.
 - Un objeto de R2 no confirmado, con tamaño o tipo distinto al declarado, no debe convertirse en adjunto visible.
 - Agenda debe mostrar tareas con vencimiento una sola vez y reflejar `DONE`, cambios de fecha y eliminaciones sin crear `business_events`.
@@ -285,7 +288,7 @@ Incluir:
 
 - [ ] **Paso 3: Implementar cliente y hooks web**
 
-Usar claves de consulta bajo `tasks`. Toda mutación debe invalidar lista, detalle y Agenda cuando cambie estado o fecha límite. Comentarios y adjuntos invalidan únicamente el detalle relacionado.
+Usar claves de consulta bajo `tasks`. Toda mutación debe invalidar lista, detalle y Agenda cuando cambie estado o fecha límite. Comentarios y adjuntos invalidan únicamente el detalle relacionado. La mutación de estado debe admitir el tablero optimista y, ante error, invalidar y recargar en lugar de restaurar una instantánea que pueda sobrescribir un movimiento posterior.
 
 - [ ] **Paso 4: Ejecutar verificaciones**
 
@@ -316,7 +319,7 @@ git commit -m "feat(tasks): expose task API and web client"
 
 **Interfaces:**
 - Consume: hooks de la Tarea 4 y consulta existente de integrantes activos.
-- Produce: ruta `/dashboard/[businessId]/tareas`.
+- Produce: ruta `/dashboard/[businessId]/tareas` y cambios de estado mediante drag-and-drop optimista.
 
 - [ ] **Paso 1: Crear contenedor autenticado y navegación**
 
@@ -330,11 +333,11 @@ Campos: título, descripción, prioridad, responsable opcional y fecha límite o
 
 Implementar `Todas`, `Mis tareas`, `Sin asignar`, integrante, prioridad y búsqueda. Conservar filtros en query string para permitir enlaces compartibles.
 
-- [ ] **Paso 4: Crear las tres columnas**
+- [ ] **Paso 4: Crear las tres columnas y el movimiento optimista**
 
-Renderizar `Pendiente`, `En curso` y `Completada`. Ordenar por vencimiento ascendente y creación descendente. Cada tarjeta debe mostrar metadatos aprobados y un menú accesible para cambiar estado cuando el usuario tenga permiso.
+Renderizar `Pendiente`, `En curso` y `Completada` con `Kanban`, `KanbanBoard`, `KanbanColumn`, `KanbanColumnContent`, `KanbanItem`, `KanbanItemHandle` y `KanbanOverlay` desde `apps/web/components/reui/kanban.tsx`. Ordenar por vencimiento ascendente y creación descendente. Cada tarjeta debe mostrar los metadatos aprobados y un menú accesible para cambiar estado cuando el usuario tenga permiso.
 
-No implementar drag-and-drop ni orden manual.
+Mantener `value` y `onValueChange` para la previsualización optimista y persistir una sola vez desde `onValueCommit`. Solo los movimientos entre columnas producen una mutación de estado con la versión actual. Un movimiento dentro de la misma columna restaura el orden canónico; las columnas no son reordenables. Ante error, conflicto o rechazo de permisos, invalidar y recargar tablero, detalle y Agenda, además de mostrar un mensaje accionable.
 
 - [ ] **Paso 5: Crear estados de carga, error y vacío**
 
@@ -347,7 +350,7 @@ pnpm --filter @oikentra/web typecheck
 pnpm --filter @oikentra/web lint
 ```
 
-Comprobación manual: crear tareas asignadas y sin asignar, aplicar filtros, mover estados con distintos roles y abrir una tarjeta mediante teclado.
+Comprobación manual: crear tareas asignadas y sin asignar, aplicar filtros, arrastrar tarjetas entre estados con distintos roles, comprobar la actualización optimista y su recuperación ante error, cambiar estado sin arrastrar y abrir una tarjeta mediante teclado.
 
 - [ ] **Paso 7: Commit**
 
