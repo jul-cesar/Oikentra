@@ -62,7 +62,7 @@ export default function VentasScreen() {
   }
 
   return <ScrollView className="flex-1" contentContainerClassName="pb-10">
-    <DashboardHeader eyebrow="Control diario" title="Caja" subtitle="Registra ventas y gastos, y revisa todos tus movimientos." />
+    <DashboardHeader eyebrow="Ventas y gastos" title="Caja" subtitle="Registra ventas y gastos, y revisa todos tus movimientos." />
     <Card><CardHeader><CardTitle>Registrar movimiento</CardTitle><CardDescription>La hora se guarda automáticamente.</CardDescription></CardHeader><CardContent className="gap-4">
       <View className="gap-2"><Label>Tipo</Label><Select value={{ value: kind, label: kind === 'SALE' ? 'Venta' : 'Gasto' }} onValueChange={(option) => setKind(option?.value as Kind)}><SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger><SelectContent><SelectItem value="SALE" label="Venta" /><SelectItem value="EXPENSE" label="Gasto" /></SelectContent></Select></View>
       <View className="gap-2"><Label>Monto</Label><Input value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="0" /></View>

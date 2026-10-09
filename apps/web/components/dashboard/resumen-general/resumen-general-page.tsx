@@ -127,7 +127,7 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 						<AreaCard
 							icon={<HugeiconsIcon icon={Dollar01Icon} size={16} />}
 							title="Caja"
-							description="Ventas, gastos y movimientos del negocio."
+							description="Ventas, gastos y flujo de caja."
 							href={`/dashboard/${businessId}/ventas`}
 							actionLabel="Ver caja"
 							mainLabel="Ventas del período"

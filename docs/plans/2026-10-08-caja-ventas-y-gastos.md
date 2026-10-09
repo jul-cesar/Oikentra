@@ -2,7 +2,7 @@
 
 > **Para agentes de implementación:** SUB-SKILL REQUERIDA: usar `superpowers:subagent-driven-development` (recomendado) o `superpowers:executing-plans` para ejecutar este plan tarea por tarea. Las casillas `- [ ]` registran el avance.
 
-**Estado:** Aprobado
+**Estado:** En curso
 
 **Objetivo:** Renombrar la sección visible «Ventas» como «Caja» y dar el mismo protagonismo a ventas y gastos sin dividirlos en módulos independientes.
 
@@ -53,15 +53,15 @@
 - Consume: ruta existente `/dashboard/[businessId]/ventas`, `VentasPage`, `CreateSaleDialog` y `CreateExpenseDialog`.
 - Produce: una experiencia web denominada «Caja» sin cambios en contratos ni rutas.
 
-- [ ] **Paso 1: Cambiar el nombre visible en la navegación**
+- [x] **Paso 1: Cambiar el nombre visible en la navegación**
 
 En `apps/web/components/app-sidebar.tsx`, cambiar únicamente el título del elemento `Ventas` a `Caja`. Conservar su URL e icono actuales.
 
-- [ ] **Paso 2: Alinear el encabezado y los estados de la ruta**
+- [x] **Paso 2: Alinear el encabezado y los estados de la ruta**
 
 En `apps/web/app/dashboard/[businessId]/ventas/page.tsx`, cambiar `Cargando ventas` por `Cargando caja`. Conservar el componente y la ruta actuales.
 
-- [ ] **Paso 3: Presentar la pantalla como Caja**
+- [x] **Paso 3: Presentar la pantalla como Caja**
 
 En `apps/web/components/dashboard/ventas/ventas-page.tsx`:
 
@@ -72,7 +72,7 @@ En `apps/web/components/dashboard/ventas/ventas-page.tsx`:
 - reemplazar el CTA único del estado vacío por dos acciones: `Registrar venta` abre `CreateSaleDialog` y `Registrar gasto` abre `CreateExpenseDialog`;
 - conservar filtros, estadísticas, categorías, medios de pago y anulación sin cambios funcionales.
 
-- [ ] **Paso 4: Corregir los accesos desde los resúmenes**
+- [x] **Paso 4: Corregir los accesos desde los resúmenes**
 
 En `apps/web/components/dashboard/business-dashboard.tsx`, cambiar el acceso `Nueva venta` que solo navega a la página por `Ir a caja`.
 
@@ -102,7 +102,7 @@ Comprobación manual:
 4. Confirmar que los filtros `Todos`, `Ventas` y `Gastos` siguen funcionando.
 5. Confirmar que los enlaces desde los resúmenes mantienen la URL existente y llegan a Caja.
 
-- [ ] **Paso 6: Commit**
+- [x] **Paso 6: Commit**
 
 ```bash
 git add apps/web/components/app-sidebar.tsx apps/web/app/dashboard/[businessId]/ventas/page.tsx apps/web/components/dashboard/ventas/ventas-page.tsx apps/web/components/dashboard/business-dashboard.tsx apps/web/components/dashboard/resumen-general/resumen-general-page.tsx
@@ -122,11 +122,11 @@ git commit -m "feat(web): rename sales area to cash"
 - Consume: ruta existente `/dashboard/[businessId]/ventas`, `useCreateSale`, `useCreateExpense` y el selector de tipo de movimiento.
 - Produce: una experiencia móvil denominada «Caja» con ventas y gastos igualmente explícitos.
 
-- [ ] **Paso 1: Cambiar el nombre visible en la navegación móvil**
+- [x] **Paso 1: Cambiar el nombre visible en la navegación móvil**
 
 En `apps/mobile/components/dashboard/app-sidebar.tsx`, cambiar `Ventas` por `Caja`. Conservar el `href` y el icono actuales.
 
-- [ ] **Paso 2: Alinear el encabezado y el formulario**
+- [x] **Paso 2: Alinear el encabezado y el formulario**
 
 En `apps/mobile/app/(app)/dashboard/[businessId]/ventas.tsx`:
 
@@ -136,7 +136,7 @@ En `apps/mobile/app/(app)/dashboard/[businessId]/ventas.tsx`:
 - mantener el selector `Venta`/`Gasto`, campos condicionales, historial y filtros actuales;
 - cambiar el texto del botón genérico `Guardar` por `Registrar venta` o `Registrar gasto` según el tipo seleccionado.
 
-- [ ] **Paso 3: Alinear el acceso desde el resumen móvil**
+- [x] **Paso 3: Alinear el acceso desde el resumen móvil**
 
 En `apps/mobile/app/(app)/dashboard/[businessId]/index.tsx`, cambiar `Registrar una venta` por `Ir a caja`, ya que el botón navega a la sección y no abre directamente el formulario.
 
@@ -157,7 +157,7 @@ Comprobación manual en un viewport móvil:
 3. Confirmar que cambia el texto del botón y que la categoría solo aparece para gastos.
 4. Registrar un movimiento de cada tipo y confirmar que ambos aparecen en el historial y sus filtros correspondientes.
 
-- [ ] **Paso 5: Commit**
+- [x] **Paso 5: Commit**
 
 ```bash
 git add apps/mobile/components/dashboard/app-sidebar.tsx apps/mobile/app/(app)/dashboard/[businessId]/ventas.tsx apps/mobile/app/(app)/dashboard/[businessId]/index.tsx
@@ -175,11 +175,11 @@ git commit -m "feat(mobile): rename sales area to cash"
 - Consume: búsqueda de referencias que confirme que `CashPage` no se importa fuera de su propio archivo.
 - Produce: una única implementación activa de la experiencia de caja.
 
-- [ ] **Paso 1: Confirmar que `CashPage` continúa sin referencias**
+- [x] **Paso 1: Confirmar que `CashPage` continúa sin referencias**
 
 Buscar `CashPage` en `apps/web`. El único resultado esperado es su declaración en `apps/web/components/dashboard/cash/cash-page.tsx`.
 
-- [ ] **Paso 2: Eliminar el componente duplicado**
+- [x] **Paso 2: Eliminar el componente duplicado**
 
 Eliminar `apps/web/components/dashboard/cash/cash-page.tsx`. No mover `VentasPage`: seguirá siendo la implementación conectada a la ruta estable `/ventas`.
 
@@ -193,7 +193,7 @@ pnpm --filter @oikentra/mobile typecheck
 
 Resultado esperado: los tres comandos terminan con código `0`.
 
-- [ ] **Paso 4: Commit**
+- [x] **Paso 4: Commit**
 
 ```bash
 git add -A apps/web/components/dashboard/cash/cash-page.tsx
@@ -203,3 +203,7 @@ git commit -m "refactor(web): remove unused cash page"
 ## Criterio de cierre
 
 El plan se considera completado cuando las verificaciones automáticas pasan, las comprobaciones manuales confirman paridad entre web y móvil, y el estado se actualiza a **Completado** tanto aquí como en `docs/plans/README.md`.
+
+## Estado de verificación
+
+La implementación y los commits están completos. Los typechecks web/móvil, las 16 pruebas web, el lint de los archivos modificados y el build web pasan. Quedan pendientes la comprobación manual autenticada y corregir el fallo basal ajeno en `apps/web/components/reui/kanban.tsx:71` para que el lint completo termine con código `0`.

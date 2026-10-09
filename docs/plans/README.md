@@ -14,7 +14,7 @@ Este directorio reúne cambios aprobados que todavía no se han implementado.
 
 | Plan | Estado | Prioridad | Objetivo |
 | --- | --- | --- | --- |
-| [Caja: ventas y gastos](./2026-10-08-caja-ventas-y-gastos.md) | Aprobado | Alta | Presentar ventas y gastos como partes visibles de una misma caja. |
+| [Caja: ventas y gastos](./2026-10-08-caja-ventas-y-gastos.md) | En curso | Alta | Presentar ventas y gastos como partes visibles de una misma caja. |
 | [Cartera: fiados y préstamos](./2026-10-08-cartera-fiados-y-prestamos.md) | En curso | Alta | Unificar ambos tipos de deuda en la experiencia sin fusionar su persistencia. |
 | [Tareas Kanban web](./2026-10-08-tareas-kanban-web.md) | Aprobado | Alta | Coordinar tareas compartidas con responsables, comentarios, adjuntos y Agenda. |
 

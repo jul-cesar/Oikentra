@@ -38,7 +38,7 @@ export default function BusinessDashboardScreen() {
           </CardHeader>
           <CardContent className="flex-col gap-3 sm:flex-row">
             <Button onPress={() => router.push(`/dashboard/${business.id}/ventas` as Href)}>
-              <Text>Ir a Caja</Text>
+              <Text>Ir a caja</Text>
             </Button>
             <Button
               variant="outline"

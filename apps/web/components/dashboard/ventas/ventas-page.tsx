@@ -302,7 +302,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						Caja
 					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Registra ventas y gastos, y revisa todos tus movimientos.
+						Registra ventas y gastos, y revisa el flujo neto de tu caja.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2 sm:justify-end">
@@ -338,11 +338,11 @@ export function VentasPage({ businessId }: { businessId: string }) {
 							size={16}
 							aria-hidden="true"
 						/>
-						Gasto
+						Nuevo gasto
 					</Button>
 					<Button size="sm" onClick={() => setCreateSaleOpen(true)}>
 						<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
-						Venta
+						Nueva venta
 					</Button>
 				</div>
 			</div>
@@ -515,8 +515,12 @@ export function VentasPage({ businessId }: { businessId: string }) {
 					</p>
 					{!movements.length ? (
 						<div className="mt-4 flex justify-center gap-2">
-							<Button onClick={() => setCreateSaleOpen(true)}>Venta</Button>
-							<Button onClick={() => setCreateExpenseOpen(true)}>Gasto</Button>
+							<Button onClick={() => setCreateSaleOpen(true)}>
+								Registrar venta
+							</Button>
+							<Button onClick={() => setCreateExpenseOpen(true)}>
+								Registrar gasto
+							</Button>
 						</div>
 					) : null}
 				</div>
