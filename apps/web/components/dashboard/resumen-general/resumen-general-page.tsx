@@ -126,10 +126,10 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 					<div className="grid gap-4 md:grid-cols-2">
 						<AreaCard
 							icon={<HugeiconsIcon icon={Dollar01Icon} size={16} />}
-							title="Ventas"
-							description="Movimiento de caja operativa."
+							title="Caja"
+							description="Ventas, gastos y movimientos del negocio."
 							href={`/dashboard/${businessId}/ventas`}
-							actionLabel="Ver ventas"
+							actionLabel="Ver caja"
 							mainLabel="Ventas del período"
 							mainValue={currencyFormatter.format(
 								summary.kpis.salesAmount,

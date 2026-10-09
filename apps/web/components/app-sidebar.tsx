@@ -46,7 +46,7 @@ export function AppSidebar({
 		{ title: "Dashboard", url: base, icon: ChartLineData01Icon },
 		{ title: "Agenda", url: `${base}/agenda`, icon: Calendar03Icon },
 		{ title: "Clientes", url: `${base}/clientes`, icon: UserGroupIcon },
-		{ title: "Ventas", url: `${base}/ventas`, icon: Dollar01Icon },
+		{ title: "Caja", url: `${base}/ventas`, icon: Dollar01Icon },
 		{ title: "Cartera", url: `${base}/cartera`, icon: Wallet01Icon },
 	];
 	return (

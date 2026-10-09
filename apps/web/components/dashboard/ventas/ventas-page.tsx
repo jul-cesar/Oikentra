@@ -297,12 +297,12 @@ export function VentasPage({ businessId }: { businessId: string }) {
 		<div className="mx-auto max-w-5xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-4 sm:py-8">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
-					<p className="text-sm font-medium text-primary">Control de caja</p>
+					<p className="text-sm font-medium text-primary">Control diario</p>
 					<h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
-						Movimientos
+						Caja
 					</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Ingresos, gastos y flujo de tu caja al día.
+						Registra ventas y gastos, y revisa todos tus movimientos.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2 sm:justify-end">
@@ -332,21 +332,17 @@ export function VentasPage({ businessId }: { businessId: string }) {
 						<HugeiconsIcon icon={Tag01Icon} size={16} aria-hidden="true" />
 						Categorías
 					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setCreateExpenseOpen(true)}
-					>
+					<Button size="sm" onClick={() => setCreateExpenseOpen(true)}>
 						<HugeiconsIcon
 							icon={ChartDecreaseIcon}
 							size={16}
 							aria-hidden="true"
 						/>
-						Nuevo gasto
+						Gasto
 					</Button>
 					<Button size="sm" onClick={() => setCreateSaleOpen(true)}>
 						<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
-						Nueva venta
+						Venta
 					</Button>
 				</div>
 			</div>
@@ -497,7 +493,9 @@ export function VentasPage({ businessId }: { businessId: string }) {
 				</div>
 			</div>
 
-			{!filtered.length ? (
+			<div>
+				<h2 className="mb-3 text-xl font-semibold">Movimientos</h2>
+				{!filtered.length ? (
 				<div className="rounded-2xl border border-dashed py-16 text-center">
 					<HugeiconsIcon
 						icon={movements.length ? ReceiptTextIcon : CashierIcon}
@@ -516,9 +514,10 @@ export function VentasPage({ businessId }: { businessId: string }) {
 							: "Registra tu primer movimiento para empezar."}
 					</p>
 					{!movements.length ? (
-						<Button className="mt-4" onClick={() => setCreateSaleOpen(true)}>
-							Registrar movimiento
-						</Button>
+						<div className="mt-4 flex justify-center gap-2">
+							<Button onClick={() => setCreateSaleOpen(true)}>Venta</Button>
+							<Button onClick={() => setCreateExpenseOpen(true)}>Gasto</Button>
+						</div>
 					) : null}
 				</div>
 			) : (
@@ -555,6 +554,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 					})}
 				</div>
 			)}
+			</div>
 
 			<CreateSaleDialog
 				businessId={businessId}
