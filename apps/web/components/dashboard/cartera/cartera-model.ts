@@ -5,6 +5,9 @@ export type PortfolioType = "CREDIT" | "LOAN";
 export type PortfolioFilter = "ALL" | PortfolioType;
 export type PortfolioStatus = "ACTIVE" | "OVERDUE" | "PAID" | "CANCELLED";
 
+const DAY_MS = 86_400_000;
+const OLD_CREDIT_DAYS = 15;
+
 export type PortfolioItem = {
   id: string;
   type: PortfolioType;
@@ -15,6 +18,7 @@ export type PortfolioItem = {
   startDate: string;
   dueDate: string | null;
   status: PortfolioStatus;
+  old: boolean;
   detailHref: string;
   interestRate?: number;
   installmentAmount?: number;
@@ -37,9 +41,18 @@ function creditStatus(credit: Credit, today: Date): PortfolioStatus {
   }
   return credit.dueDate &&
     credit.remainingAmount > 0 &&
-    new Date(credit.dueDate).getTime() < today.getTime()
+    credit.dueDate < today.toISOString().slice(0, 10)
     ? "OVERDUE"
     : "ACTIVE";
+}
+
+function isOldCredit(credit: Credit, today: Date): boolean {
+  // ponytail: mirrors the backend threshold; return this flag from the API if the rule becomes configurable.
+  const age = Math.floor(
+    (today.getTime() - new Date(`${credit.creditDate}T00:00:00Z`).getTime()) /
+      DAY_MS,
+  );
+  return credit.status === "PENDING" && credit.remainingAmount > 0 && age > OLD_CREDIT_DAYS;
 }
 
 function loanStatus(loan: Loan): PortfolioStatus {
@@ -69,10 +82,11 @@ export function buildPortfolioItems(
       customerId: credit.customerId,
       customerName: nameFor(credit.customerId),
       originalAmount: credit.originalAmount,
-      remainingAmount: credit.remainingAmount,
+      remainingAmount: credit.status === "PENDING" ? credit.remainingAmount : 0,
       startDate: credit.creditDate,
       dueDate: credit.dueDate,
       status: creditStatus(credit, today),
+      old: isOldCredit(credit, today),
       detailHref: `/fiados/${credit.customerId}`,
     })),
     ...loans.map((loan) => ({
@@ -81,10 +95,14 @@ export function buildPortfolioItems(
       customerId: loan.customerId,
       customerName: nameFor(loan.customerId),
       originalAmount: loan.totalAmount,
-      remainingAmount: loan.remainingAmount,
+      remainingAmount:
+        loan.status === "PAID" || loan.status === "CANCELLED"
+          ? 0
+          : loan.remainingAmount,
       startDate: loan.startDate,
       dueDate: loan.dueDate,
       status: loanStatus(loan),
+      old: false,
       detailHref: `/prestamos/${loan.id}`,
       interestRate: loan.interestRate,
       installmentAmount: loan.installmentAmount,

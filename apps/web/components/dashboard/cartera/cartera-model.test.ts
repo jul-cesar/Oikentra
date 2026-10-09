@@ -100,6 +100,17 @@ test("normalizes a pending credit with an expired balance as overdue", () => {
   assert.equal(item.status, "OVERDUE");
 });
 
+test("keeps a credit active throughout its due date", () => {
+  const [item] = buildPortfolioItems(
+    [credit({ dueDate: "2026-03-01" })],
+    [],
+    [customer],
+    new Date("2026-03-01T18:00:00.000Z"),
+  );
+
+  assert.equal(item.status, "ACTIVE");
+});
+
 test("normalizes defaulted loans and loans with overdue installments as overdue", () => {
   const defaulted = loan({ id: "loan-default", status: "DEFAULT" });
   const lateInstallment = loan({
@@ -132,6 +143,36 @@ test("preserves paid and cancelled states", () => {
   );
 
   assert.deepEqual(items.map((item) => item.status), ["PAID", "CANCELLED"]);
+});
+
+test("closed obligations have no pending balance and sort after open ones", () => {
+  const items = buildPortfolioItems(
+    [credit({ id: "credit-cancelled", status: "CANCELLED", remainingAmount: 100 })],
+    [loan({ id: "loan-active", remainingAmount: 20 })],
+    [customer],
+    today,
+  );
+
+  assert.equal(items[0].remainingAmount, 0);
+  assert.deepEqual(
+    filterPortfolioItems(items, "ALL", "").map((item) => item.id),
+    ["loan-active", "credit-cancelled"],
+  );
+});
+
+test("marks pending credits older than fifteen whole days", () => {
+  const items = buildPortfolioItems(
+    [
+      credit({ id: "old", creditDate: "2026-02-13", dueDate: null }),
+      credit({ id: "recent", creditDate: "2026-02-14", dueDate: null }),
+      credit({ id: "closed", creditDate: "2026-01-01", status: "PAID" }),
+    ],
+    [],
+    [customer],
+    today,
+  );
+
+  assert.deepEqual(items.map((item) => item.old), [true, false, false]);
 });
 
 test("builds stable detail links for credits and loans", () => {

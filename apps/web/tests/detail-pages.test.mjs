@@ -6,15 +6,14 @@ const read = (path) =>
 	readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("fiados y préstamos abren su detalle en páginas dedicadas", () => {
-	const fiados = read("components/dashboard/fiados/fiados-page.tsx");
-	const prestamos = read("components/dashboard/prestamos/prestamos-page.tsx");
+	const carteraModel = read("components/dashboard/cartera/cartera-model.ts");
 	const customerDetail = read(
 		"components/dashboard/fiados/customer-detail.tsx",
 	);
 	const loanDetail = read("components/dashboard/prestamos/loan-detail.tsx");
 
-	assert.match(fiados, /fiados\/\$\{customer\.id\}/);
-	assert.match(prestamos, /prestamos\/\$\{loan\.id\}/);
+	assert.match(carteraModel, /fiados\/\$\{credit\.customerId\}/);
+	assert.match(carteraModel, /prestamos\/\$\{loan\.id\}/);
 	assert.doesNotMatch(customerDetail, /<Dialog\b/);
 	assert.doesNotMatch(loanDetail, /<Dialog\b/);
 	read("app/dashboard/[businessId]/fiados/[customerId]/page.tsx");
