@@ -39,7 +39,7 @@
 
 ---
 
-### Tarea 1: Crear persistencia y configuración privada de archivos
+### Task 1: Crear persistencia y configuración privada de archivos
 
 **Archivos:**
 - Modificar: `apps/business-service/src/db/schema.ts`
@@ -107,7 +107,7 @@ git commit -m "feat(tasks): add task persistence"
 
 ---
 
-### Tarea 2: Implementar permisos y dominio principal de tareas
+### Task 2: Implementar permisos y dominio principal de tareas
 
 **Archivos:**
 - Modificar: `apps/business-service/src/modules/businesses/members.service.ts`
@@ -188,7 +188,7 @@ git commit -m "feat(tasks): add task domain and permissions"
 
 ---
 
-### Tarea 3: Implementar comentarios y adjuntos privados
+### Task 3: Implementar comentarios y adjuntos privados
 
 **Archivos:**
 - Crear: `apps/business-service/src/storage/r2-client.ts`
@@ -254,7 +254,7 @@ git commit -m "feat(tasks): add comments and private attachments"
 
 ---
 
-### Tarea 4: Publicar API y cliente web
+### Task 4: Publicar API y cliente web
 
 **Archivos:**
 - Crear: `apps/business-service/src/modules/tasks/tasks.routes.ts`
@@ -307,7 +307,7 @@ git commit -m "feat(tasks): expose task API and web client"
 
 ---
 
-### Tarea 5: Construir el tablero Kanban web
+### Task 5: Construir el tablero Kanban web
 
 **Archivos:**
 - Crear: `apps/web/app/dashboard/[businessId]/tareas/page.tsx`
@@ -361,7 +361,7 @@ git commit -m "feat(web): add task kanban board"
 
 ---
 
-### Tarea 6: Construir detalle, comentarios y adjuntos web
+### Task 6: Construir detalle, comentarios y adjuntos web
 
 **Archivos:**
 - Crear: `apps/web/app/dashboard/[businessId]/tareas/[taskId]/page.tsx`
@@ -407,7 +407,7 @@ git commit -m "feat(web): add task collaboration detail"
 
 ---
 
-### Tarea 7: Proyectar vencimientos en Agenda
+### Task 7: Proyectar vencimientos en Agenda
 
 **Archivos:**
 - Modificar: `apps/business-service/src/modules/agenda/agenda.repository.ts`
