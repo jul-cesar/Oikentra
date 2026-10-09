@@ -39,12 +39,15 @@ DATABASE_URL=postgres://user:password@localhost:5432/oikentra_business
 INTERNAL_AUTH_PUBLIC_KEY_B64=replace-with-base64-spki-public-key
 PORT=3000
 
-# Optional Cloudflare R2 logo uploads
+# Optional Cloudflare R2 uploads
 R2_ACCOUNT_ID=replace-with-cloudflare-account-id
+# Public bucket used only for business logos
 R2_BUCKET=oikentra-assets
+R2_PUBLIC_BASE_URL=https://assets.oikentra.com
+# Separate private bucket used for task attachments; never expose it publicly
+R2_PRIVATE_BUCKET=oikentra-task-attachments
 R2_ACCESS_KEY_ID=replace-with-r2-access-key-id
 R2_SECRET_ACCESS_KEY=replace-with-r2-secret-access-key
-R2_PUBLIC_BASE_URL=https://assets.oikentra.com
 ```
 
 ## Database
@@ -62,6 +65,8 @@ pnpm --filter @oikentra/business-service run db:migrate
 ```
 
 The `businesses.id` column uses PostgreSQL `uuid`. IDs are generated app-side so synced entities can keep the same UUID across SQLite and PostgreSQL.
+
+Task attachments require `R2_PRIVATE_BUCKET` in addition to the shared R2 account credentials. Create this bucket as private and grant the configured R2 access key read/write access to it. When the variable or credentials are missing, attachment endpoints intentionally return `503 TASK_ATTACHMENTS_NOT_CONFIGURED`; task creation and the rest of the module remain available.
 
 ## Authentication Boundary
 
