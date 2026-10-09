@@ -1,6 +1,6 @@
 # Reports Service
 
-Genera documentos exportables (PDF/CSV) a partir de datos de `business-service`. No modifica datos financieros.
+Genera documentos exportables (PDF, CSV y XLSX) a partir de datos de `business-service`. No modifica datos financieros. La descarga requiere una sesión válida y acceso al negocio.
 
 ## Desarrollo
 
@@ -26,8 +26,7 @@ cp apps/reports-service/.env.example apps/reports-service/.env
 
 Requeridas:
 
-- `DATABASE_URL` — Cadena de conexión PostgreSQL para la base `oikentra_reports`.
-- `BUSINESS_SERVICE_URL` — URL base de business-service (ej. `http://localhost:3000`).
+- `BUSINESS_SERVICE_URL` — URL de business-service (ej. `http://localhost:3002`).
 - `INTERNAL_AUTH_PUBLIC_KEY_B64` — Clave pública base64 para verificar assertions internas.
 - `PORT` — Opcional, por defecto `3000`.
 - `INTERNAL_AUTH_DEV_BYPASS` — Bypass para desarrollo local.
@@ -37,13 +36,6 @@ Requeridas:
 
 - `GET /api/reports/health/live`
 - `GET /api/reports/health/ready`
-
-## Database
-
-```sh
-pnpm --filter @oikentra/reports-service db:generate
-pnpm --filter @oikentra/reports-service db:migrate
-```
 
 ## Validación
 
@@ -57,9 +49,10 @@ pnpm --filter @oikentra/reports-service test
 | Tipo | Descripción |
 |------|-------------|
 | `DAILY_SUMMARY` | Resumen de caja del día |
-| `WEEKLY_SUMMARY` | Resumen semanal de 7 días |
-| `RECEIVABLES` | Cuentas por cobrar |
-| `AGED_DEBTS` | Deudas antiguas clasificadas |
+| `WEEKLY_SUMMARY` | Resumen del período seleccionado |
+| `PAYMENT_METHODS` | Ventas por cada medio de pago del período |
+| `RECEIVABLES` | Fiados por cobrar |
+| `AGED_DEBTS` | Fiados antiguos clasificados |
 | `CUSTOMER_STATEMENT` | Estado de cuenta de un cliente |
 | `MOVEMENT_HISTORY` | Historial de movimientos |
 

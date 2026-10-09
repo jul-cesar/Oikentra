@@ -1,86 +1,81 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Download01Icon,
-  File01Icon,
-  FilesIcon,
-} from "@hugeicons/core-free-icons";
+import { Download01Icon, File01Icon, FilesIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { generateReport, downloadBlob, type ReportType, type ReportFormat } from "@/lib/reports-api";
+import { downloadBlob, generateReport, type ReportFormat, type ReportType } from "@/lib/reports-api";
 
-const REPORT_TYPES = [
+const REPORT_TYPES: Array<{ value: ReportType; label: string }> = [
   { value: "DAILY_SUMMARY", label: "Resumen del día" },
-  { value: "WEEKLY_SUMMARY", label: "Resumen semanal" },
-  { value: "RECEIVABLES", label: "Cuentas por cobrar" },
-  { value: "AGED_DEBTS", label: "Deudas antiguas" },
+  { value: "WEEKLY_SUMMARY", label: "Resumen del período" },
+  { value: "PAYMENT_METHODS", label: "Ventas por medio de pago" },
+  { value: "RECEIVABLES", label: "Fiados por cobrar" },
+  { value: "AGED_DEBTS", label: "Fiados antiguos" },
   { value: "MOVEMENT_HISTORY", label: "Historial de movimientos" },
-] as const;
-
-const DATE_REQUIRED = new Set(["WEEKLY_SUMMARY", "MOVEMENT_HISTORY"]);
+];
 
 const today = () => {
-	const now = new Date();
-	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 };
 
-export function ExportReportDialog({
-  businessId,
-  open,
-  onOpenChange,
-}: {
+type Props = {
   businessId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}) {
-  const [reportType, setReportType] = useState<ReportType>("DAILY_SUMMARY");
+  initialReportType?: ReportType;
+  initialFrom?: string;
+  initialTo?: string;
+  fixedReportType?: ReportType;
+  customerId?: string;
+};
+
+export function ExportReportDialog(props: Props) {
+  return props.open ? <OpenExportReportDialog {...props} /> : null;
+}
+
+function OpenExportReportDialog({
+  businessId, open, onOpenChange, initialReportType = "WEEKLY_SUMMARY",
+  initialFrom, initialTo, fixedReportType, customerId,
+}: Props) {
+  const [reportType, setReportType] = useState<ReportType>(fixedReportType ?? initialReportType);
   const [format, setFormat] = useState<ReportFormat>("PDF");
-  const [from, setFrom] = useState(today());
-  const [to, setTo] = useState(today());
+  const [from, setFrom] = useState(initialFrom ?? today());
+  const [to, setTo] = useState(initialTo ?? today());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const needsDate = DATE_REQUIRED.has(reportType);
+  const needsRange = reportType === "WEEKLY_SUMMARY" || reportType === "MOVEMENT_HISTORY" || reportType === "PAYMENT_METHODS";
+  const needsDay = reportType === "DAILY_SUMMARY";
+  const invalidDate = (needsDay && !from) || (needsRange && (!from || !to || from > to));
 
   async function handleExport() {
+    if (invalidDate || loading) return;
     setLoading(true);
     setError("");
     try {
       const input: {
-        reportType: ReportType;
-        format: ReportFormat;
-        from?: string;
-        to?: string;
+        reportType: ReportType; format: ReportFormat;
+        from?: string; to?: string; customerId?: string;
       } = { reportType, format };
-      if (needsDate) {
-        input.from = from;
-        input.to = to;
-      }
+      if (needsRange || needsDay) input.from = from;
+      if (needsRange) input.to = to;
+      if (reportType === "CUSTOMER_STATEMENT") input.customerId = customerId;
       const { blob, filename } = await generateReport(businessId, input);
       downloadBlob(blob, filename);
       onOpenChange(false);
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "No pudimos generar el reporte.",
-      );
+      setError(cause instanceof Error ? cause.message : "No pudimos generar el reporte.");
     } finally {
       setLoading(false);
     }
@@ -88,93 +83,72 @@ export function ExportReportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Exportar reporte</DialogTitle>
+          <DialogTitle>Descargar reporte</DialogTitle>
           <DialogDescription>
-            Genera un archivo con los datos de tu negocio.
+            Elige el formato para guardar o compartir los datos de tu negocio.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {!fixedReportType ? (
+            <div className="space-y-2">
+              <Label htmlFor="report-type">Tipo de reporte</Label>
+              <Select value={reportType} onValueChange={(value) => setReportType(value as ReportType)}>
+                <SelectTrigger id="report-type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_TYPES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <p className="rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-foreground">
+              {REPORT_TYPES.find((item) => item.value === reportType)?.label ?? "Estado de cuenta"}
+            </p>
+          )}
+
           <div className="space-y-2">
-            <Label>Tipo de reporte</Label>
-            <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
-              <SelectTrigger>
+            <Label htmlFor="report-format">Formato</Label>
+            <Select value={format} onValueChange={(value) => setFormat(value as ReportFormat)}>
+              <SelectTrigger id="report-format" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {REPORT_TYPES.map((rt) => (
-                  <SelectItem key={rt.value} value={rt.value}>
-                    {rt.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="PDF"><span className="flex items-center gap-2"><HugeiconsIcon icon={File01Icon} size={16} />PDF · compartir o imprimir</span></SelectItem>
+                <SelectItem value="CSV"><span className="flex items-center gap-2"><HugeiconsIcon icon={FilesIcon} size={16} />CSV · datos editables</span></SelectItem>
+                <SelectItem value="XLSX"><span className="flex items-center gap-2"><HugeiconsIcon icon={FilesIcon} size={16} />Excel (.xlsx) · tabla con formato</span></SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Formato</Label>
-            <Select value={format} onValueChange={(v) => setFormat(v as ReportFormat)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PDF">
-                  <span className="flex items-center gap-2">
-                    <HugeiconsIcon icon={File01Icon} size={14} />
-                    PDF
-                  </span>
-                </SelectItem>
-                <SelectItem value="CSV">
-                  <span className="flex items-center gap-2">
-                    <HugeiconsIcon icon={FilesIcon} size={14} />
-                    CSV
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {needsDate ? (
-            <div className="grid grid-cols-2 gap-3">
+          {needsRange || needsDay ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Desde</Label>
-                <input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                />
+                <Label htmlFor="report-from">{needsDay ? "Día" : "Desde"}</Label>
+                <input id="report-from" type="date" value={from} onChange={(event) => setFrom(event.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
               </div>
-              <div className="space-y-2">
-                <Label>Hasta</Label>
-                <input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                />
-              </div>
+              {needsRange ? (
+                <div className="space-y-2">
+                  <Label htmlFor="report-to">Hasta</Label>
+                  <input id="report-to" type="date" value={to} onChange={(event) => setTo(event.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                </div>
+              ) : null}
             </div>
           ) : null}
-
-          {error ? (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          ) : null}
+          {invalidDate && from && to ? <p className="text-sm text-destructive">La fecha final debe ser igual o posterior a la inicial.</p> : null}
+          {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button type="button" onClick={() => void handleExport()} disabled={loading}>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancelar</Button>
+          <Button type="button" onClick={() => void handleExport()} disabled={loading || invalidDate}>
             <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
             {loading ? "Generando…" : "Descargar"}
           </Button>

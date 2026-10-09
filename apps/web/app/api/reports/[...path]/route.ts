@@ -76,6 +76,27 @@ function logProxy(fields: {
   );
 }
 
+async function validateSession(request: Request, id: string): Promise<string | null> {
+  const configured = process.env.AUTH_BASE_URL?.trim();
+  if (!configured) throw new Error("AUTH_BASE_URL is missing");
+  const url = new URL("/internal/session/validate", configured);
+  const headers = new Headers();
+  for (const name of ["cookie", "authorization", "user-agent"] as const) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  headers.set("x-request-id", id);
+  const response = await fetch(url, {
+    headers,
+    cache: "no-store",
+    redirect: "manual",
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (response.status === 401 || response.status === 403) return null;
+  if (!response.ok) throw new Error("Authentication service is unavailable");
+  return response.headers.get("x-internal-auth")?.trim() || null;
+}
+
 async function proxy(request: Request, path: string[]) {
   const id = requestId(request);
   const safePath = `/api/reports/${path.map((segment) => encodeURIComponent(segment)).join("/")}`;
@@ -107,12 +128,23 @@ async function proxy(request: Request, path: string[]) {
     return json({ code: "SERVICE_UNAVAILABLE", requestId: id }, 503);
   }
 
+  let assertion: string | null;
+  try {
+    assertion = await validateSession(request, id);
+  } catch {
+    return json({ code: "SERVICE_UNAVAILABLE", message: "No pudimos validar tu sesión.", requestId: id }, 503);
+  }
+  if (!assertion) {
+    return json({ code: "UNAUTHENTICATED", message: "Inicia sesión para descargar reportes.", requestId: id }, 401);
+  }
+
   const headers = new Headers();
   for (const name of REQUEST_HEADERS) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
   headers.set("x-request-id", id);
+  headers.set("x-internal-auth", assertion);
 
   try {
     const upstream = await fetch(getUpstreamUrl(baseUrl, path, request), {

@@ -7,8 +7,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@oikentra/internal-auth": "workspace:*",
     "@oikentra/http-logging": "workspace:*",
+    "@oikentra/internal-auth": "workspace:*",
+    "exceljs": "^4.4.0",
     "hono": "4.12.29",
     "pdfmake": "^0.2.18",
     "zod": "^4.4.3"

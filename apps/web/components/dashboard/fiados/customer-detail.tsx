@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, Download01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
+import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { useCredits } from "@/lib/queries/fiados";
 import { usePublicUsers } from "@/lib/queries/members";
 import type { Customer, Credit } from "@/lib/fiados-api";
@@ -85,6 +86,7 @@ export function CustomerDetail({
 		refetch,
 	} = useCredits(businessId);
 	const [createOpen, setCreateOpen] = useState(false);
+	const [exportOpen, setExportOpen] = useState(false);
 	const [paymentCredit, setPaymentCredit] = useState<Credit | null>(null);
 	const [cancelCredit, setCancelCredit] = useState<Credit | null>(null);
 	const customerCredits = credits.filter(
@@ -147,14 +149,20 @@ export function CustomerDetail({
 							{money(customer.totalDebt)}
 						</p>
 					</div>
-					<Button
-						size="lg"
-						className="rounded-xl"
-						onClick={() => setCreateOpen(true)}
-					>
-						<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
-						Nuevo fiado para este cliente
-					</Button>
+					<div className="flex flex-wrap gap-2">
+						<Button variant="outline" className="rounded-xl" onClick={() => setExportOpen(true)}>
+							<HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
+							Descargar estado de cuenta
+						</Button>
+						<Button
+							size="lg"
+							className="rounded-xl"
+							onClick={() => setCreateOpen(true)}
+						>
+							<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
+							Nuevo fiado para este cliente
+						</Button>
+					</div>
 				</div>
 
 				<div className="rounded-3xl border bg-card p-4 sm:p-6 lg:p-8">
@@ -284,6 +292,7 @@ export function CustomerDetail({
 				</div>
 			</div>
 
+			<ExportReportDialog businessId={businessId} open={exportOpen} onOpenChange={setExportOpen} fixedReportType="CUSTOMER_STATEMENT" customerId={customer.id} />
 			<CreateCreditDialog
 				key={String(createOpen)}
 				businessId={businessId}

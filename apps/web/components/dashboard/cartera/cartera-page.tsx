@@ -2,6 +2,7 @@
 
 import {
   ArrowRight01Icon,
+  Download01Icon,
   BankIcon,
   PlusSignIcon,
   Search01Icon,
@@ -14,6 +15,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { CreateCreditDialog } from "@/components/dashboard/fiados/create-credit-dialog";
+import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { CreateLoanDialog } from "@/components/dashboard/prestamos/create-loan-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +95,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
   const [search, setSearch] = useState("");
   const [creditOpen, setCreditOpen] = useState(false);
   const [loanOpen, setLoanOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const filter = portfolioFilterFromQuery(searchParams.get("tipo"));
 
   const queries = [
@@ -162,6 +165,10 @@ export function CarteraPage({ businessId }: { businessId: string }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="rounded-xl" onClick={() => setExportOpen(true)}>
+            <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
+            Descargar fiados
+          </Button>
           <Button variant="outline" className="rounded-xl" onClick={() => setCreditOpen(true)}>
             <HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
             Nuevo fiado
@@ -274,6 +281,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
         </div>
       </section>
 
+      <ExportReportDialog businessId={businessId} open={exportOpen} onOpenChange={setExportOpen} fixedReportType="RECEIVABLES" />
       <CreateCreditDialog
         key={String(creditOpen)}
         businessId={businessId}

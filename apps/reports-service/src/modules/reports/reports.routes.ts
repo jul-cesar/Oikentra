@@ -8,15 +8,7 @@ import { generateReportSchema, reportParamsSchema } from './reports.schemas'
 
 export const reportsRoutes = new Hono<AppBindings>()
 
-// reportsRoutes.use('*', requireAuthHeaders)
-reportsRoutes.use("*", async (c, next) => {
-  c.set("auth", {
-    userId: "test-user-123",
-    sessionId: "test-session-456",
-  })
-
-  await next()
-})
+reportsRoutes.use('*', requireAuthHeaders)
 
 reportsRoutes.post('/:businessId/generate', async (c) => {
   const parsedParams = reportParamsSchema.safeParse(c.req.param())
@@ -29,11 +21,11 @@ reportsRoutes.post('/:businessId/generate', async (c) => {
     throw validationError(parsedBody.error)
   }
 
-  const result = await generateReport(parsedParams.data.businessId, parsedBody.data)
+  const result = await generateReport(parsedParams.data.businessId, parsedBody.data, c.req.header('X-Internal-Auth')?.trim())
 
   const disposition = parsedBody.data.disposition === 'INLINE' ? 'inline' : 'attachment'
 
-  return new Response(result.buffer.buffer as ArrayBuffer, {
+  return new Response(new Uint8Array(result.buffer), {
     status: 200,
     headers: {
       'Content-Type': result.contentType,

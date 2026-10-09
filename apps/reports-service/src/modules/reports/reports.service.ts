@@ -1,9 +1,11 @@
 import { AppError } from '../../http/errors'
 import { fetchReportData, type ReportDataResponse } from './data-client'
 import type { ReportType, ReportFormat } from './report-types'
+import { generateXLSX } from './generators/xlsx'
 import {
   generateDailySummaryCSV,
   generateWeeklySummaryCSV,
+  generatePaymentMethodsCSV,
   generateReceivablesCSV,
   generateAgedDebtsCSV,
   generateMovementHistoryCSV,
@@ -12,6 +14,7 @@ import {
 import {
   generateDailySummaryPDF,
   generateWeeklySummaryPDF,
+  generatePaymentMethodsPDF,
   generateReceivablesPDF,
   generateAgedDebtsPDF,
   generateMovementHistoryPDF,
@@ -34,16 +37,17 @@ type GenerateReportResult = {
 }
 
 function getContentType(format: ReportFormat): string {
-  return format === 'PDF' ? 'application/pdf' : 'text/csv; charset=utf-8'
+  return format === 'PDF' ? 'application/pdf' : format === 'CSV' ? 'text/csv; charset=utf-8' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 }
 
 function getFilename(reportType: ReportType, format: ReportFormat, from?: string, to?: string): string {
-  const suffix = format === 'PDF' ? 'pdf' : 'csv'
-  const datePart = from && to ? `-${to}` : `-${new Date().toISOString().slice(0, 10)}`
+  const suffix = format.toLowerCase()
+  const datePart = `-${to ?? from ?? new Date().toISOString().slice(0, 10)}`
 
   const names: Record<ReportType, string> = {
     DAILY_SUMMARY: `resumen-diario${datePart}`,
-    WEEKLY_SUMMARY: `resumen-semanal${datePart}`,
+    WEEKLY_SUMMARY: `resumen-periodo${datePart}`,
+    PAYMENT_METHODS: `ventas-medios-pago${datePart}`,
     RECEIVABLES: `cuentas-por-cobrar${datePart}`,
     AGED_DEBTS: `deudas-antiguas${datePart}`,
     CUSTOMER_STATEMENT: `estado-cuenta${datePart}`,
@@ -59,6 +63,8 @@ function generateCSV(data: ReportDataResponse, input: GenerateReportInput): stri
       return generateDailySummaryCSV(data, input.from ?? new Date().toISOString().slice(0, 10))
     case 'WEEKLY_SUMMARY':
       return generateWeeklySummaryCSV(data, input.from!, input.to!)
+    case 'PAYMENT_METHODS':
+      return generatePaymentMethodsCSV(data, input.from!, input.to!)
     case 'RECEIVABLES':
       return generateReceivablesCSV(data)
     case 'AGED_DEBTS':
@@ -70,12 +76,14 @@ function generateCSV(data: ReportDataResponse, input: GenerateReportInput): stri
   }
 }
 
-function generatePDF(data: ReportDataResponse, input: GenerateReportInput): Buffer {
+function generatePDF(data: ReportDataResponse, input: GenerateReportInput): Promise<Buffer> {
   switch (input.reportType) {
     case 'DAILY_SUMMARY':
       return generateDailySummaryPDF(data, input.from ?? new Date().toISOString().slice(0, 10))
     case 'WEEKLY_SUMMARY':
       return generateWeeklySummaryPDF(data, input.from!, input.to!)
+    case 'PAYMENT_METHODS':
+      return generatePaymentMethodsPDF(data, input.from!, input.to!)
     case 'RECEIVABLES':
       return generateReceivablesPDF(data)
     case 'AGED_DEBTS':
@@ -87,16 +95,18 @@ function generatePDF(data: ReportDataResponse, input: GenerateReportInput): Buff
   }
 }
 
-function generateFile(data: ReportDataResponse, input: GenerateReportInput): Buffer {
+function generateFile(data: ReportDataResponse, input: GenerateReportInput): Promise<Buffer> {
   if (input.format === 'CSV') {
-    return Buffer.from(generateCSV(data, input), 'utf-8')
+    return Promise.resolve(Buffer.from('\uFEFF' + generateCSV(data, input), 'utf-8'))
   }
+  if (input.format === 'XLSX') return generateXLSX(data, input)
   return generatePDF(data, input)
 }
 
 export async function generateReport(
   businessId: string,
   input: GenerateReportInput,
+  assertion?: string,
 ): Promise<GenerateReportResult> {
   try {
     const data = await fetchReportData(
@@ -105,9 +115,10 @@ export async function generateReport(
       input.from,
       input.to,
       input.customerId,
+      assertion,
     )
 
-    const buffer = generateFile(data, input)
+    const buffer = await generateFile(data, input)
 
     return {
       buffer,

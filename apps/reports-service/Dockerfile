@@ -26,9 +26,8 @@ COPY packages/http-logging/package.json packages/http-logging/package.json
 COPY packages/http-logging/src packages/http-logging/src
 COPY packages/internal-auth/package.json packages/internal-auth/package.json
 COPY packages/internal-auth/src packages/internal-auth/src
-COPY apps/reports-service/drizzle.config.ts apps/reports-service/drizzle.config.ts
-COPY apps/reports-service/drizzle apps/reports-service/drizzle
 COPY apps/reports-service/src apps/reports-service/src
+COPY apps/reports-service/fonts apps/reports-service/fonts
 
 WORKDIR /workspace/apps/reports-service
 

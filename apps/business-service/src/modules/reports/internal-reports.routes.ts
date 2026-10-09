@@ -14,10 +14,14 @@ import {
   portfolioMovements,
 } from '../../db/schema'
 import { AppError } from '../../http/errors'
+import { requireAuthHeaders } from '../../http/middleware/require-auth-headers'
+import { businessesService } from '../businesses/businesses.service'
+import { membersService, permissions } from '../businesses/members.service'
 import type { AppBindings } from '../../http/request-context'
 import { z } from 'zod'
 
-const internalReportsRoutes = new Hono<AppBindings>()
+export const internalReportsRoutes = new Hono<AppBindings>()
+internalReportsRoutes.use('*', requireAuthHeaders)
 
 const requestDataSchema = z.object({
   businessId: z.string().min(1),
@@ -34,7 +38,12 @@ internalReportsRoutes.post('/data', async (c) => {
   }
 
   const { businessId, reportType, from, to, customerId } = parsed.data
+  await businessesService.get(c.get('auth').userId, businessId)
   const db = getDb()
+  const [selectedCustomer] = customerId
+    ? await db.select({ id: customers.id, name: customers.name }).from(customers).where(and(eq(customers.id, customerId), eq(customers.businessId, businessId))).limit(1)
+    : [undefined]
+  if (customerId && !selectedCustomer) throw new AppError('CUSTOMER_NOT_FOUND', 404, 'The customer was not found.')
 
   const [business] = await db
     .select()
@@ -44,6 +53,55 @@ internalReportsRoutes.post('/data', async (c) => {
 
   if (!business) {
     throw new AppError('BUSINESS_NOT_FOUND', 404, 'The business was not found.')
+  }
+
+  if (reportType === 'PAYMENT_METHODS') {
+    if (!from || !to || from > to) {
+      throw new AppError('VALIDATION_ERROR', 400, 'A valid date range is required.')
+    }
+    await membersService.requirePermission(c.get('auth').userId, businessId, permissions.cashRead)
+    const sales = await db
+      .select({ amount: cashMovements.amount, paymentMethod: cashMovements.paymentMethod })
+      .from(cashMovements)
+      .where(and(
+        eq(cashMovements.businessId, businessId),
+        eq(cashMovements.status, 'ACTIVE'),
+        eq(cashMovements.type, 'SALE'),
+        gte(cashMovements.businessDate, from),
+        lte(cashMovements.businessDate, to),
+      ))
+
+    const methods = new Map<string, { name: string; amount: number; count: number }>()
+    let salesTotal = 0
+    for (const sale of sales) {
+      const name = sale.paymentMethod ?? 'Sin medio'
+      const method = methods.get(name) ?? { name, amount: 0, count: 0 }
+      method.amount += sale.amount
+      method.count += 1
+      methods.set(name, method)
+      salesTotal += sale.amount
+    }
+
+    return c.json({
+      data: {
+        business: {
+          id: business.id,
+          name: business.name,
+          currencyCode: business.currencyCode,
+          timezone: business.timezone,
+        },
+        paymentMethods: Array.from(methods.values())
+          .sort((a, b) => b.amount - a.amount)
+          .map((method) => ({
+            ...method,
+            share: salesTotal ? Number(((method.amount / salesTotal) * 100).toFixed(1)) : 0,
+          })),
+        dailySummaries: [],
+        receivables: { totalReceivable: 0, customersWithDebt: 0, oldDebts: 0 },
+        customers: [],
+        movements: [],
+      },
+    })
   }
 
   // Fetch cash movements for the date range (operating cash: sales and expenses)
@@ -56,10 +114,8 @@ internalReportsRoutes.post('/data', async (c) => {
   if (from) movementConditions.push(gte(cashMovements.businessDate, from))
   if (to) movementConditions.push(lte(cashMovements.businessDate, to))
   if (customerId) {
-    // For customer statements, only operating cash movements
-    movementConditions.push(
-      sql`(${cashMovements.sourceType} IS NULL AND ${cashMovements.type} IN ('SALE', 'EXPENSE'))`,
-    )
+    // Customer statements include only movements linked to the customer below.
+    movementConditions.push(sql`1 = 0`)
   }
 
   const movements = await db
@@ -102,7 +158,8 @@ internalReportsRoutes.post('/data', async (c) => {
   const portfolioConditions = [eq(portfolioMovements.businessId, businessId)]
   if (from) portfolioConditions.push(gte(portfolioMovements.businessDate, from))
   if (to) portfolioConditions.push(lte(portfolioMovements.businessDate, to))
-  if (customerId) {
+  if (customerId && reportType === 'CUSTOMER_STATEMENT') portfolioConditions.push(sql`1 = 0`)
+  if (customerId && reportType !== 'CUSTOMER_STATEMENT') {
     const customerLoans = await db
       .select({ id: loans.id })
       .from(loans)
@@ -397,7 +454,9 @@ internalReportsRoutes.post('/data', async (c) => {
         customersWithDebt: customerMap.size,
         oldDebts,
       },
-      customers: Array.from(customerMap.values()),
+      customers: selectedCustomer
+        ? [customerMap.get(selectedCustomer.id) ?? { id: selectedCustomer.id, name: selectedCustomer.name, totalDebt: 0, activeCredits: 0, oldDebt: false }]
+        : Array.from(customerMap.values()),
       loansReceivables: {
         totalOutstanding: totalLoanOutstanding,
         loansWithDebt: pendingLoans.length,
@@ -435,5 +494,3 @@ internalReportsRoutes.post('/data', async (c) => {
     },
   })
 })
-
-export { internalReportsRoutes }

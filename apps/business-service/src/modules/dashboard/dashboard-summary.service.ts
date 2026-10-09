@@ -314,15 +314,25 @@ export function createDashboardSummaryService(
 			}
 
 			const netCashFlow = salesAmount - expensesAmount;
-			const paymentMethodRows = Array.from(paymentMethods.values())
-				.sort((a, b) => b.amount - a.amount)
-				.slice(0, 6)
-				.map((item) => ({
-					...item,
-					share: salesAmount
-						? Math.round((item.amount / salesAmount) * 100)
-						: 0,
-				}));
+			const rankedMethods = Array.from(paymentMethods.values())
+				.sort((a, b) => b.amount - a.amount);
+			const visibleMethods = rankedMethods.slice(0, 5);
+			const remainingMethods = rankedMethods.slice(5);
+			if (remainingMethods.length) {
+				let otherLabel = "Otros medios";
+				while (paymentMethods.has(otherLabel)) otherLabel += " (agrupados)";
+				visibleMethods.push({
+					name: otherLabel,
+					amount: remainingMethods.reduce((sum, item) => sum + item.amount, 0),
+					count: remainingMethods.reduce((sum, item) => sum + item.count, 0),
+				});
+			}
+			const paymentMethodRows = visibleMethods.map((item) => ({
+				...item,
+				share: salesAmount
+					? Math.round((item.amount / salesAmount) * 100)
+					: 0,
+			}));
 			const topCategories = Array.from(categories.values())
 				.sort((a, b) => b.amount - a.amount)
 				.slice(0, 6);

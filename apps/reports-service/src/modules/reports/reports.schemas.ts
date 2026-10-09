@@ -12,7 +12,7 @@ export const generateReportSchema = z
     disposition: z.enum(['INLINE', 'ATTACHMENT']).default('INLINE'),
   })
   .superRefine((value, ctx) => {
-    if (value.reportType === 'WEEKLY_SUMMARY' || value.reportType === 'MOVEMENT_HISTORY') {
+    if (value.reportType === 'WEEKLY_SUMMARY' || value.reportType === 'MOVEMENT_HISTORY' || value.reportType === 'PAYMENT_METHODS') {
       if (!value.from) {
         ctx.addIssue({ code: 'custom', path: ['from'], message: 'from is required for this report type.' })
       }

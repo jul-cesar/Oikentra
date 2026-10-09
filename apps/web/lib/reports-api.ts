@@ -1,12 +1,13 @@
 export type ReportType =
   | "DAILY_SUMMARY"
   | "WEEKLY_SUMMARY"
+  | "PAYMENT_METHODS"
   | "RECEIVABLES"
   | "AGED_DEBTS"
   | "CUSTOMER_STATEMENT"
   | "MOVEMENT_HISTORY";
 
-export type ReportFormat = "PDF" | "CSV";
+export type ReportFormat = "PDF" | "CSV" | "XLSX";
 
 type GenerateReportInput = {
   reportType: ReportType;
