@@ -41,3 +41,20 @@ export const taskFiltersSchema = z.object({
 	unassigned: z.boolean().optional(),
 	search: z.string().trim().min(1).max(160).optional(),
 });
+
+export const createTaskCommentSchema = z.object({
+	body: z.string().trim().min(1).max(1_000),
+});
+
+const attachmentFile = {
+	fileName: z.string().trim().min(1).max(255),
+	contentType: z.string().trim().min(1).max(100),
+	sizeBytes: z.number().int().positive(),
+};
+
+export const requestTaskAttachmentUploadSchema = z.object(attachmentFile);
+
+export const confirmTaskAttachmentSchema = z.object({
+	...attachmentFile,
+	objectKey: z.string().min(1).max(300),
+});

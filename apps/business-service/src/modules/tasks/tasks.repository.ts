@@ -3,10 +3,16 @@ import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { getDb } from "../../db/client";
 import {
 	businessMembers,
+	taskAttachments,
+	taskComments,
 	tasks,
 	type BusinessMember,
 	type NewTask,
+	type NewTaskAttachment,
+	type NewTaskComment,
 	type Task,
+	type TaskAttachment,
+	type TaskComment,
 } from "../../db/schema";
 import type { TaskFilters } from "./types/tasks.types";
 
@@ -115,5 +121,105 @@ export const taskRepository: TaskRepository = {
 			.where(and(eq(tasks.id, taskId), eq(tasks.businessId, businessId)))
 			.returning();
 		return task ?? null;
+	},
+};
+
+export type TaskCollaborationRepository = Pick<
+	TaskRepository,
+	"findByIdAndBusiness" | "remove"
+> & {
+	listComments(taskId: string, businessId: string): Promise<TaskComment[]>;
+	createComment(input: NewTaskComment): Promise<TaskComment>;
+	listAttachments(taskId: string, businessId: string): Promise<TaskAttachment[]>;
+	findAttachment(
+		attachmentId: string,
+		taskId: string,
+		businessId: string,
+	): Promise<TaskAttachment | null>;
+	findAttachmentByObjectKey(objectKey: string): Promise<TaskAttachment | null>;
+	createAttachment(input: NewTaskAttachment): Promise<TaskAttachment>;
+	deleteAttachment(
+		attachmentId: string,
+		taskId: string,
+		businessId: string,
+	): Promise<TaskAttachment | null>;
+};
+
+export const taskCollaborationRepository: TaskCollaborationRepository = {
+	findByIdAndBusiness: taskRepository.findByIdAndBusiness,
+	remove: taskRepository.remove,
+
+	async listComments(taskId, businessId) {
+		return getDb()
+			.select()
+			.from(taskComments)
+			.where(
+				and(eq(taskComments.taskId, taskId), eq(taskComments.businessId, businessId)),
+			)
+			.orderBy(asc(taskComments.createdAt));
+	},
+
+	async createComment(input) {
+		const [comment] = await getDb().insert(taskComments).values(input).returning();
+		return comment;
+	},
+
+	async listAttachments(taskId, businessId) {
+		return getDb()
+			.select()
+			.from(taskAttachments)
+			.where(
+				and(
+					eq(taskAttachments.taskId, taskId),
+					eq(taskAttachments.businessId, businessId),
+				),
+			)
+			.orderBy(asc(taskAttachments.createdAt));
+	},
+
+	async findAttachment(attachmentId, taskId, businessId) {
+		const [attachment] = await getDb()
+			.select()
+			.from(taskAttachments)
+			.where(
+				and(
+					eq(taskAttachments.id, attachmentId),
+					eq(taskAttachments.taskId, taskId),
+					eq(taskAttachments.businessId, businessId),
+				),
+			)
+			.limit(1);
+		return attachment ?? null;
+	},
+
+	async findAttachmentByObjectKey(objectKey) {
+		const [attachment] = await getDb()
+			.select()
+			.from(taskAttachments)
+			.where(eq(taskAttachments.objectKey, objectKey))
+			.limit(1);
+		return attachment ?? null;
+	},
+
+	async createAttachment(input) {
+		const [attachment] = await getDb()
+			.insert(taskAttachments)
+			.values(input)
+			.returning();
+		return attachment;
+	},
+
+	async deleteAttachment(attachmentId, taskId, businessId) {
+		const [attachment] = await getDb()
+			.delete(taskAttachments)
+			.where(
+				and(
+					eq(taskAttachments.id, attachmentId),
+					eq(taskAttachments.taskId, taskId),
+					eq(taskAttachments.businessId, businessId),
+				),
+			)
+			.returning();
+		return attachment ?? null;
 	},
 };
