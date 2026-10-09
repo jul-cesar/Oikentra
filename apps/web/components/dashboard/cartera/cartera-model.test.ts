@@ -3,7 +3,12 @@ import test from "node:test";
 
 import type { Credit, CreditSummary, Customer } from "../../../lib/fiados-api";
 import type { Loan, LoanSummary } from "../../../lib/loans-api";
-import { buildPortfolioItems, buildPortfolioSummary } from "./cartera-model";
+import {
+  buildPortfolioItems,
+  buildPortfolioSummary,
+  filterPortfolioItems,
+  portfolioFilterFromQuery,
+} from "./cartera-model";
 
 const customer: Customer = {
   id: "customer-1",
@@ -136,6 +141,33 @@ test("builds stable detail links for credits and loans", () => {
     "/fiados/customer-1",
     "/prestamos/loan-1",
   ]);
+});
+
+test("maps supported query values to portfolio filters", () => {
+  assert.equal(portfolioFilterFromQuery("fiados"), "CREDIT");
+  assert.equal(portfolioFilterFromQuery("prestamos"), "LOAN");
+  assert.equal(portfolioFilterFromQuery("otro"), "ALL");
+  assert.equal(portfolioFilterFromQuery(null), "ALL");
+});
+
+test("filters by type and customer name and orders by remaining balance", () => {
+  const secondCustomer = { ...customer, id: "customer-2", name: "Beatriz" };
+  const items = buildPortfolioItems(
+    [credit({ remainingAmount: 80 })],
+    [loan({ customerId: secondCustomer.id, remainingAmount: 165 })],
+    [customer, secondCustomer],
+    today,
+  );
+
+  assert.deepEqual(
+    filterPortfolioItems(items, "ALL", "").map((item) => item.remainingAmount),
+    [165, 80],
+  );
+  assert.deepEqual(
+    filterPortfolioItems(items, "CREDIT", "ana").map((item) => item.type),
+    ["CREDIT"],
+  );
+  assert.deepEqual(filterPortfolioItems(items, "LOAN", "ana"), []);
 });
 
 test("combines debt totals without combining customer counts", () => {

@@ -2,6 +2,7 @@ import type { Credit, CreditSummary, Customer } from "../../../lib/fiados-api";
 import type { Loan, LoanSummary } from "../../../lib/loans-api";
 
 export type PortfolioType = "CREDIT" | "LOAN";
+export type PortfolioFilter = "ALL" | PortfolioType;
 export type PortfolioStatus = "ACTIVE" | "OVERDUE" | "PAID" | "CANCELLED";
 
 export type PortfolioItem = {
@@ -90,6 +91,27 @@ export function buildPortfolioItems(
       frequency: loan.frequency,
     })),
   ];
+}
+
+export function portfolioFilterFromQuery(value: string | null): PortfolioFilter {
+  if (value === "fiados") return "CREDIT";
+  if (value === "prestamos") return "LOAN";
+  return "ALL";
+}
+
+export function filterPortfolioItems(
+  items: PortfolioItem[],
+  filter: PortfolioFilter,
+  search: string,
+): PortfolioItem[] {
+  const query = search.trim().toLocaleLowerCase();
+  return items
+    .filter(
+      (item) =>
+        (filter === "ALL" || item.type === filter) &&
+        (!query || item.customerName.toLocaleLowerCase().includes(query)),
+    )
+    .sort((a, b) => b.remainingAmount - a.remainingAmount);
 }
 
 export function buildPortfolioSummary(
