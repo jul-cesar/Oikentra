@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { AttachmentDropzone } from "@/components/dashboard/tasks/attachment-dropzone";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import {
@@ -13,9 +14,13 @@ import {
 	useUploadTaskAttachment,
 } from "@/lib/queries/tasks";
 import { canDeleteTaskAttachment } from "@/lib/task-board";
-import { getTaskAttachmentDownload, type TaskAttachment } from "@/lib/tasks-api";
 import {
-	TASK_ATTACHMENT_TYPES,
+	getTaskAttachmentDownload,
+	isTrustedR2Url,
+	type TaskAttachment,
+} from "@/lib/tasks-api";
+import {
+	MAX_TASK_ATTACHMENTS,
 	validateTaskAttachment,
 } from "@/lib/validation/tasks-schemas";
 
@@ -69,29 +74,42 @@ export function TaskAttachments({
 	const upload = useUploadTaskAttachment(businessId, taskId);
 	const remove = useDeleteTaskAttachment(businessId, taskId);
 	const download = useTaskAttachmentDownload(businessId, taskId);
-	const input = useRef<HTMLInputElement>(null);
-	// The file stays here after a failure so retrying needs no new selection.
+	// Files stay here after a failure so retrying needs no new selection.
 	const [failed, setFailed] = useState<{
-		file: File;
+		files: File[];
 		message: string;
 		retryable: boolean;
 	} | null>(null);
 
-	function send(file: File) {
-		const invalid = validateTaskAttachment(file);
-		if (invalid) {
-			setFailed({ file, message: invalid, retryable: false });
+	// Uploads one file at a time; the backend enforces the 10-attachment limit.
+	async function send(files: File[]) {
+		setFailed(null);
+		const room = MAX_TASK_ATTACHMENTS - (attachments.data?.length ?? 0);
+		if (files.length > room) {
+			setFailed({
+				files: [],
+				message: `Solo puedes agregar ${Math.max(room, 0)} archivo(s) más. Máximo ${MAX_TASK_ATTACHMENTS} por tarea.`,
+				retryable: false,
+			});
 			return;
 		}
-		setFailed(null);
-		upload.mutate(file, {
-			onError: (error) =>
+		for (const [index, file] of files.entries()) {
+			const invalid = validateTaskAttachment(file);
+			if (invalid) {
+				setFailed({ files: [], message: `${file.name}: ${invalid}`, retryable: false });
+				return;
+			}
+			try {
+				await upload.mutateAsync(file);
+			} catch (error) {
 				setFailed({
-					file,
-					message: `${error.message} Revisa tu conexión y reintenta.`,
+					files: files.slice(index),
+					message: `${file.name}: ${error instanceof Error ? error.message : "No pudimos subir el archivo."}`,
 					retryable: true,
-				}),
-		});
+				});
+				return;
+			}
+		}
 	}
 
 	function open(attachmentId: string) {
@@ -100,6 +118,16 @@ export function TaskAttachments({
 		const tab = window.open("", "_blank");
 		download.mutate(attachmentId, {
 			onSuccess: ({ downloadUrl }) => {
+				if (!isTrustedR2Url(downloadUrl)) {
+					tab?.close();
+					toast.add({
+						type: "error",
+						title: "No pudimos abrir el archivo",
+						description: "La URL del archivo no es válida.",
+						priority: "high",
+					});
+					return;
+				}
 				if (tab) tab.location.href = downloadUrl;
 				else window.location.assign(downloadUrl);
 			},
@@ -190,21 +218,9 @@ export function TaskAttachments({
 				</p>
 			)}
 			<div className="space-y-2">
-				<label htmlFor="task-attachment-file" className="text-sm font-medium">
-					Agregar archivo
-				</label>
-				<input
-					ref={input}
-					id="task-attachment-file"
-					type="file"
-					accept={TASK_ATTACHMENT_TYPES.join(",")}
+				<AttachmentDropzone
 					disabled={upload.isPending}
-					className="block w-full text-sm"
-					onChange={(event) => {
-						const file = event.target.files?.[0];
-						if (file) send(file);
-						if (input.current) input.current.value = "";
-					}}
+					onFiles={(files) => void send(files)}
 				/>
 				{upload.isPending ? (
 					<p role="status" className="text-sm text-muted-foreground">
@@ -219,7 +235,7 @@ export function TaskAttachments({
 								variant="outline"
 								size="sm"
 								className="mt-2"
-								onClick={() => send(failed.file)}
+								onClick={() => void send(failed.files)}
 							>
 								Reintentar
 							</Button>

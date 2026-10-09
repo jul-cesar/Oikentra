@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 
+import { AttachmentDropzone } from "@/components/dashboard/tasks/attachment-dropzone";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -34,8 +35,11 @@ import {
 import { toast } from "@/components/ui/toast";
 import { endOfDayInZone, taskPriorityLabels } from "@/lib/task-board";
 import { useCreateTask } from "@/lib/queries/tasks";
-import { taskPriorities } from "@/lib/tasks-api";
-import { taskFormSchema } from "@/lib/validation/tasks-schemas";
+import { taskPriorities, uploadTaskAttachment } from "@/lib/tasks-api";
+import {
+	addTaskAttachmentFiles,
+	taskFormSchema,
+} from "@/lib/validation/tasks-schemas";
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
 
@@ -65,26 +69,70 @@ export function CreateTaskDialog({
 		resolver: zodResolver(taskFormSchema),
 		defaultValues: emptyForm,
 	});
+	const [files, setFiles] = useState<File[]>([]);
+	const [fileErrors, setFileErrors] = useState<string[]>([]);
+	const [uploading, setUploading] = useState(false);
 
 	useEffect(() => {
 		if (open) form.reset(emptyForm);
 	}, [form, open]);
 
+	// Pending files are cleared on every close, so each open starts empty.
+	function handleOpenChange(next: boolean) {
+		if (!next) {
+			setFiles([]);
+			setFileErrors([]);
+		}
+		onOpenChange(next);
+	}
+
+	function addFiles(incoming: File[]) {
+		const result = addTaskAttachmentFiles(files, incoming);
+		setFiles(result.files);
+		setFileErrors(result.errors);
+	}
+
+	// The task must exist before its attachments can be uploaded; failures do
+	// not undo the task, the user can retry from the task detail.
+	async function uploadPending(taskId: string) {
+		const failed: string[] = [];
+		for (const file of files) {
+			try {
+				await uploadTaskAttachment({ businessId, taskId, file });
+			} catch {
+				failed.push(file.name);
+			}
+		}
+		return failed;
+	}
+
 	async function onSubmit(values: TaskFormValues) {
 		try {
-			await create.mutateAsync({
+			const task = await create.mutateAsync({
 				title: values.title,
 				description: values.description || null,
 				priority: values.priority,
 				assigneeMemberId: values.assigneeMemberId || null,
 				dueAt: values.dueAt ? endOfDayInZone({ date: values.dueAt, timeZone }) : null,
 			});
-			onOpenChange(false);
-			toast.add({
-				type: "success",
-				title: "Tarea creada",
-				description: "La tarea quedó en la columna Pendiente.",
-			});
+			setUploading(true);
+			const failed = files.length ? await uploadPending(task.id) : [];
+			setUploading(false);
+			handleOpenChange(false);
+			toast.add(
+				failed.length
+					? {
+							type: "warning",
+							title: "Tarea creada sin algunos adjuntos",
+							description: `No pudimos subir: ${failed.join(", ")}. Puedes reintentar desde el detalle de la tarea.`,
+							priority: "high",
+						}
+					: {
+							type: "success",
+							title: "Tarea creada",
+							description: "La tarea quedó en la columna Pendiente.",
+						},
+			);
 		} catch (cause) {
 			const message =
 				cause instanceof Error ? cause.message : "No pudimos crear la tarea.";
@@ -99,7 +147,7 @@ export function CreateTaskDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Nueva tarea</DialogTitle>
@@ -214,6 +262,47 @@ export function CreateTaskDialog({
 								</FormItem>
 							)}
 						/>
+						<div className="space-y-2">
+							<p className="text-sm font-medium">Adjuntos (opcional)</p>
+							<AttachmentDropzone
+								disabled={create.isPending || uploading}
+								onFiles={addFiles}
+							/>
+							{files.length ? (
+								<ul className="space-y-1 text-sm">
+									{files.map((file, index) => (
+										<li
+											key={`${file.name}-${index}`}
+											className="flex items-center gap-2 rounded-md border px-2 py-1"
+										>
+											<span className="min-w-0 flex-1 truncate">{file.name}</span>
+											<span className="text-xs text-muted-foreground">
+												{(file.size / 1024 / 1024).toFixed(1)} MB
+											</span>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												aria-label={`Quitar ${file.name}`}
+												disabled={create.isPending || uploading}
+												onClick={() =>
+													setFiles(files.filter((_, i) => i !== index))
+												}
+											>
+												Quitar
+											</Button>
+										</li>
+									))}
+								</ul>
+							) : null}
+							{fileErrors.length ? (
+								<ul role="alert" className="space-y-1 text-sm text-destructive">
+									{fileErrors.map((error) => (
+										<li key={error}>{error}</li>
+									))}
+								</ul>
+							) : null}
+						</div>
 						{form.formState.errors.root?.server?.message ? (
 							<p className="text-sm text-destructive" role="alert">
 								{form.formState.errors.root.server.message}
@@ -223,12 +312,16 @@ export function CreateTaskDialog({
 							<Button
 								type="button"
 								variant="outline"
-								onClick={() => onOpenChange(false)}
+								onClick={() => handleOpenChange(false)}
 							>
 								Cancelar
 							</Button>
-							<Button type="submit" disabled={create.isPending}>
-								{create.isPending ? "Guardando…" : "Crear tarea"}
+							<Button type="submit" disabled={create.isPending || uploading}>
+								{uploading
+									? "Subiendo adjuntos…"
+									: create.isPending
+										? "Guardando…"
+										: "Crear tarea"}
 							</Button>
 						</DialogFooter>
 					</form>

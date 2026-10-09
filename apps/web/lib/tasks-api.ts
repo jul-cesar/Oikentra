@@ -271,6 +271,23 @@ export function deleteTaskAttachment({
 	});
 }
 
+// Signed URLs must point at Cloudflare R2 over HTTPS before the browser is sent there.
+export function trustedR2Url(value: string): URL | null {
+	try {
+		const url = new URL(value);
+		return url.protocol === "https:" &&
+			url.hostname.endsWith(".r2.cloudflarestorage.com")
+			? url
+			: null;
+	} catch {
+		return null;
+	}
+}
+
+export function isTrustedR2Url(value: string) {
+	return trustedR2Url(value) !== null;
+}
+
 // Request a signed URL, PUT the file straight to R2, then confirm it so the
 // service can verify the object before registering the attachment.
 export async function uploadTaskAttachment({
@@ -291,14 +308,11 @@ export async function uploadTaskAttachment({
 		url: `${taskUrl(businessId, taskId)}/attachments/upload`,
 		init: post(meta),
 	});
-	const url = new URL(upload.uploadUrl);
-	if (
-		url.protocol !== "https:" ||
-		!url.hostname.endsWith(".r2.cloudflarestorage.com")
-	) {
+	const uploadUrl = trustedR2Url(upload.uploadUrl);
+	if (!uploadUrl) {
 		throw new Error("La URL para subir el archivo no es válida.");
 	}
-	const response = await fetch(url.toString(), {
+	const response = await fetch(uploadUrl, {
 		method: "PUT",
 		headers: upload.headers,
 		body: file,
