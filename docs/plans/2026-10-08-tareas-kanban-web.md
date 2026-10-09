@@ -204,7 +204,7 @@ git commit -m "feat(tasks): add task domain and permissions"
 - Produce helper R2 compartido para `PutObject`, `GetObject`, `HeadObject` y `DeleteObject`.
 - Consume: `tasks.comment`, `tasks.attach`, `tasks.manage` y acceso de lectura a la tarea.
 
-- [ ] **Paso 1: Escribir pruebas fallidas de colaboración y seguridad**
+- [x] **Paso 1: Escribir pruebas fallidas de colaboración y seguridad**
 
 Cubrir:
 
@@ -220,32 +220,32 @@ Cubrir:
 - una confirmación con tamaño o tipo inválido elimina el objeto rechazado de R2;
 - la eliminación de tarea se detiene si R2 falla y puede reintentarse.
 
-- [ ] **Paso 2: Ejecutar pruebas para comprobar que fallan**
+- [x] **Paso 2: Ejecutar pruebas para comprobar que fallan**
 
 ```bash
 bun test apps/business-service/src/modules/tasks/task-collaboration.service.test.ts
 ```
 
-- [ ] **Paso 3: Extraer cliente R2 compartido**
+- [x] **Paso 3: Extraer cliente R2 compartido**
 
 Mover únicamente la creación reutilizable de `S3Client` a `storage/r2-client.ts`. Mantener intacta la API pública de logos y sus URLs públicas. Las tareas deben seleccionar exclusivamente `R2_PRIVATE_BUCKET`.
 
-- [ ] **Paso 4: Implementar comentarios**
+- [x] **Paso 4: Implementar comentarios**
 
 Los comentarios se crean como registros inmutables y se devuelven en orden ascendente por `createdAt`, incluyendo `authorUserId`.
 
-- [ ] **Paso 5: Implementar ciclo de adjuntos**
+- [x] **Paso 5: Implementar ciclo de adjuntos**
 
 La solicitud de carga genera una clave controlada por servidor y URL firmada de cinco minutos, vinculando `Content-Type` y `Content-Length` esperados. La confirmación verifica el objeto antes de insertar metadatos y elimina cualquier objeto que no coincida. La descarga genera una URL firmada de corta duración. La eliminación borra primero R2 y después los metadatos.
 
-- [ ] **Paso 6: Ejecutar pruebas y typecheck**
+- [x] **Paso 6: Ejecutar pruebas y typecheck**
 
 ```bash
 bun test apps/business-service/src/modules/tasks/task-collaboration.service.test.ts
 pnpm --filter @oikentra/business-service typecheck
 ```
 
-- [ ] **Paso 7: Commit**
+- [x] **Paso 7: Commit**
 
 ```bash
 git add apps/business-service/src/storage apps/business-service/src/modules/tasks apps/business-service/src/modules/businesses/logo-upload.service.ts
