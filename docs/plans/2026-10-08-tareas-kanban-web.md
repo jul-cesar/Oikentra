@@ -2,7 +2,7 @@
 
 > **Para agentes de implementación:** SUB-SKILL REQUERIDA: usar `superpowers:subagent-driven-development` (recomendado) o `superpowers:executing-plans` para ejecutar este plan tarea por tarea. Las casillas `- [ ]` registran el avance.
 
-**Estado:** Aprobado
+**Estado:** Completado
 
 **Objetivo:** Crear un módulo web de tareas compartidas con tablero Kanban, responsable único opcional, comentarios, adjuntos privados y proyección de vencimientos en Agenda.
 
@@ -420,7 +420,7 @@ git commit -m "feat(web): add task collaboration detail"
 - Produce: `AgendaItem.source = "TASK"` y `taskId` para navegación.
 - Consume: tareas con `dueAt` dentro del rango solicitado.
 
-- [ ] **Paso 1: Escribir pruebas fallidas de Agenda**
+- [x] **Paso 1: Escribir pruebas fallidas de Agenda**
 
 Cubrir:
 
@@ -431,21 +431,21 @@ Cubrir:
 - la tarea se representa una sola vez, como elemento de día completo y `readOnly`;
 - pertenece al negocio solicitado y respeta el rango.
 
-- [ ] **Paso 2: Ejecutar pruebas para comprobar que fallan**
+- [x] **Paso 2: Ejecutar pruebas para comprobar que fallan**
 
 ```bash
 bun test apps/business-service/src/modules/agenda/agenda.service.test.ts
 ```
 
-- [ ] **Paso 3: Agregar consulta y mapeo**
+- [x] **Paso 3: Agregar consulta y mapeo**
 
 Consultar tareas directamente desde Agenda; no insertar `business_events`. Añadir `taskId`, título, descripción y estado normalizado al resultado.
 
-- [ ] **Paso 4: Actualizar cliente y navegación web**
+- [x] **Paso 4: Actualizar cliente y navegación web**
 
 Extender el tipo `AgendaItem` con `TASK`. Al seleccionar una tarea, navegar a `/dashboard/{businessId}/tareas/{taskId}`; no abrir el editor de eventos.
 
-- [ ] **Paso 5: Ejecutar verificación final**
+- [x] **Paso 5: Ejecutar verificación final**
 
 ```bash
 bun test apps/business-service/src/modules/tasks/tasks.service.test.ts apps/business-service/src/modules/tasks/task-collaboration.service.test.ts apps/business-service/src/modules/agenda/agenda.service.test.ts apps/business-service/src/index.test.ts
@@ -458,11 +458,11 @@ Resultado esperado: todos los comandos terminan con código `0`.
 
 Comprobación manual: crear tarea con vencimiento, verla en Agenda, completarla, cambiar la fecha y eliminarla; Agenda debe reflejar cada cambio sin registros duplicados.
 
-- [ ] **Paso 6: Actualizar estado documental**
+- [x] **Paso 6: Actualizar estado documental**
 
 Cambiar este plan y `docs/plans/README.md` a **Completado** después de verificar todos los criterios.
 
-- [ ] **Paso 7: Commit**
+- [x] **Paso 7: Commit**
 
 ```bash
 git add apps/business-service/src/modules/agenda apps/web/lib/agenda-api.ts apps/web/components/dashboard/agenda/agenda-page.tsx docs/plans

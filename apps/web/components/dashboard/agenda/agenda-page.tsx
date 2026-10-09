@@ -118,6 +118,7 @@ const eventColors: Record<AgendaItem["source"], string> = {
 	EVENT: "var(--color-blue-500)",
 	CREDIT: "var(--color-amber-500)",
 	LOAN_INSTALLMENT: "var(--color-violet-500)",
+	TASK: "var(--color-emerald-500)",
 };
 
 function dateParts(date: Date) {
@@ -281,6 +282,10 @@ export function AgendaPage({
 		}
 		if (item.source === "LOAN_INSTALLMENT" && item.loanId) {
 			router.push(`/dashboard/${businessId}/prestamos/${item.loanId}`);
+			return;
+		}
+		if (item.source === "TASK" && item.taskId) {
+			router.push(`/dashboard/${businessId}/tareas/${item.taskId}`);
 			return;
 		}
 		const start = inBusinessZone({ date: occurrence.start, timeZone });
