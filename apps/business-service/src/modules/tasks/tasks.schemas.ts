@@ -3,6 +3,9 @@ import { z } from "zod";
 import { taskPriorities, taskStatuses } from "../../db/schema";
 
 const instant = z.string().datetime({ offset: true });
+// Member ids are text primary keys and are not always UUIDs; the service
+// verifies the member is ACTIVE in the same business.
+const memberId = z.string().trim().min(1).max(64);
 const editableTaskFields = {
 	title: z.string().trim().min(1).max(160),
 	description: z.string().trim().max(1_000).nullable().optional(),
@@ -12,7 +15,7 @@ const editableTaskFields = {
 
 export const createTaskSchema = z.object({
 	...editableTaskFields,
-	assigneeMemberId: z.string().uuid().nullable().optional(),
+	assigneeMemberId: memberId.nullable().optional(),
 });
 
 export const updateTaskSchema = z.object({
@@ -30,13 +33,13 @@ export const changeTaskStatusSchema = z.object({
 
 export const assignTaskSchema = z.object({
 	version: z.number().int().positive(),
-	assigneeMemberId: z.string().uuid().nullable(),
+	assigneeMemberId: memberId.nullable(),
 });
 
 export const taskFiltersSchema = z.object({
 	status: z.enum(taskStatuses).optional(),
 	priority: z.enum(taskPriorities).optional(),
-	assigneeMemberId: z.string().uuid().optional(),
+	assigneeMemberId: memberId.optional(),
 	mine: z.boolean().optional(),
 	unassigned: z.boolean().optional(),
 	search: z.string().trim().min(1).max(160).optional(),
