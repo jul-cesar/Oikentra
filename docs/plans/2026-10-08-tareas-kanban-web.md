@@ -321,29 +321,29 @@ git commit -m "feat(tasks): expose task API and web client"
 - Consume: hooks de la Tarea 4 y consulta existente de integrantes activos.
 - Produce: ruta `/dashboard/[businessId]/tareas` y cambios de estado mediante drag-and-drop optimista.
 
-- [ ] **Paso 1: Crear contenedor autenticado y navegación**
+- [x] **Paso 1: Crear contenedor autenticado y navegación**
 
 Seguir el patrón de `DashboardShell`, agregar `Tareas` al menú y usar `Cargando tareas` en el estado inicial.
 
-- [ ] **Paso 2: Crear formulario de tarea**
+- [x] **Paso 2: Crear formulario de tarea**
 
 Campos: título, descripción, prioridad, responsable opcional y fecha límite opcional. Para operadores, el selector solo permite `Sin asignar` o su propio integrante; propietarios y administradores ven todos los integrantes activos.
 
-- [ ] **Paso 3: Crear filtros y búsqueda**
+- [x] **Paso 3: Crear filtros y búsqueda**
 
 Implementar `Todas`, `Mis tareas`, `Sin asignar`, integrante, prioridad y búsqueda. Conservar filtros en query string para permitir enlaces compartibles.
 
-- [ ] **Paso 4: Crear las tres columnas y el movimiento optimista**
+- [x] **Paso 4: Crear las tres columnas y el movimiento optimista**
 
 Renderizar `Pendiente`, `En curso` y `Completada` con `Kanban`, `KanbanBoard`, `KanbanColumn`, `KanbanColumnContent`, `KanbanItem`, `KanbanItemHandle` y `KanbanOverlay` desde `apps/web/components/reui/kanban.tsx`. Ordenar por vencimiento ascendente y creación descendente. Cada tarjeta debe mostrar los metadatos aprobados y un menú accesible para cambiar estado cuando el usuario tenga permiso.
 
 Mantener `value` y `onValueChange` para la previsualización optimista y persistir una sola vez desde `onValueCommit`. Solo los movimientos entre columnas producen una mutación de estado con la versión actual. Un movimiento dentro de la misma columna restaura el orden canónico; las columnas no son reordenables. Ante error, conflicto o rechazo de permisos, invalidar y recargar tablero, detalle y Agenda, además de mostrar un mensaje accionable.
 
-- [ ] **Paso 5: Crear estados de carga, error y vacío**
+- [x] **Paso 5: Crear estados de carga, error y vacío**
 
 El error ofrece `Reintentar`; el estado vacío mantiene visible `Nueva tarea`. Una columna vacía conserva su encabezado y explica qué tipo de tarea aparecerá allí.
 
-- [ ] **Paso 6: Verificar tablero**
+- [x] **Paso 6: Verificar tablero**
 
 ```bash
 pnpm --filter @oikentra/web typecheck
@@ -352,7 +352,7 @@ pnpm --filter @oikentra/web lint
 
 Comprobación manual: crear tareas asignadas y sin asignar, aplicar filtros, arrastrar tarjetas entre estados con distintos roles, comprobar la actualización optimista y su recuperación ante error, cambiar estado sin arrastrar y abrir una tarjeta mediante teclado.
 
-- [ ] **Paso 7: Commit**
+- [x] **Paso 7: Commit**
 
 ```bash
 git add apps/web/app/dashboard/[businessId]/tareas/page.tsx apps/web/components/dashboard/tasks apps/web/components/app-sidebar.tsx
