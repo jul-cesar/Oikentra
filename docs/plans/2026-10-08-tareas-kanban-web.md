@@ -124,7 +124,7 @@ git commit -m "feat(tasks): add task persistence"
 - Produce métodos `list`, `get`, `create`, `update`, `changeStatus`, `assign` y `remove` en `tasksService`.
 - Consume: integrante autenticado obtenido mediante `membersService.requirePermission`.
 
-- [ ] **Paso 1: Escribir pruebas fallidas de permisos y reglas**
+- [x] **Paso 1: Escribir pruebas fallidas de permisos y reglas**
 
 Cubrir:
 
@@ -140,7 +140,7 @@ Cubrir:
 - eliminar requiere `tasks.manage`;
 - integrante inactivo o de otro negocio devuelve error de validación.
 
-- [ ] **Paso 2: Ejecutar pruebas para comprobar que fallan**
+- [x] **Paso 2: Ejecutar pruebas para comprobar que fallan**
 
 ```bash
 bun test apps/business-service/src/modules/tasks/tasks.service.test.ts
@@ -148,13 +148,13 @@ bun test apps/business-service/src/modules/tasks/tasks.service.test.ts
 
 Resultado esperado: falla porque el módulo no existe.
 
-- [ ] **Paso 3: Agregar permisos por rol**
+- [x] **Paso 3: Agregar permisos por rol**
 
 `OWNER` y `MANAGER` reciben todos los permisos de tareas. `OPERATOR` recibe lectura, creación, comentarios y adjuntos; las operaciones contextuales de autoasignación y cambio de estado se validan en `tasksService`, no mediante confianza en el cliente.
 
 Agregar un permiso de lectura de integrantes activos disponible para todos los roles sin conceder `members.manage`, para que el tablero pueda resolver responsables.
 
-- [ ] **Paso 4: Implementar esquemas y tipos**
+- [x] **Paso 4: Implementar esquemas y tipos**
 
 Definir entradas exactas:
 
@@ -164,13 +164,13 @@ Definir entradas exactas:
 - `AssignTaskInput`: versión y `assigneeMemberId` nullable;
 - filtros: estado, prioridad, responsable, `mine`, `unassigned` y búsqueda.
 
-- [ ] **Paso 5: Implementar repositorio y servicio**
+- [x] **Paso 5: Implementar repositorio y servicio**
 
 Todas las consultas deben incluir `businessId`. Las actualizaciones deben comparar `id`, `businessId` y `version`, incrementar la versión y distinguir conflicto de recurso inexistente.
 
 Cuando se desactive un integrante, `members.repository.deactivate` debe desasignar sus tareas dentro de la misma transacción.
 
-- [ ] **Paso 6: Ejecutar pruebas y typecheck**
+- [x] **Paso 6: Ejecutar pruebas y typecheck**
 
 ```bash
 bun test apps/business-service/src/modules/tasks/tasks.service.test.ts apps/business-service/src/modules/businesses/businesses.service.test.ts
@@ -179,7 +179,7 @@ pnpm --filter @oikentra/business-service typecheck
 
 Resultado esperado: todo pasa.
 
-- [ ] **Paso 7: Commit**
+- [x] **Paso 7: Commit**
 
 ```bash
 git add apps/business-service/src/modules/tasks apps/business-service/src/modules/businesses/members.service.ts apps/business-service/src/modules/businesses/members.repository.ts apps/business-service/src/modules/businesses/businesses.service.test.ts
