@@ -84,3 +84,33 @@ test("agenda follows the wide Caja hierarchy", () => {
 	assert.doesNotMatch(agenda, /max-w-5xl/);
 	assert.doesNotMatch(agenda, /shadow-sm/);
 });
+
+test("task screens follow the dashboard visual contract", () => {
+	const paths = [
+		"components/dashboard/tasks/tasks-page.tsx",
+		"components/dashboard/tasks/create-task-page.tsx",
+		"components/dashboard/tasks/task-detail.tsx",
+		"components/dashboard/tasks/task-board.tsx",
+		"components/dashboard/tasks/task-card.tsx",
+		"components/dashboard/tasks/edit-task-dialog.tsx",
+		"components/dashboard/tasks/task-attachments.tsx",
+		"components/dashboard/tasks/attachment-dropzone.tsx",
+		"components/dashboard/tasks/task-comments.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	const list = read(paths[0]);
+	const create = read(paths[1]);
+	const detail = read(paths[2]);
+	const card = read(paths[4]);
+
+	assert.match(list, /<DashboardPage width="wide">/);
+	assert.match(create, /<DashboardPage>/);
+	assert.match(detail, /<DashboardPage className="max-w-3xl">/);
+	for (const source of [list, create, detail]) {
+		assert.match(source, /text-3xl font-semibold tracking-tight/);
+		assert.match(source, /text-sm text-muted-foreground/);
+	}
+	assert.match(card, /min-w-0 flex-1/);
+	assert.match(card, /rounded-full/);
+});

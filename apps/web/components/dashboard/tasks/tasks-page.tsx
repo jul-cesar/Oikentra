@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PlusSignIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { TaskBoard } from "@/components/dashboard/tasks/task-board";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,12 +90,12 @@ export function TasksPage({
 	const memberId = memberOptions.find((member) => member.userId === userId)?.id;
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-6">
+		<DashboardPage width="wide">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
 					<p className="text-sm font-medium">Trabajo del equipo</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">Tareas</h1>
-					<p className="mt-2 text-muted-foreground">
+					<p className="mt-2 text-sm text-muted-foreground">
 						Organiza, asigna y completa el trabajo de tu negocio.
 					</p>
 				</div>
@@ -219,6 +220,6 @@ export function TasksPage({
 					/>
 				</>
 			)}
-		</div>
+		</DashboardPage>
 	);
 }

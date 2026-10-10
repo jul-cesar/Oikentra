@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { TaskAttachments } from "@/components/dashboard/tasks/task-attachments";
 import { EditTaskDialog } from "@/components/dashboard/tasks/edit-task-dialog";
 import { TaskComments } from "@/components/dashboard/tasks/task-comments";
@@ -92,14 +93,14 @@ export function TaskDetail({
 
 	if (task.isLoading) {
 		return (
-			<div
-				className="mx-auto max-w-3xl space-y-4"
+			<DashboardPage
+				className="max-w-3xl"
 				role="status"
 				aria-label="Cargando tarea"
 			>
 				<Skeleton className="h-10 w-2/3" />
 				<Skeleton className="h-40 rounded-xl" />
-			</div>
+			</DashboardPage>
 		);
 	}
 	if (task.error || !task.data) {
@@ -176,7 +177,7 @@ export function TaskDetail({
 	}
 
 	return (
-		<div className="mx-auto max-w-3xl space-y-8">
+		<DashboardPage className="max-w-3xl">
 			<div>
 				<Link
 					href={backHref}
@@ -188,7 +189,7 @@ export function TaskDetail({
 					{data.title}
 				</h1>
 				{data.description ? (
-					<p className="mt-3 whitespace-pre-wrap text-muted-foreground">
+					<p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
 						{data.description}
 					</p>
 				) : null}
@@ -318,6 +319,6 @@ export function TaskDetail({
 				authorNames={authorNames}
 				timeZone={timeZone}
 			/>
-		</div>
+		</DashboardPage>
 	);
 }
