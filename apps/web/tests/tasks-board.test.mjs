@@ -112,12 +112,20 @@ test("el tablero tiene ruta, navegación y tres columnas Kanban", () => {
 	]);
 });
 
-test("la página ofrece reintento, nueva tarea y filtros", () => {
+test("la página ofrece filtros y lleva la creación a una ruta propia", () => {
 	const page = read("components/dashboard/tasks/tasks-page.tsx");
 	for (const label of ["Reintentar", "Nueva tarea", "Mis tareas", "Sin asignar", "Todas"]) {
 		assert.match(page, new RegExp(label));
 	}
-	assert.match(read("components/dashboard/tasks/create-task-dialog.tsx"), /Sin asignar/);
+	assert.match(page, /\/tareas\/nueva/);
+	assert.equal(
+		existsSync(pathFromWeb("app/dashboard/[businessId]/tareas/nueva/page.tsx")),
+		true,
+	);
+	const create = read("components/dashboard/tasks/create-task-page.tsx");
+	assert.match(create, /Sin asignar/);
+	assert.match(create, /router\.replace\(backHref\)/);
+	assert.doesNotMatch(page, /CreateTaskDialog/);
 });
 
 test("el detalle avisa del conflicto de versión y ordena la conversación", () => {
@@ -153,16 +161,19 @@ test("el detalle es enlazable y reúne datos, comentarios y adjuntos", () => {
 	assert.doesNotMatch(comments, /Editar|Responder/);
 });
 
-test("los adjuntos validan antes de subir, reintentan y descargan con URL firmada al abrir", () => {
+test("los adjuntos validan, previsualizan y descargan con URL firmada al abrir", () => {
 	const attachments = read("components/dashboard/tasks/task-attachments.tsx");
-	assert.match(attachments, /type="file"/);
-	assert.match(attachments, /accept=\{TASK_ATTACHMENT_TYPES\.join\(","\)\}/);
+	const dropzone = read("components/dashboard/tasks/attachment-dropzone.tsx");
+	assert.match(dropzone, /type="file"/);
+	assert.match(dropzone, /accept=\{TASK_ATTACHMENT_TYPES\.join\(","\)\}/);
 	assert.ok(
 		attachments.indexOf("validateTaskAttachment") < attachments.indexOf(".mutate("),
 	);
 	assert.match(attachments, /Reintentar/);
 	assert.match(attachments, /useTaskAttachmentDownload/);
 	assert.match(attachments, /<img\b/);
+	assert.match(attachments, /getAttachmentPreview/);
+	assert.match(attachments, /sm:grid-cols-2/);
 	assert.match(attachments, /canDeleteTaskAttachment/);
 });
 

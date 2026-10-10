@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PlusSignIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { CreateTaskDialog } from "@/components/dashboard/tasks/create-task-dialog";
 import { TaskBoard } from "@/components/dashboard/tasks/task-board";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMembers, usePublicUsers } from "@/lib/queries/members";
 import { useTasks } from "@/lib/queries/tasks";
 import {
-	assignableMembers,
 	parseTaskBoardFilters,
 	taskBoardQueryString,
 	taskPriorityLabels,
@@ -52,7 +51,6 @@ export function TasksPage({
 	const searchParams = useSearchParams();
 	const filters = parseTaskBoardFilters(searchParams);
 	const [search, setSearch] = useState(filters.search);
-	const [creating, setCreating] = useState(false);
 	const members = useMembers(businessId);
 	const users = usePublicUsers(
 		(members.data ?? []).map((member) => member.userId),
@@ -100,8 +98,8 @@ export function TasksPage({
 						Organiza, asigna y completa el trabajo de tu negocio.
 					</p>
 				</div>
-				<Button onClick={() => setCreating(true)}>
-					<HugeiconsIcon icon={PlusSignIcon} size={18} />
+				<Button render={<Link href={`/dashboard/${businessId}/tareas/nueva`} />}>
+					<HugeiconsIcon icon={PlusSignIcon} size={18} aria-hidden="true" />
 					Nueva tarea
 				</Button>
 			</div>
@@ -221,17 +219,6 @@ export function TasksPage({
 					/>
 				</>
 			)}
-			<CreateTaskDialog
-				businessId={businessId}
-				members={assignableMembers({
-					role,
-					memberId,
-					members: memberOptions,
-				})}
-				timeZone={timeZone}
-				open={creating}
-				onOpenChange={setCreating}
-			/>
 		</div>
 	);
 }
