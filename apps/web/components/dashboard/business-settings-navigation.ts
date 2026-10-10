@@ -41,6 +41,17 @@ export function getBusinessSettingsItems(
   return items;
 }
 
+export function getActiveBusinessSettingsItem(
+  pathname: string,
+  items: BusinessSettingsItem[],
+) {
+  return items.find(({ href, match }) =>
+    match === "exact"
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`),
+  );
+}
+
 export function canAccessBusinessSettingsPath(
   pathname: string,
   businessId: string,

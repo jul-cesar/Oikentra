@@ -4,9 +4,6 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { AuthGuard } from "@/components/auth-guard";
-import { useSession } from "@/hooks/use-session";
 import {
 	useBusiness,
 	useCreateBusinessLogoUpload,
@@ -48,15 +45,10 @@ import {
 } from "@/components/ui/form";
 
 export default function BusinessSettings() {
-	return (
-		<AuthGuard>
-			<BusinessSettingsContent />
-		</AuthGuard>
-	);
+	return <BusinessSettingsContent />;
 }
 
 function BusinessSettingsContent() {
-	const { user } = useSession();
 	const { businessId } = useParams<{ businessId: string }>();
 	const router = useRouter();
 	const { data: business, isLoading, error } = useBusiness(businessId);
@@ -77,14 +69,6 @@ function BusinessSettingsContent() {
 	});
 
 	const fetchErrorMessage = error ? "No pudimos cargar este negocio." : "";
-	const canManageBusiness =
-		business?.role === "OWNER" || business?.role === "MANAGER";
-
-	useEffect(() => {
-		if (business && !canManageBusiness) {
-			router.replace(`/dashboard/${businessId}`);
-		}
-	}, [business, businessId, canManageBusiness, router]);
 
 	useEffect(() => {
 		if (business) {
@@ -115,7 +99,12 @@ function BusinessSettingsContent() {
 		}
 
 		const upload = await logoUploadMutation.mutateAsync(file.type);
-		const url = new URL(upload.uploadUrl);
+		let url: URL;
+		try {
+			url = new URL(upload.uploadUrl);
+		} catch {
+			throw new Error("La URL para subir el logo no es válida.");
+		}
 		if (
 			url.protocol !== "https:" ||
 			!url.hostname.endsWith(".r2.cloudflarestorage.com")
@@ -195,7 +184,7 @@ function BusinessSettingsContent() {
 		return (
 			<OikentraLoader label="Cargando configuración" className="min-h-[60vh]" />
 		);
-	if (!business || !user)
+	if (!business)
 		return (
 			<div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">
 				<p className="text-muted-foreground">{fetchErrorMessage}</p>
@@ -204,10 +193,8 @@ function BusinessSettingsContent() {
 				</Button>
 			</div>
 		);
-	if (!canManageBusiness) return null;
 	return (
-		<DashboardShell business={business} user={user}>
-			<div className="mx-auto max-w-5xl space-y-6">
+		<div className="mx-auto max-w-5xl space-y-6">
 				<div>
 					<p className="text-sm font-medium ">Configuración</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
@@ -392,7 +379,6 @@ function BusinessSettingsContent() {
 				{business.role === "OWNER" ? (
 					<CollaboratorsSettings businessId={businessId} />
 				) : null}
-			</div>
-		</DashboardShell>
+		</div>
 	);
 }

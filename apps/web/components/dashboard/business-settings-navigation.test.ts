@@ -6,6 +6,7 @@ const navigation = await import(
 );
 const {
   canAccessBusinessSettingsPath,
+  getActiveBusinessSettingsItem,
   getBusinessSettingsItems,
   isBusinessSettingsPath,
 } = navigation;
@@ -57,6 +58,25 @@ test("enforces settings access by role", () => {
       "OWNER",
     ),
     false,
+  );
+});
+
+test("finds the active declared settings item", () => {
+  const ownerItems = getBusinessSettingsItems("business-1", "OWNER");
+
+  assert.equal(
+    getActiveBusinessSettingsItem(
+      "/dashboard/business-1/configuracion/medios-de-pago",
+      ownerItems,
+    )?.title,
+    "Medios de pago",
+  );
+  assert.equal(
+    getActiveBusinessSettingsItem(
+      "/dashboard/business-1/configuracion/desconocida",
+      ownerItems,
+    ),
+    undefined,
   );
 });
 
