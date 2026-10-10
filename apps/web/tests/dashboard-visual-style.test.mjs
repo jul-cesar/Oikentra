@@ -46,3 +46,28 @@ test("shared primitives match the approved baseline", () => {
 	assert.match(dialog, /rounded-xl border bg-popover p-6/);
 	assert.match(dialog, /shadow-lg/);
 });
+
+test("home and summary screens follow Caja hierarchy", () => {
+	const paths = [
+		"app/dashboard/page.tsx",
+		"components/dashboard/dashboard/dashboard-page.tsx",
+		"components/dashboard/resumen-general/resumen-general-page.tsx",
+		"components/dashboard/business-dashboard.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	for (const path of paths.slice(1)) {
+		const source = read(path);
+		assert.match(source, /components\/dashboard\/dashboard-page/);
+		assert.match(source, /<DashboardPage/);
+		assert.match(source, /text-3xl font-semibold tracking-tight/);
+		assert.match(source, /text-sm text-muted-foreground/);
+	}
+
+	const dashboard = read("components/dashboard/dashboard/dashboard-page.tsx");
+	assert.match(dashboard, /rounded-xl border bg-card p-5/);
+	assert.doesNotMatch(dashboard, /hover:shadow-md/);
+
+	const statistics = read("components/dashboard/business-dashboard.tsx");
+	assert.match(statistics, /rounded-2xl/);
+});
