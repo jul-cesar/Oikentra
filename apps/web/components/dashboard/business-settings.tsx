@@ -14,8 +14,6 @@ import {
 	type BusinessSettingsValues,
 } from "@/lib/validation/onboarding-schemas";
 import { Button } from "@/components/ui/button";
-import { CollaboratorsSettings } from "@/components/dashboard/collaborators-settings";
-import { PaymentMethodsSettings } from "@/components/dashboard/payment-methods-settings";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
 import { BusinessLogo } from "@/components/business-logo";
 import {
@@ -195,15 +193,14 @@ function BusinessSettingsContent() {
 		);
 	return (
 		<div className="mx-auto max-w-5xl space-y-6">
-				<div>
-					<p className="text-sm font-medium ">Configuración</p>
-					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
-						Configura tu negocio
-					</h1>
-					<p className="mt-2 text-muted-foreground">
-						Estos datos ayudan a que Oikentra se adapte a tu forma de trabajar.
-					</p>
-				</div>
+			<div>
+				<h1 className="text-3xl font-semibold tracking-tight">
+					Información general
+				</h1>
+				<p className="mt-2 text-muted-foreground">
+					Actualiza la identidad y las preferencias regionales de tu negocio.
+				</p>
+			</div>
 				<Card className="overflow-hidden">
 					<CardHeader>
 						<CardTitle>Información general</CardTitle>
@@ -374,11 +371,7 @@ function BusinessSettingsContent() {
 							</form>
 						</Form>
 					</CardContent>
-				</Card>
-				<PaymentMethodsSettings businessId={businessId} />
-				{business.role === "OWNER" ? (
-					<CollaboratorsSettings businessId={businessId} />
-				) : null}
+			</Card>
 		</div>
 	);
 }
