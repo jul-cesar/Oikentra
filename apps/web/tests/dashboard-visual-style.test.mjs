@@ -71,3 +71,16 @@ test("home and summary screens follow Caja hierarchy", () => {
 	const statistics = read("components/dashboard/business-dashboard.tsx");
 	assert.match(statistics, /rounded-2xl/);
 });
+
+test("agenda follows the wide Caja hierarchy", () => {
+	const path = "components/dashboard/agenda/agenda-page.tsx";
+	const agenda = read(path);
+
+	assertDashboardVisualPolicy([path]);
+	assert.match(agenda, /components\/dashboard\/dashboard-page/);
+	assert.match(agenda, /<DashboardPage width="wide">/);
+	assert.match(agenda, /text-3xl font-semibold tracking-tight/);
+	assert.match(agenda, /text-sm text-muted-foreground/);
+	assert.doesNotMatch(agenda, /max-w-5xl/);
+	assert.doesNotMatch(agenda, /shadow-sm/);
+});
