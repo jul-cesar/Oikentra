@@ -199,6 +199,7 @@ test("credit and loan details follow the dashboard contract", () => {
 
 test("dashboard settings share canonical forms and surfaces", () => {
 	const paths = [
+		"components/dashboard/business-settings-layout.tsx",
 		"components/dashboard/business-settings.tsx",
 		"components/dashboard/collaborators-settings.tsx",
 		"components/dashboard/payment-methods-settings.tsx",
@@ -206,11 +207,13 @@ test("dashboard settings share canonical forms and surfaces", () => {
 	];
 	assertDashboardVisualPolicy(paths);
 
-	const business = read(paths[0]);
-	const collaborators = read(paths[1]);
-	const payments = read(paths[2]);
-	const profile = read(paths[3]);
-	assert.match(business, /<DashboardPage>/);
+	const layout = read(paths[0]);
+	const business = read(paths[1]);
+	const collaborators = read(paths[2]);
+	const payments = read(paths[3]);
+	const profile = read(paths[4]);
+	assert.match(layout, /<DashboardPage/);
+	assert.match(layout, /width="wide"/);
 	assert.match(profile, /<DashboardPage className="max-w-3xl">/);
 	for (const source of [business, profile]) {
 		assert.match(source, /text-3xl font-semibold tracking-tight/);

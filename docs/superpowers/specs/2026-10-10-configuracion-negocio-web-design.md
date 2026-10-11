@@ -1,7 +1,12 @@
 # Diseño: configuración del negocio en web
 
+<<<<<<< HEAD
 **Fecha:** 2026-10-10  
 **Estado:** Pendiente de aprobación final
+=======
+**Fecha:** 2026-10-10
+**Estado:** Aprobado
+>>>>>>> 22004c67fed3220ffb78de3169ae4852eaed542d
 
 ## Objetivo
 
