@@ -4,10 +4,6 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
-import { DashboardPage } from "@/components/dashboard/dashboard-page";
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { AuthGuard } from "@/components/auth-guard";
-import { useSession } from "@/hooks/use-session";
 import {
 	useBusiness,
 	useCreateBusinessLogoUpload,
@@ -18,8 +14,6 @@ import {
 	type BusinessSettingsValues,
 } from "@/lib/validation/onboarding-schemas";
 import { Button } from "@/components/ui/button";
-import { CollaboratorsSettings } from "@/components/dashboard/collaborators-settings";
-import { PaymentMethodsSettings } from "@/components/dashboard/payment-methods-settings";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
 import { BusinessLogo } from "@/components/business-logo";
 import {
@@ -49,15 +43,10 @@ import {
 } from "@/components/ui/form";
 
 export default function BusinessSettings() {
-	return (
-		<AuthGuard>
-			<BusinessSettingsContent />
-		</AuthGuard>
-	);
+	return <BusinessSettingsContent />;
 }
 
 function BusinessSettingsContent() {
-	const { user } = useSession();
 	const { businessId } = useParams<{ businessId: string }>();
 	const router = useRouter();
 	const { data: business, isLoading, error } = useBusiness(businessId);
@@ -78,14 +67,6 @@ function BusinessSettingsContent() {
 	});
 
 	const fetchErrorMessage = error ? "No pudimos cargar este negocio." : "";
-	const canManageBusiness =
-		business?.role === "OWNER" || business?.role === "MANAGER";
-
-	useEffect(() => {
-		if (business && !canManageBusiness) {
-			router.replace(`/dashboard/${businessId}`);
-		}
-	}, [business, businessId, canManageBusiness, router]);
 
 	useEffect(() => {
 		if (business) {
@@ -201,7 +182,7 @@ function BusinessSettingsContent() {
 		return (
 			<OikentraLoader label="Cargando configuración" className="min-h-[60vh]" />
 		);
-	if (!business || !user)
+	if (!business)
 		return (
 			<div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">
 				<p className="text-muted-foreground">{fetchErrorMessage}</p>
@@ -210,19 +191,16 @@ function BusinessSettingsContent() {
 				</Button>
 			</div>
 		);
-	if (!canManageBusiness) return null;
 	return (
-		<DashboardShell business={business} user={user}>
-			<DashboardPage>
-				<div>
-					<p className="text-sm font-medium text-primary">Configuración</p>
-					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
-						Configura tu negocio
-					</h1>
-					<p className="mt-2 text-sm text-muted-foreground">
-						Estos datos ayudan a que Oikentra se adapte a tu forma de trabajar.
-					</p>
-				</div>
+		<div className="mx-auto max-w-5xl space-y-6">
+			<div>
+				<h1 className="text-3xl font-semibold tracking-tight">
+					Información general
+				</h1>
+				<p className="mt-2 text-muted-foreground">
+					Actualiza la identidad y las preferencias regionales de tu negocio.
+				</p>
+			</div>
 				<Card className="overflow-hidden">
 					<CardHeader>
 						<CardTitle>Información general</CardTitle>
@@ -393,12 +371,7 @@ function BusinessSettingsContent() {
 							</form>
 						</Form>
 					</CardContent>
-				</Card>
-				<PaymentMethodsSettings businessId={businessId} />
-				{business.role === "OWNER" ? (
-					<CollaboratorsSettings businessId={businessId} />
-				) : null}
-			</DashboardPage>
-		</DashboardShell>
+			</Card>
+		</div>
 	);
 }

@@ -13,6 +13,7 @@ import {
 	Calendar03Icon,
 	Task01Icon,
 } from "@hugeicons/core-free-icons";
+import { isBusinessSettingsPath } from "@/components/dashboard/business-settings-navigation";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -80,12 +81,12 @@ export function AppSidebar({
 						<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton
-									isActive={pathname === `${base}/configuracion`}
-									tooltip="Configurar negocio"
+									isActive={isBusinessSettingsPath(pathname, business.id)}
+									tooltip="Configuración"
 									render={<Link href={`${base}/configuracion`} />}
 								>
 									<HugeiconsIcon icon={Settings01Icon} strokeWidth={2} />
-									<span>Configurar negocio</span>
+									<span>Configuración</span>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
