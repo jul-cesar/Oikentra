@@ -92,6 +92,31 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 
 	const methods = methodsQuery.data ?? [];
 
+	if (methodsQuery.isLoading) {
+		return (
+			<Card>
+				<CardContent className="py-10 text-center text-sm text-muted-foreground" aria-live="polite">
+					Cargando medios de pago…
+				</CardContent>
+			</Card>
+		);
+	}
+
+	if (methodsQuery.error) {
+		return (
+			<Card>
+				<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+					<p role="alert" className="text-sm text-destructive">
+						No pudimos cargar los medios de pago.
+					</p>
+					<Button variant="outline" onClick={() => void methodsQuery.refetch()}>
+						Reintentar
+					</Button>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card className="overflow-hidden">
 			<CardHeader className="gap-2">

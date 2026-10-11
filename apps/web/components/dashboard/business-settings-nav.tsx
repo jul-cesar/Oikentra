@@ -33,7 +33,7 @@ export function BusinessSettingsNav({
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "block rounded-xl border px-4 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  "block rounded-xl border px-4 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                   active
                     ? "border-primary/30 bg-primary/10 text-foreground"
                     : "border-transparent text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground",
