@@ -196,3 +196,30 @@ test("credit and loan details follow the dashboard contract", () => {
 	assert.match(dialog, /rounded-xl border bg-popover p-6/);
 	assert.match(dialog, /shadow-lg/);
 });
+
+test("dashboard settings share canonical forms and surfaces", () => {
+	const paths = [
+		"components/dashboard/business-settings.tsx",
+		"components/dashboard/collaborators-settings.tsx",
+		"components/dashboard/payment-methods-settings.tsx",
+		"components/dashboard/profile-settings.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	const business = read(paths[0]);
+	const collaborators = read(paths[1]);
+	const payments = read(paths[2]);
+	const profile = read(paths[3]);
+	assert.match(business, /<DashboardPage>/);
+	assert.match(profile, /<DashboardPage className="max-w-3xl">/);
+	for (const source of [business, profile]) {
+		assert.match(source, /text-3xl font-semibold tracking-tight/);
+		assert.match(source, /text-sm text-muted-foreground/);
+		assert.match(source, /<Card/);
+		assert.match(source, /grid gap-5/);
+	}
+	assert.match(collaborators, /<DialogContent/);
+	assert.doesNotMatch(collaborators, /shadow-sm/);
+	assert.match(collaborators, /rounded-xl border bg-card/);
+	assert.match(payments, /rounded-xl border bg-card/);
+});

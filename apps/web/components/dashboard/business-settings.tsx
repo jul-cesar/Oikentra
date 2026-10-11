@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AuthGuard } from "@/components/auth-guard";
 import { useSession } from "@/hooks/use-session";
@@ -115,7 +116,12 @@ function BusinessSettingsContent() {
 		}
 
 		const upload = await logoUploadMutation.mutateAsync(file.type);
-		const url = new URL(upload.uploadUrl);
+		let url: URL;
+		try {
+			url = new URL(upload.uploadUrl);
+		} catch {
+			throw new Error("La URL para subir el logo no es válida.");
+		}
 		if (
 			url.protocol !== "https:" ||
 			!url.hostname.endsWith(".r2.cloudflarestorage.com")
@@ -207,13 +213,13 @@ function BusinessSettingsContent() {
 	if (!canManageBusiness) return null;
 	return (
 		<DashboardShell business={business} user={user}>
-			<div className="mx-auto max-w-5xl space-y-6">
+			<DashboardPage>
 				<div>
-					<p className="text-sm font-medium ">Configuración</p>
+					<p className="text-sm font-medium text-primary">Configuración</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
 						Configura tu negocio
 					</h1>
-					<p className="mt-2 text-muted-foreground">
+					<p className="mt-2 text-sm text-muted-foreground">
 						Estos datos ayudan a que Oikentra se adapte a tu forma de trabajar.
 					</p>
 				</div>
@@ -392,7 +398,7 @@ function BusinessSettingsContent() {
 				{business.role === "OWNER" ? (
 					<CollaboratorsSettings businessId={businessId} />
 				) : null}
-			</div>
+			</DashboardPage>
 		</DashboardShell>
 	);
 }
