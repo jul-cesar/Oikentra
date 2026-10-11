@@ -29,6 +29,13 @@ test("el calendario abre en Mes y ofrece los modos Mes, Semana y Día", () => {
 	assert.match(page, /day: "Día"/);
 });
 
+test("la agenda conserva el ancho completo del calendario", () => {
+	const page = read("components/dashboard/agenda/agenda-page.tsx");
+
+	assert.match(page, /<DashboardPage width="wide">/);
+	assert.doesNotMatch(page, /max-w-5xl/);
+});
+
 test("el modal usa controles shadcn y recordatorios con más anticipación", () => {
 	const page = read("components/dashboard/agenda/agenda-page.tsx");
 

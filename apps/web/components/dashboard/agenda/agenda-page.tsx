@@ -8,6 +8,7 @@ import { es } from "date-fns/locale";
 import { PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { EventCalendar } from "@/components/reui/event-calendar/event-calendar";
 import { EventCalendarContent } from "@/components/reui/event-calendar/event-calendar-content";
 import {
@@ -409,17 +410,17 @@ export function AgendaPage({
 	}
 
 	return (
-		<div className="space-y-5">
+		<DashboardPage width="wide">
 			<div>
 				<p className="text-sm font-medium text-primary">Organiza tu negocio</p>
-				<h1 className="text-2xl font-semibold tracking-tight">Agenda</h1>
+				<h1 className="text-3xl font-semibold tracking-tight">Agenda</h1>
 				<p className="text-sm text-muted-foreground">
 					Eventos, próximos cobros y cuotas en un solo lugar.
 				</p>
 			</div>
 
 			{reminders.length ? (
-				<div className="rounded-xl border bg-card p-4 shadow-sm">
+				<div className="rounded-xl border bg-card p-4">
 					<h2 className="font-semibold">Próximos recordatorios</h2>
 					<div className="mt-3 grid gap-2 sm:grid-cols-3">
 						{reminders.map((item) => (
@@ -434,7 +435,7 @@ export function AgendaPage({
 				</div>
 			) : null}
 
-			<div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+			<div className="overflow-hidden rounded-xl border bg-card">
 				<EventCalendar<AgendaItem>
 					events={events}
 					defaultView="month"
@@ -629,6 +630,6 @@ export function AgendaPage({
 					</DialogContent>
 				) : null}
 			</Dialog>
-		</div>
+		</DashboardPage>
 	);
 }

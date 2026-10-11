@@ -7,6 +7,7 @@ import {
 	PencilEdit01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -103,14 +104,14 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 		);
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-6">
+		<DashboardPage width="wide">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
 					<p className="text-sm font-medium">Catálogo de clientes</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
 						Clientes
 					</h1>
-					<p className="mt-2 text-muted-foreground">
+					<p className="mt-2 text-sm text-muted-foreground">
 						Administra sus datos y consulta un resumen de sus fiados.
 					</p>
 				</div>
@@ -166,8 +167,8 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 									key={customer.id}
 									className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
 								>
-									<div>
-										<p className="font-medium">{customer.name}</p>
+									<div className="min-w-0">
+										<p className="truncate font-medium" title={customer.name}>{customer.name}</p>
 										<p className="text-sm text-muted-foreground">
 											{customer.phone || "Sin teléfono"}
 											{customer.notes ? ` · ${customer.notes}` : ""}
@@ -178,8 +179,8 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 											<p
 												className={
 													customer.totalDebt
-														? "font-semibold"
-														: "text-muted-foreground"
+														? "font-semibold tabular-nums"
+														: "text-muted-foreground tabular-nums"
 												}
 											>
 												{customer.totalDebt
@@ -251,6 +252,6 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</DashboardPage>
 	);
 }

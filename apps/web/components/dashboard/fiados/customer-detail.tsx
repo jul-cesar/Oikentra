@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft01Icon, Download01Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { useCredits } from "@/lib/queries/fiados";
@@ -121,12 +122,12 @@ export function CustomerDetail({
 
 	return (
 		<>
-			<div className="mx-auto max-w-5xl space-y-5 py-2 sm:space-y-6 sm:py-4">
+			<DashboardPage>
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-					<div>
+					<div className="min-w-0">
 						<Button
 							variant="ghost"
-							className="-ml-3 mb-2 rounded-xl"
+							className="-ml-3 mb-2"
 							render={
 								<Link href={`/dashboard/${businessId}/cartera?tipo=fiados`} />
 							}
@@ -141,22 +142,21 @@ export function CustomerDetail({
 						<p className="text-sm font-medium text-primary">
 							Detalle del cliente
 						</p>
-						<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
+						<h1 className="mt-1 break-words text-balance text-3xl font-semibold tracking-tight">
 							{customer.name}
 						</h1>
-						<p className="mt-1.5 text-muted-foreground">
+						<p className="mt-1.5 text-sm text-muted-foreground">
 							{customer.phone || "Sin teléfono"} · Debe{" "}
 							{money(customer.totalDebt)}
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-2">
-						<Button variant="outline" className="rounded-xl" onClick={() => setExportOpen(true)}>
+						<Button variant="outline" onClick={() => setExportOpen(true)}>
 							<HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
 							Descargar estado de cuenta
 						</Button>
 						<Button
 							size="lg"
-							className="rounded-xl"
 							onClick={() => setCreateOpen(true)}
 						>
 							<HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
@@ -165,7 +165,7 @@ export function CustomerDetail({
 					</div>
 				</div>
 
-				<div className="rounded-3xl border bg-card p-4 sm:p-6 lg:p-8">
+				<div className="rounded-xl border bg-card p-4 sm:p-6 lg:p-8">
 					{isLoading ? (
 						<p className="py-16 text-center text-sm text-muted-foreground">
 							Cargando deudas…
@@ -290,7 +290,7 @@ export function CustomerDetail({
 						</div>
 					)}
 				</div>
-			</div>
+			</DashboardPage>
 
 			<ExportReportDialog businessId={businessId} open={exportOpen} onOpenChange={setExportOpen} fixedReportType="CUSTOMER_STATEMENT" customerId={customer.id} />
 			<CreateCreditDialog

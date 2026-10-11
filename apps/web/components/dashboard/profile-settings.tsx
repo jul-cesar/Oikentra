@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AuthGuard } from "@/components/auth-guard";
 import { useSession } from "@/hooks/use-session";
@@ -147,13 +148,13 @@ function ProfileSettingsContent() {
 
 	return (
 		<DashboardShell business={business} user={user}>
-			<div className="mx-auto max-w-3xl">
-				<div className="mb-8">
+			<DashboardPage className="max-w-3xl">
+				<div>
 					<p className="text-sm font-medium text-primary">Perfil</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
 						Configura tu perfil
 					</h1>
-					<p className="mt-2 text-muted-foreground">
+					<p className="mt-2 text-sm text-muted-foreground">
 						Mantén tus datos de contacto actualizados.
 					</p>
 				</div>
@@ -242,7 +243,7 @@ function ProfileSettingsContent() {
 						</Form>
 					</CardContent>
 				</Card>
-			</div>
+			</DashboardPage>
 		</DashboardShell>
 	);
 }

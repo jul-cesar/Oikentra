@@ -5,6 +5,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { BusinessSettingsNav } from "@/components/dashboard/business-settings-nav";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { canAccessBusinessSettingsPath } from "@/components/dashboard/business-settings-navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -69,13 +70,16 @@ function BusinessSettingsLayoutContent({
 
   return (
     <DashboardShell business={business} user={user}>
-      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+      <DashboardPage
+        width="wide"
+        className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10"
+      >
         <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-          <p className="mb-3 px-1 text-sm font-medium">Configuración</p>
+          <p className="mb-3 px-1 text-sm font-medium text-primary">Configuración</p>
           <BusinessSettingsNav businessId={businessId} role={business.role} />
         </aside>
         <div className="min-w-0">{children}</div>
-      </div>
+      </DashboardPage>
     </DashboardShell>
   );
 }

@@ -152,7 +152,7 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 					{methods.map((method) => (
 						<div
 							key={method.id}
-							className="flex items-center justify-between gap-3 rounded-2xl border bg-card p-3 text-sm"
+							className="flex items-center justify-between gap-3 rounded-xl border bg-card p-3 text-sm"
 						>
 							<div className="min-w-0">
 								<p className="truncate font-medium">{method.name}</p>
@@ -176,7 +176,7 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 						</div>
 					))}
 					{!methods.length && !methodsQuery.isLoading ? (
-						<p className="rounded-2xl border border-dashed py-8 text-center text-sm text-muted-foreground">
+						<p className="rounded-xl border border-dashed py-8 text-center text-sm text-muted-foreground">
 							Aún no hay medios de pago activos.
 						</p>
 					) : null}

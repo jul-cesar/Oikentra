@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { getAttachmentPreview } from "@/components/dashboard/tasks/attachment-preview";
 import { AttachmentDropzone } from "@/components/dashboard/tasks/attachment-dropzone";
 import { Button } from "@/components/ui/button";
@@ -197,7 +198,7 @@ export function CreateTaskPage({
 	const busy = create.isPending || uploading;
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-6">
+		<DashboardPage>
 			<div>
 				<Link
 					href={backHref}
@@ -207,7 +208,7 @@ export function CreateTaskPage({
 					Volver al tablero
 				</Link>
 				<h1 className="mt-2 text-3xl font-semibold tracking-tight">Nueva tarea</h1>
-				<p className="mt-2 text-muted-foreground">
+				<p className="mt-2 text-sm text-muted-foreground">
 					Define el trabajo, asígnalo y agrega el contexto necesario.
 				</p>
 			</div>
@@ -418,6 +419,6 @@ export function CreateTaskPage({
 					</Card>
 				</form>
 			</Form>
-		</div>
+		</DashboardPage>
 	);
 }
