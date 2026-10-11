@@ -36,7 +36,7 @@ export function useTooltipPosition({
   onPosition: () => void;
   pointer: ReturnType<typeof useTooltipPointer>;
 }) {
-  const { cursor, onMove } = pointer;
+  const { cursor, setOnMove } = pointer;
   const cursorSide = useRef<Placement | null>(null);
   useLayoutEffect(() => {
     cursorSide.current = open ? side : null;
@@ -54,11 +54,9 @@ export function useTooltipPosition({
     });
   }, []);
   useLayoutEffect(() => {
-    onMove.current = schedule;
-    return () => {
-      onMove.current = null;
-    };
-  }, [onMove, schedule]);
+    setOnMove(schedule);
+    return () => setOnMove(null);
+  }, [setOnMove, schedule]);
   const pointX = anchorPoint?.x;
   const pointY = anchorPoint?.y;
 
@@ -158,6 +156,9 @@ export function useTooltipPointer(
 ) {
   const cursor = useRef<TooltipPoint | null>(null);
   const onMove = useRef<(() => void) | null>(null);
+  const setOnMove = useCallback((callback: (() => void) | null) => {
+    onMove.current = callback;
+  }, []);
   const pointerFocus = useRef(false);
   useLayoutEffect(() => {
     const anchor = anchorRef.current;
@@ -200,5 +201,5 @@ export function useTooltipPointer(
     };
   }, [anchorRef, followCursor]);
 
-  return { cursor, onMove };
+  return { cursor, setOnMove };
 }
