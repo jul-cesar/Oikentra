@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTheme } from "next-themes";
 
+import { useThemeToggle } from "@/components/motion/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -45,7 +45,7 @@ export function NavUser({
   onSignOut: () => void;
 }) {
   const { isMobile } = useSidebar();
-  const { theme, setTheme } = useTheme();
+  const { theme, setThemeAnimated } = useThemeToggle();
   const initials = user.name
     .split(" ")
     .slice(0, 2)
@@ -106,7 +106,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuLabel>Preferencia de tema</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+              <DropdownMenuRadioGroup value={theme} onValueChange={setThemeAnimated}>
                 <DropdownMenuRadioItem value="light"><HugeiconsIcon icon={Sun01Icon} strokeWidth={2} />Claro</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="dark"><HugeiconsIcon icon={Moon01Icon} strokeWidth={2} />Oscuro</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="system"><HugeiconsIcon icon={ContrastIcon} strokeWidth={2} />Sistema</DropdownMenuRadioItem>
