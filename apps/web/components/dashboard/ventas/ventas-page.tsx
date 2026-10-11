@@ -17,6 +17,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
@@ -294,7 +295,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 		);
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-4 sm:py-8">
+		<DashboardPage>
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
 					<p className="text-sm font-medium text-primary">Control diario</p>
@@ -544,7 +545,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 										{money(Math.abs(total))}
 									</span>
 								</div>
-								<div className="rounded-2xl border bg-card p-1.5">
+								<div className="rounded-xl border bg-card p-1.5">
 									{list.map((movement) => (
 										<MovementRow
 											key={movement.id}
@@ -578,7 +579,7 @@ export function VentasPage({ businessId }: { businessId: string }) {
 					if (!value) setCancelTarget(null);
 				}}
 			/>
-		</div>
+		</DashboardPage>
 	);
 }
 
@@ -594,7 +595,7 @@ function StatTile({
 	detail: string;
 }) {
 	return (
-		<div className="rounded-2xl border bg-card p-4">
+		<div className="rounded-xl border bg-card p-4">
 			<div className="flex items-center gap-2">
 				<span className="grid size-8 place-items-center rounded-lg bg-muted">
 					{icon}

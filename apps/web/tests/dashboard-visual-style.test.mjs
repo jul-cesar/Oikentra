@@ -137,3 +137,32 @@ test("customers and portfolio follow the Caja hierarchy", () => {
 	assert.match(portfolio, /rounded-2xl bg-primary/);
 	assert.doesNotMatch(portfolio, /space-y-6 px-3 py-5/);
 });
+
+test("Caja and its secondary screens define the canonical module", () => {
+	const paths = [
+		"components/dashboard/ventas/ventas-page.tsx",
+		"components/dashboard/ventas/categories-page.tsx",
+		"components/dashboard/ventas/movement-row.tsx",
+		"components/dashboard/ventas/create-sale-dialog.tsx",
+		"components/dashboard/ventas/create-expense-dialog.tsx",
+		"components/dashboard/ventas/create-category-dialog.tsx",
+		"components/dashboard/ventas/delete-category-dialog.tsx",
+		"components/dashboard/ventas/cancel-movement-dialog.tsx",
+		"components/dashboard/ventas/export-report-dialog.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	const caja = read(paths[0]);
+	const categories = read(paths[1]);
+	const exportDialog = read(paths[8]);
+	assert.match(caja, /<DashboardPage>/);
+	assert.doesNotMatch(caja, /space-y-5 px-3 py-5/);
+	assert.match(caja, /rounded-2xl bg-primary/);
+	assert.match(caja, /rounded-full bg-muted p-1/);
+	assert.match(caja, /bg-background text-foreground shadow-sm/);
+	assert.match(caja, /rounded-xl border bg-card/);
+	assert.match(categories, /<DashboardPage className="max-w-3xl">/);
+	assert.match(categories, /text-3xl font-semibold tracking-tight/);
+	assert.match(categories, /text-sm text-muted-foreground/);
+	assert.doesNotMatch(exportDialog, /rounded-xl border border-input/);
+});

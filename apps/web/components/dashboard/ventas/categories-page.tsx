@@ -8,6 +8,7 @@ import {
 	PencilEdit01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -66,14 +67,14 @@ export function CategoriesPage({ businessId }: { businessId: string }) {
 		);
 
 	return (
-		<div className="mx-auto max-w-3xl space-y-6">
+		<DashboardPage className="max-w-3xl">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
 					<p className="text-sm font-medium text-primary">Movimientos</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight">
 						Categorías
 					</h1>
-					<p className="mt-2 text-muted-foreground">
+					<p className="mt-2 text-sm text-muted-foreground">
 						Organiza tus ventas y gastos por categoría.
 					</p>
 				</div>
@@ -197,6 +198,6 @@ export function CategoriesPage({ businessId }: { businessId: string }) {
 					if (!value) setDeactivateTarget(null);
 				}}
 			/>
-		</div>
+		</DashboardPage>
 	);
 }
