@@ -166,3 +166,33 @@ test("Caja and its secondary screens define the canonical module", () => {
 	assert.match(categories, /text-sm text-muted-foreground/);
 	assert.doesNotMatch(exportDialog, /rounded-xl border border-input/);
 });
+
+test("credit and loan details follow the dashboard contract", () => {
+	const paths = [
+		"components/dashboard/fiados/customer-detail.tsx",
+		"components/dashboard/fiados/create-credit-dialog.tsx",
+		"components/dashboard/fiados/create-payment-dialog.tsx",
+		"components/dashboard/fiados/cancel-dialog.tsx",
+		"components/dashboard/prestamos/loan-detail.tsx",
+		"components/dashboard/prestamos/create-loan-dialog.tsx",
+		"components/dashboard/prestamos/create-payment-dialog.tsx",
+		"components/dashboard/prestamos/cancel-dialog.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	const customer = read(paths[0]);
+	const loan = read(paths[4]);
+	for (const source of [customer, loan]) {
+		assert.match(source, /<DashboardPage>/);
+		assert.match(source, /text-3xl font-semibold tracking-tight/);
+		assert.match(source, /text-sm text-muted-foreground/);
+		assert.match(source, /tabular-nums/);
+		assert.match(source, /break-words/);
+	}
+	for (const path of [...paths.slice(1, 4), ...paths.slice(5)]) {
+		assert.match(read(path), /<DialogContent/);
+	}
+	const dialog = read("components/ui/dialog.tsx");
+	assert.match(dialog, /rounded-xl border bg-popover p-6/);
+	assert.match(dialog, /shadow-lg/);
+});

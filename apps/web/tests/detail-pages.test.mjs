@@ -19,3 +19,15 @@ test("fiados y préstamos abren su detalle en páginas dedicadas", () => {
 	read("app/dashboard/[businessId]/fiados/[customerId]/page.tsx");
 	read("app/dashboard/[businessId]/prestamos/[loanId]/page.tsx");
 });
+
+test("los detalles financieros usan el contenedor visual compartido", () => {
+	const customerDetail = read(
+		"components/dashboard/fiados/customer-detail.tsx",
+	);
+	const loanDetail = read("components/dashboard/prestamos/loan-detail.tsx");
+
+	assert.match(customerDetail, /<DashboardPage>/);
+	assert.match(loanDetail, /<DashboardPage>/);
+	assert.match(customerDetail, /break-words/);
+	assert.match(loanDetail, /break-words/);
+});
