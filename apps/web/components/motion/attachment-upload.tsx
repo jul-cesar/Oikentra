@@ -747,7 +747,10 @@ export function AttachmentUpload({
     onValueChange,
   });
   const itemsRef = useRef(items);
-  itemsRef.current = items;
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   useEffect(
     () => () => {
@@ -917,18 +920,13 @@ export function AttachmentUpload({
   }, []);
   const closePreview = useCallback(() => setPreviewItem(null), []);
 
-  useEffect(() => {
-    if (
-      previewItem &&
-      !items.some((item) => item.id === previewItem.id)
-    ) {
-      setPreviewItem(null);
-    }
-  }, [items, previewItem]);
-
+  const visiblePreviewItem =
+    previewItem && items.some((item) => item.id === previewItem.id)
+      ? previewItem
+      : null;
   const uploadOrder = Array.from(uploadingIds);
-  const previewLayoutId = previewItem
-    ? `attachment-image-${previewItem.id}`
+  const previewLayoutId = visiblePreviewItem
+    ? `attachment-image-${visiblePreviewItem.id}`
     : undefined;
 
   return (
@@ -1070,7 +1068,7 @@ export function AttachmentUpload({
       ) : null}
 
       <ImagePreviewDialog
-        item={previewItem}
+        item={visiblePreviewItem}
         layoutId={reduce ? undefined : previewLayoutId}
         onClose={closePreview}
         reduce={reduce}
