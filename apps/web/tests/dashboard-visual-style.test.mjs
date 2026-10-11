@@ -114,3 +114,26 @@ test("task screens follow the dashboard visual contract", () => {
 	assert.match(card, /min-w-0 flex-1/);
 	assert.match(card, /rounded-full/);
 });
+
+test("customers and portfolio follow the Caja hierarchy", () => {
+	const paths = [
+		"components/dashboard/customers/customers-page.tsx",
+		"components/dashboard/customers/create-customer-dialog.tsx",
+		"components/dashboard/cartera/cartera-page.tsx",
+	];
+	assertDashboardVisualPolicy(paths);
+
+	const customers = read(paths[0]);
+	const portfolio = read(paths[2]);
+	assert.match(customers, /<DashboardPage width="wide">/);
+	assert.match(portfolio, /<DashboardPage>/);
+	for (const source of [customers, portfolio]) {
+		assert.match(source, /text-3xl font-semibold tracking-tight/);
+		assert.match(source, /text-sm text-muted-foreground/);
+		assert.match(source, /tabular-nums/);
+	}
+	assert.match(customers, /min-w-0/);
+	assert.match(customers, /truncate font-medium/);
+	assert.match(portfolio, /rounded-2xl bg-primary/);
+	assert.doesNotMatch(portfolio, /space-y-6 px-3 py-5/);
+});
