@@ -146,6 +146,43 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
     defaultValues: { identifier: "", role: "OPERATOR" },
   });
 
+  if (members.isLoading || profiles.isLoading || invitations.isLoading) {
+    return (
+      <Card>
+        <CardContent
+          className="py-10 text-center text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          Cargando equipo…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (members.error || profiles.error || invitations.error) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+          <p role="alert" className="text-sm text-destructive">
+            No pudimos cargar el equipo y las invitaciones.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() =>
+              void Promise.all([
+                members.refetch(),
+                profiles.refetch(),
+                invitations.refetch(),
+              ])
+            }
+          >
+            Reintentar
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   function memberName(member: Member, profile?: PublicUser) {
     if (member.role === "OWNER") return "Propietario";
     return profile?.name ?? member.userId;
@@ -271,7 +308,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(submit)}
-            className="grid gap-4 rounded-2xl border bg-muted/20 p-4 sm:grid-cols-[1fr_190px_auto]"
+            className="grid gap-4 rounded-xl border bg-muted/20 p-4 sm:grid-cols-[1fr_190px_auto]"
           >
             <FormField
               control={form.control}
@@ -340,7 +377,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
                 return (
                   <div
                     key={member.id}
-                    className="flex items-start justify-between gap-3 rounded-2xl border bg-card p-3 text-sm shadow-sm"
+                    className="flex items-start justify-between gap-3 rounded-xl border bg-card p-3 text-sm"
                   >
                     <div className="flex min-w-0 items-start gap-3">
                       <Avatar className="mt-0.5">
@@ -430,7 +467,7 @@ export function CollaboratorsSettings({ businessId }: { businessId: string }) {
               {invitations.data.map((invitation) => (
                 <div
                   key={invitation.id}
-                  className="flex items-start justify-between gap-3 rounded-2xl border bg-card p-3 text-sm shadow-sm"
+                  className="flex items-start justify-between gap-3 rounded-xl border bg-card p-3 text-sm"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">

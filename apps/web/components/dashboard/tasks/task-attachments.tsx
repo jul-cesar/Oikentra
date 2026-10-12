@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { File01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 
+import { getAttachmentPreview } from "@/components/dashboard/tasks/attachment-preview";
 import { AttachmentDropzone } from "@/components/dashboard/tasks/attachment-dropzone";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
@@ -54,10 +57,10 @@ function ImageThumbnail({
 		<img
 			src={download.data.downloadUrl}
 			alt={attachment.fileName}
-			className="size-12 rounded object-cover"
+			className="h-36 w-full object-cover"
 		/>
 	) : (
-		<div className="size-12 rounded bg-muted" aria-hidden="true" />
+		<div className="h-36 w-full animate-pulse bg-muted" aria-hidden="true" />
 	);
 }
 
@@ -163,53 +166,73 @@ export function TaskAttachments({
 					</Button>
 				</div>
 			) : attachments.data?.length ? (
-				<ul className="space-y-2">
-					{attachments.data.map((attachment) => (
-						<li
-							key={attachment.id}
-							className="flex items-center gap-3 rounded-lg border p-3 text-sm"
-						>
-							{attachment.contentType.startsWith("image/") ? (
-								<ImageThumbnail
-									businessId={businessId}
-									taskId={taskId}
-									attachment={attachment}
-								/>
-							) : null}
-							<span className="min-w-0 flex-1 truncate">
-								{attachment.fileName}
-							</span>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => open(attachment.id)}
+				<ul className="grid gap-3 sm:grid-cols-2">
+					{attachments.data.map((attachment) => {
+						const preview = getAttachmentPreview(
+							attachment.contentType,
+							attachment.sizeBytes,
+						);
+						return (
+							<li
+								key={attachment.id}
+								className="overflow-hidden rounded-xl border bg-card text-sm"
 							>
-								{attachment.contentType === "application/pdf"
-									? "Abrir PDF"
-									: "Abrir"}
-							</Button>
-							{canDeleteTaskAttachment(role) ? (
-								<Button
-									variant="ghost"
-									size="sm"
-									disabled={remove.isPending}
-									onClick={() =>
-										remove.mutate(attachment.id, {
-											onError: (error) =>
-												toast.add({
-													type: "error",
-													title: "No pudimos eliminar el adjunto",
-													description: error.message,
-													priority: "high",
-												}),
-										})
-									}
-								>
-									Eliminar
-								</Button>
-							) : null}
-						</li>
-					))}
+								<div className="flex h-36 items-center justify-center bg-muted/50">
+									{preview.kind === "image" ? (
+										<ImageThumbnail
+											businessId={businessId}
+											taskId={taskId}
+											attachment={attachment}
+										/>
+									) : (
+										<div className="flex flex-col items-center gap-2 text-muted-foreground">
+											<HugeiconsIcon icon={File01Icon} size={38} aria-hidden="true" />
+											<span className="text-xs font-medium">Documento PDF</span>
+										</div>
+									)}
+								</div>
+								<div className="space-y-3 p-3">
+									<div>
+										<p className="truncate font-medium" title={attachment.fileName}>
+											{attachment.fileName}
+										</p>
+										<p className="mt-0.5 text-xs text-muted-foreground">{preview.size}</p>
+									</div>
+									<div className="flex gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											className="flex-1"
+											disabled={download.isPending}
+											onClick={() => open(attachment.id)}
+										>
+											{preview.kind === "pdf" ? "Abrir PDF" : "Abrir imagen"}
+										</Button>
+										{canDeleteTaskAttachment(role) ? (
+											<Button
+												variant="ghost"
+												size="sm"
+												disabled={remove.isPending}
+												onClick={() =>
+													remove.mutate(attachment.id, {
+														onError: (error) =>
+															toast.add({
+																type: "error",
+																title: "No pudimos eliminar el adjunto",
+																description: error.message,
+																priority: "high",
+															}),
+													})
+												}
+											>
+												Eliminar
+											</Button>
+										) : null}
+									</div>
+								</div>
+							</li>
+						);
+					})}
 				</ul>
 			) : (
 				<p className="text-sm text-muted-foreground">
@@ -220,7 +243,7 @@ export function TaskAttachments({
 			<div className="space-y-2">
 				<AttachmentDropzone
 					disabled={upload.isPending}
-					onFiles={(files) => void send(files)}
+					onFilesAction={(files) => void send(files)}
 				/>
 				{upload.isPending ? (
 					<p role="status" className="text-sm text-muted-foreground">

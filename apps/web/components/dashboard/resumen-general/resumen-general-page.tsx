@@ -16,6 +16,7 @@ import {
 	XAxis,
 } from "recharts";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import {
 	Card,
 	CardContent,
@@ -87,14 +88,14 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 	const summary = summaryQuery.data;
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-6">
+		<DashboardPage>
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<p className="text-sm font-medium text-primary">Resumen general</p>
-					<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
+					<h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
 						Ventas y cartera
 					</h1>
-					<p className="mt-1.5 max-w-xl text-muted-foreground text-pretty">
+					<p className="mt-1.5 max-w-xl text-pretty text-sm text-muted-foreground">
 						Un vistazo al movimiento de tu negocio en el período seleccionado.
 					</p>
 				</div>
@@ -200,7 +201,7 @@ export function ResumenGeneralPage({ businessId }: { businessId: string }) {
 					<CreditFlowChart data={summary.dailyCashFlow} />
 				</>
 			)}
-		</div>
+		</DashboardPage>
 	);
 }
 

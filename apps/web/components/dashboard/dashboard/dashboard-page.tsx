@@ -21,6 +21,7 @@ import {
 	YAxis,
 } from "recharts";
 
+import { DashboardPage as DashboardPageLayout } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OikentraLoader } from "@/components/ui/oikentra-loader";
@@ -96,7 +97,7 @@ function MetricCard({
 	tone = "default",
 }: MetricCardProps) {
 	return (
-		<article className="relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+		<article className="relative overflow-hidden rounded-xl border bg-card p-5">
 			<div className="flex items-start justify-between gap-3">
 				<div className="min-w-0">
 					<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -248,16 +249,16 @@ export function DashboardPage({ businessId }: { businessId: string }) {
 	const summary = summaryQuery.data;
 
 	return (
-		<div className="mx-auto max-w-6xl space-y-6">
+		<DashboardPageLayout>
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
 						{todayLabel()}
 					</p>
-					<h1 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+					<h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight">
 						Dashboard
 					</h1>
-					<p className="mt-2 max-w-xl text-muted-foreground text-pretty">
+					<p className="mt-2 max-w-xl text-pretty text-sm text-muted-foreground">
 						Resumen del movimiento de tu negocio en el período seleccionado.
 					</p>
 				</div>
@@ -390,6 +391,6 @@ export function DashboardPage({ businessId }: { businessId: string }) {
 					</div>
 				</>
 			)}
-		</div>
+		</DashboardPageLayout>
 	);
 }

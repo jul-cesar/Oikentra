@@ -132,13 +132,13 @@ function OpenExportReportDialog({
               <div className="space-y-2">
                 <Label htmlFor="report-from">{needsDay ? "Día" : "Desde"}</Label>
                 <input id="report-from" type="date" value={from} onChange={(event) => setFrom(event.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                  className="flex h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" />
               </div>
               {needsRange ? (
                 <div className="space-y-2">
                   <Label htmlFor="report-to">Hasta</Label>
                   <input id="report-to" type="date" value={to} onChange={(event) => setTo(event.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                    className="flex h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" />
                 </div>
               ) : null}
             </div>

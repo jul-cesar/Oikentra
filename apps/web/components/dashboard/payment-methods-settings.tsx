@@ -92,6 +92,31 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 
 	const methods = methodsQuery.data ?? [];
 
+	if (methodsQuery.isLoading) {
+		return (
+			<Card>
+				<CardContent className="py-10 text-center text-sm text-muted-foreground" aria-live="polite">
+					Cargando medios de pago…
+				</CardContent>
+			</Card>
+		);
+	}
+
+	if (methodsQuery.error) {
+		return (
+			<Card>
+				<CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+					<p role="alert" className="text-sm text-destructive">
+						No pudimos cargar los medios de pago.
+					</p>
+					<Button variant="outline" onClick={() => void methodsQuery.refetch()}>
+						Reintentar
+					</Button>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card className="overflow-hidden">
 			<CardHeader className="gap-2">
@@ -127,7 +152,7 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 					{methods.map((method) => (
 						<div
 							key={method.id}
-							className="flex items-center justify-between gap-3 rounded-2xl border bg-card p-3 text-sm"
+							className="flex items-center justify-between gap-3 rounded-xl border bg-card p-3 text-sm"
 						>
 							<div className="min-w-0">
 								<p className="truncate font-medium">{method.name}</p>
@@ -151,7 +176,7 @@ export function PaymentMethodsSettings({ businessId }: { businessId: string }) {
 						</div>
 					))}
 					{!methods.length && !methodsQuery.isLoading ? (
-						<p className="rounded-2xl border border-dashed py-8 text-center text-sm text-muted-foreground">
+						<p className="rounded-xl border border-dashed py-8 text-center text-sm text-muted-foreground">
 							Aún no hay medios de pago activos.
 						</p>
 					) : null}

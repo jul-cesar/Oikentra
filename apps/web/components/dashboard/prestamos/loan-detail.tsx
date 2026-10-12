@@ -9,6 +9,7 @@ import {
 	ReceiptTextIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePublicUsers } from "@/lib/queries/members";
@@ -96,12 +97,12 @@ export function LoanDetail({
 
 	return (
 		<>
-			<div className="mx-auto max-w-5xl space-y-5 py-2 sm:space-y-6 sm:py-4">
+			<DashboardPage>
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-					<div>
+					<div className="min-w-0">
 						<Button
 							variant="ghost"
-							className="-ml-3 mb-2 rounded-xl"
+							className="-ml-3 mb-2"
 							render={
 								<Link href={`/dashboard/${businessId}/cartera?tipo=prestamos`} />
 							}
@@ -116,7 +117,7 @@ export function LoanDetail({
 						<p className="text-sm font-medium text-primary">
 							Detalle del préstamo
 						</p>
-						<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
+						<h1 className="mt-1 break-words text-balance text-3xl font-semibold tracking-tight">
 							{customerName}
 						</h1>
 						<div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -140,7 +141,7 @@ export function LoanDetail({
 						<div className="flex flex-wrap gap-2">
 							<Button
 								variant="outline"
-								className="rounded-xl text-destructive"
+								className="text-destructive"
 								onClick={() =>
 									setCancelTarget({ type: "loan", loanId: loan.id })
 								}
@@ -149,7 +150,6 @@ export function LoanDetail({
 							</Button>
 							<Button
 								size="lg"
-								className="rounded-xl"
 								onClick={() => setPaymentOpen(true)}
 							>
 								<HugeiconsIcon
@@ -163,7 +163,7 @@ export function LoanDetail({
 					) : null}
 				</div>
 
-				<div className="rounded-3xl border bg-card p-4 sm:p-6 lg:p-8">
+				<div className="rounded-xl border bg-card p-4 sm:p-6 lg:p-8">
 					<div className="grid gap-3 sm:grid-cols-3">
 						<SummaryTile label="Capital" value={money(loan.capitalAmount)} />
 						<SummaryTile label="Interés" value={money(loan.interestAmount)} />
@@ -295,7 +295,7 @@ export function LoanDetail({
 						)}
 					</section>
 				</div>
-			</div>
+			</DashboardPage>
 
 			<CreatePaymentDialog
 				key={`${paymentOpen}-${loan.id}`}

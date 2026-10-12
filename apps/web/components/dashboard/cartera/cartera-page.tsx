@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { CreateCreditDialog } from "@/components/dashboard/fiados/create-credit-dialog";
 import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { CreateLoanDialog } from "@/components/dashboard/prestamos/create-loan-dialog";
@@ -153,27 +154,27 @@ export function CarteraPage({ businessId }: { businessId: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-3 py-5 sm:px-4 sm:py-8">
+    <DashboardPage>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">Control de cartera</p>
           <h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
             Cartera
           </h1>
-          <p className="mt-1.5 text-muted-foreground">
+          <p className="mt-1.5 text-sm text-muted-foreground">
             Fiados y préstamos pendientes de tus clientes.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => setExportOpen(true)}>
+          <Button variant="outline" onClick={() => setExportOpen(true)}>
             <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
             Descargar fiados
           </Button>
-          <Button variant="outline" className="rounded-xl" onClick={() => setCreditOpen(true)}>
+          <Button variant="outline" onClick={() => setCreditOpen(true)}>
             <HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
             Nuevo fiado
           </Button>
-          <Button className="rounded-xl" onClick={() => setLoanOpen(true)}>
+          <Button onClick={() => setLoanOpen(true)}>
             <HugeiconsIcon icon={PlusSignIcon} size={16} aria-hidden="true" />
             Nuevo préstamo
           </Button>
@@ -181,7 +182,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
       </header>
 
       <section className="grid gap-3 md:grid-cols-3" aria-label="Resumen de cartera">
-        <div className="relative overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground md:col-span-3">
+        <div className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground md:col-span-3">
           <div
             className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-primary-foreground/10 blur-2xl"
             aria-hidden="true"
@@ -214,7 +215,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
         />
       </section>
 
-      <section className="rounded-3xl border bg-card p-4 sm:p-5">
+      <section className="rounded-xl border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-semibold tracking-tight">Obligaciones</h2>
@@ -228,7 +229,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
               aria-hidden="true"
             />
             <Input
-              className="rounded-xl pl-9"
+              className="pl-9"
               aria-label="Buscar por cliente"
               placeholder="Buscar cliente"
               value={search}
@@ -296,7 +297,7 @@ export function CarteraPage({ businessId }: { businessId: string }) {
         open={loanOpen}
         onOpenChange={setLoanOpen}
       />
-    </div>
+    </DashboardPage>
   );
 }
 
@@ -312,7 +313,7 @@ function SummaryCard({
   rows: [string, number][];
 }) {
   return (
-    <div className="rounded-3xl border bg-card p-5 md:col-span-1">
+    <div className="rounded-xl border bg-card p-5 md:col-span-1">
       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         <HugeiconsIcon icon={icon} size={16} aria-hidden="true" />
         {title}
@@ -341,7 +342,7 @@ function PortfolioRow({
   return (
     <Link
       href={`/dashboard/${businessId}${item.detailHref}`}
-      className="group flex flex-col gap-4 rounded-2xl border border-border/60 p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-row sm:items-center"
+      className="group flex flex-col gap-4 rounded-xl border border-border/60 p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 sm:flex-row sm:items-center"
     >
       <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold text-primary ring-1 ring-inset ring-primary/20" aria-hidden="true">
         {initials(item.customerName)}

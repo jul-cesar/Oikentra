@@ -28,6 +28,7 @@ import {
 } from "recharts";
 
 import { AuthGuard } from "@/components/auth-guard";
+import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 import { Button } from "@/components/ui/button";
@@ -144,14 +145,14 @@ function BusinessDashboardContent() {
 
 	return (
 		<DashboardShell business={business} user={user}>
-			<div className="mx-auto max-w-6xl space-y-6">
+			<DashboardPage width="wide">
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 					<div>
 						<p className="text-sm font-medium text-primary">Estadísticas</p>
-						<h1 className="mt-1 text-3xl font-semibold tracking-tight text-balance">
+						<h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">
 							Buenos días, {user.name?.split(" ")[0] || "bienvenido"}
 						</h1>
-						<p className="mt-1.5 max-w-xl text-muted-foreground text-pretty">
+						<p className="mt-1.5 max-w-xl text-pretty text-sm text-muted-foreground">
 							Señales rápidas de caja, cartera y comportamiento de ventas.
 						</p>
 					</div>
@@ -233,7 +234,7 @@ function BusinessDashboardContent() {
 						</div>
 					</>
 				)}
-			</div>
+			</DashboardPage>
 			<ExportReportDialog businessId={business.id} open={exportOpen} onOpenChange={setExportOpen} fixedReportType="WEEKLY_SUMMARY" initialFrom={range.from} initialTo={range.to} />
 			<ExportReportDialog businessId={business.id} open={paymentExportOpen} onOpenChange={setPaymentExportOpen} fixedReportType="PAYMENT_METHODS" initialFrom={range.from} initialTo={range.to} />
 		</DashboardShell>
