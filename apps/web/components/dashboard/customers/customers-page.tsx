@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+	Download01Icon,
 	UserAdd01Icon,
 	Search01Icon,
 	PencilEdit01Icon,
@@ -29,6 +30,7 @@ import { OikentraLoader } from "@/components/ui/oikentra-loader";
 import { useCustomers, useDeleteCustomer } from "@/lib/queries/fiados";
 import type { Customer } from "@/lib/fiados-api";
 import { CreateCustomerDialog } from "./create-customer-dialog";
+import { ExportReportDialog } from "@/components/dashboard/ventas/export-report-dialog";
 
 const money = (value: number) =>
 	new Intl.NumberFormat("es-CO", {
@@ -46,6 +48,7 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 	const [deactivateTarget, setDeactivateTarget] = useState<Customer | null>(
 		null,
 	);
+	const [exportOpen, setExportOpen] = useState(false);
 	const customers = useMemo(
 		() =>
 			(query.data ?? []).filter((customer) =>
@@ -114,10 +117,20 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 						Administra sus datos y consulta un resumen de sus fiados.
 					</p>
 				</div>
-				<Button onClick={openCreate}>
-					<HugeiconsIcon icon={UserAdd01Icon} size={18} />
-					Nuevo cliente
-				</Button>
+				<div className="flex items-center gap-3">
+					<Button
+						variant="outline"
+						className="rounded-xl"
+						onClick={() => setExportOpen(true)}
+					>
+						<HugeiconsIcon icon={Download01Icon} size={18} />
+						Descargar
+					</Button>
+					<Button onClick={openCreate}>
+						<HugeiconsIcon icon={UserAdd01Icon} size={18} />
+						Nuevo cliente
+					</Button>
+				</div>
 			</div>
 			<Card>
 				<CardHeader className="gap-4">
@@ -222,6 +235,12 @@ export function CustomersPage({ businessId }: { businessId: string }) {
 					setDialogOpen(open);
 					if (!open) setEditing(null);
 				}}
+			/>
+			<ExportReportDialog
+				businessId={businessId}
+				open={exportOpen}
+				onOpenChange={setExportOpen}
+				fixedReportType="CUSTOMER_DIRECTORY"
 			/>
 			<Dialog
 				open={Boolean(deactivateTarget)}

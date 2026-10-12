@@ -35,3 +35,4 @@ export const generateReceivablesCSV = (data: ReportDataResponse) => generate(dat
 export const generateAgedDebtsCSV = (data: ReportDataResponse) => generate(data, 'AGED_DEBTS')
 export const generateMovementHistoryCSV = (data: ReportDataResponse, from: string, to: string) => generate(data, 'MOVEMENT_HISTORY', from, to)
 export const generateCustomerStatementCSV = (data: ReportDataResponse, customerId: string) => generate(data, 'CUSTOMER_STATEMENT', undefined, undefined, customerId)
+export const generateCustomerDirectoryCSV = (data: ReportDataResponse) => generate(data, 'CUSTOMER_DIRECTORY')

@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { and, desc, eq, gte, lte, inArray, ne, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, isNull, lte, ne, sql } from 'drizzle-orm'
 
 import { getDb } from '../../db/client'
 import {
@@ -17,6 +17,7 @@ import { AppError } from '../../http/errors'
 import { requireAuthHeaders } from '../../http/middleware/require-auth-headers'
 import { businessesService } from '../businesses/businesses.service'
 import { membersService, permissions } from '../businesses/members.service'
+import { creditRepository } from '../credits/credits.repository'
 import type { AppBindings } from '../../http/request-context'
 import { z } from 'zod'
 
@@ -99,6 +100,51 @@ internalReportsRoutes.post('/data', async (c) => {
         dailySummaries: [],
         receivables: { totalReceivable: 0, customersWithDebt: 0, oldDebts: 0 },
         customers: [],
+        movements: [],
+      },
+    })
+  }
+
+  if (reportType === 'CUSTOMER_DIRECTORY') {
+    await membersService.requirePermission(c.get('auth').userId, businessId, permissions.customersRead)
+
+    const directoryRows = await db
+      .select({ id: customers.id, name: customers.name, phone: customers.phone, notes: customers.notes })
+      .from(customers)
+      .where(and(eq(customers.businessId, businessId), isNull(customers.deletedAt)))
+      .orderBy(customers.name)
+
+    const debtSummaries = await creditRepository.getDebtSummariesByBusiness(businessId)
+
+    let totalReceivable = 0
+    let customersWithDebt = 0
+    let oldDebts = 0
+    for (const summary of debtSummaries.values()) {
+      totalReceivable += summary.totalDebt
+      if (summary.totalDebt > 0) customersWithDebt += 1
+      if (summary.oldDebt) oldDebts += 1
+    }
+
+    return c.json({
+      data: {
+        business: {
+          id: business.id,
+          name: business.name,
+          currencyCode: business.currencyCode,
+          timezone: business.timezone,
+        },
+        paymentMethods: [],
+        dailySummaries: [],
+        receivables: { totalReceivable, customersWithDebt, oldDebts },
+        customers: directoryRows.map((customer) => ({
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          notes: customer.notes,
+          totalDebt: debtSummaries.get(customer.id)?.totalDebt ?? 0,
+          activeCredits: debtSummaries.get(customer.id)?.activeCredits ?? 0,
+          oldDebt: debtSummaries.get(customer.id)?.oldDebt ?? false,
+        })),
         movements: [],
       },
     })

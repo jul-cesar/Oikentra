@@ -27,6 +27,8 @@ export type ReportDataResponse = {
   customers: Array<{
     id: string
     name: string
+    phone?: string | null
+    notes?: string | null
     totalDebt: number
     activeCredits: number
     oldDebt: boolean

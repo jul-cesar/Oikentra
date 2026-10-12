@@ -95,6 +95,23 @@ export function buildReportTable(
         columns: ['Cliente', 'Deuda pendiente', 'Estado'],
         rows: [...data.customers].sort((a, b) => Number(b.oldDebt) - Number(a.oldDebt)).map((customer) => [customer.name, customer.totalDebt, customer.oldDebt ? 'Antigua' : 'Reciente']),
       }
+    case 'CUSTOMER_DIRECTORY':
+      return {
+        title: 'Directorio de clientes',
+        summary: [
+          ['Clientes', data.customers.length],
+          ['Con deuda pendiente', data.customers.filter((customer) => customer.totalDebt > 0).length],
+          ['Deudas antiguas', data.customers.filter((customer) => customer.oldDebt).length],
+        ],
+        columns: ['Cliente', 'Teléfono', 'Notas', 'Deuda pendiente', 'Fiados activos'],
+        rows: data.customers.map((customer) => [
+          customer.name,
+          customer.phone ?? '',
+          customer.notes ?? '',
+          customer.totalDebt,
+          customer.activeCredits,
+        ]),
+      }
     case 'MOVEMENT_HISTORY':
       return {
         title: 'Historial de movimientos',

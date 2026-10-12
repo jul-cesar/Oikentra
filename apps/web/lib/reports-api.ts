@@ -5,6 +5,7 @@ export type ReportType =
   | "RECEIVABLES"
   | "AGED_DEBTS"
   | "CUSTOMER_STATEMENT"
+  | "CUSTOMER_DIRECTORY"
   | "MOVEMENT_HISTORY";
 
 export type ReportFormat = "PDF" | "CSV" | "XLSX";

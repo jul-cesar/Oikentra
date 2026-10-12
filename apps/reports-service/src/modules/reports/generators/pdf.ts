@@ -3,6 +3,7 @@ import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces.js'
 import { fileURLToPath } from 'url'
 
 import type { ReportDataResponse } from '../data-client'
+import { oikentraLogoChipDataUrl } from '../logo'
 import type { ReportType } from '../report-types'
 import { buildReportTable, type ReportCell } from './report-table'
 
@@ -18,6 +19,8 @@ const fonts = {
 
 const green = '#64DEA2'
 const dark = '#111827'
+const brand = '#075B3A'
+const slate = '#334155'
 const muted = '#64748B'
 const pale = '#E9FAF1'
 const money = (value: number) => '$' + value.toLocaleString('es-CO')
@@ -53,7 +56,21 @@ function render(data: ReportDataResponse, input: { reportType: ReportType; from?
 
   const content: Content[] = [
     {
-      table: { widths: ['*'], body: [[{ text: 'OIKENTRA   /   REPORTES', bold: true, fontSize: 11, color: dark, margin: [12, 9, 12, 9] }]] },
+      table: {
+        widths: ['*'],
+        body: [[{
+          columns: [
+            {
+              columns: [
+                { image: 'oikentraLogoChip', width: 20, margin: [12, 7, 24, 7] },
+                { text: 'OIKENTRA', bold: true, fontSize: 14, color: brand, margin: [20, 9, 0, 9] },
+              ],
+              width: '*',
+            },
+            { text: 'REPORTES', fontSize: 10, bold: true, characterSpacing: 3, color: slate, margin: [0, 11, 12, 11], alignment: 'right' },
+          ],
+        }]],
+      },
       layout: { defaultBorder: false, fillColor: () => green },
       margin: [0, 0, 0, 18],
     },
@@ -84,6 +101,7 @@ function render(data: ReportDataResponse, input: { reportType: ReportType; from?
     pageSize: 'A4',
     pageOrientation: report.columns.length > 4 ? 'landscape' : 'portrait',
     pageMargins: [36, 36, 36, 45],
+    images: { oikentraLogoChip: oikentraLogoChipDataUrl },
     content,
     defaultStyle: { font: 'Roboto', fontSize: report.columns.length > 5 ? 8 : 9 },
     footer: (page, total) => ({ text: `Oikentra  ·  Página ${page} de ${total}`, alignment: 'right', color: muted, fontSize: 8, margin: [36, 0, 36, 0] }),
@@ -106,3 +124,4 @@ export const generateReceivablesPDF = (data: ReportDataResponse) => render(data,
 export const generateAgedDebtsPDF = (data: ReportDataResponse) => render(data, { reportType: 'AGED_DEBTS' })
 export const generateMovementHistoryPDF = (data: ReportDataResponse, from: string, to: string) => render(data, { reportType: 'MOVEMENT_HISTORY', from, to })
 export const generateCustomerStatementPDF = (data: ReportDataResponse, customerId: string) => render(data, { reportType: 'CUSTOMER_STATEMENT', customerId })
+export const generateCustomerDirectoryPDF = (data: ReportDataResponse) => render(data, { reportType: 'CUSTOMER_DIRECTORY' })

@@ -21,6 +21,7 @@ const REPORT_TYPES: Array<{ value: ReportType; label: string }> = [
   { value: "PAYMENT_METHODS", label: "Ventas por medio de pago" },
   { value: "RECEIVABLES", label: "Fiados por cobrar" },
   { value: "AGED_DEBTS", label: "Fiados antiguos" },
+  { value: "CUSTOMER_DIRECTORY", label: "Directorio de clientes" },
   { value: "MOVEMENT_HISTORY", label: "Historial de movimientos" },
 ];
 

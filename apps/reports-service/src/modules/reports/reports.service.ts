@@ -10,6 +10,7 @@ import {
   generateAgedDebtsCSV,
   generateMovementHistoryCSV,
   generateCustomerStatementCSV,
+  generateCustomerDirectoryCSV,
 } from './generators/csv'
 import {
   generateDailySummaryPDF,
@@ -19,6 +20,7 @@ import {
   generateAgedDebtsPDF,
   generateMovementHistoryPDF,
   generateCustomerStatementPDF,
+  generateCustomerDirectoryPDF,
 } from './generators/pdf'
 
 type GenerateReportInput = {
@@ -51,6 +53,7 @@ function getFilename(reportType: ReportType, format: ReportFormat, from?: string
     RECEIVABLES: `cuentas-por-cobrar${datePart}`,
     AGED_DEBTS: `deudas-antiguas${datePart}`,
     CUSTOMER_STATEMENT: `estado-cuenta${datePart}`,
+    CUSTOMER_DIRECTORY: `directorio-clientes${datePart}`,
     MOVEMENT_HISTORY: `historial-movimientos${datePart}`,
   }
 
@@ -73,6 +76,8 @@ function generateCSV(data: ReportDataResponse, input: GenerateReportInput): stri
       return generateMovementHistoryCSV(data, input.from!, input.to!)
     case 'CUSTOMER_STATEMENT':
       return generateCustomerStatementCSV(data, input.customerId!)
+    case 'CUSTOMER_DIRECTORY':
+      return generateCustomerDirectoryCSV(data)
   }
 }
 
@@ -92,6 +97,8 @@ function generatePDF(data: ReportDataResponse, input: GenerateReportInput): Prom
       return generateMovementHistoryPDF(data, input.from!, input.to!)
     case 'CUSTOMER_STATEMENT':
       return generateCustomerStatementPDF(data, input.customerId!)
+    case 'CUSTOMER_DIRECTORY':
+      return generateCustomerDirectoryPDF(data)
   }
 }
 

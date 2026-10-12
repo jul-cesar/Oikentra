@@ -1,10 +1,12 @@
 import ExcelJS from 'exceljs'
 
 import type { ReportDataResponse } from '../data-client'
+import { oikentraLogoChipBase64 } from '../logo'
 import type { ReportType } from '../report-types'
 import { buildReportTable } from './report-table'
 
 const dark = 'FF111827'
+const brandGreen = 'FF075B3A'
 const green = 'FF5FE0A0'
 const pale = 'FFE9FAF1'
 const muted = 'FF64748B'
@@ -17,6 +19,7 @@ export async function generateXLSX(
   const workbook = new ExcelJS.Workbook()
   workbook.creator = 'Oikentra'
   workbook.created = new Date()
+  const logoId = workbook.addImage({ base64: oikentraLogoChipBase64, extension: 'png' })
   const sheet = workbook.addWorksheet('Reporte', {
     views: [{ state: 'frozen', ySplit: report.summary.length + 6 }],
     pageSetup: { fitToPage: true, fitToWidth: 1, orientation: 'landscape' },
@@ -28,11 +31,12 @@ export async function generateXLSX(
 
   sheet.mergeCells(1, 1, 1, width)
   const brand = sheet.getCell(1, 1)
-  brand.value = 'OIKENTRA  /  REPORTES'
-  brand.font = { name: 'Arial', size: 11, bold: true, color: { argb: dark } }
+  brand.value = 'OIKENTRA  ·  REPORTES'
+  brand.font = { name: 'Arial', size: 11, bold: true, color: { argb: brandGreen } }
   brand.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: green } }
-  brand.alignment = { vertical: 'middle', indent: 1 }
+  brand.alignment = { vertical: 'middle', indent: 4 }
   sheet.getRow(1).height = 30
+  sheet.addImage(logoId, { tl: { col: 0.15, row: 0.12 }, ext: { width: 24, height: 24 } })
 
   sheet.mergeCells(2, 1, 2, width)
   const title = sheet.getCell(2, 1)

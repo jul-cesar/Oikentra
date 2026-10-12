@@ -28,6 +28,7 @@ COPY packages/internal-auth/package.json packages/internal-auth/package.json
 COPY packages/internal-auth/src packages/internal-auth/src
 COPY apps/reports-service/src apps/reports-service/src
 COPY apps/reports-service/fonts apps/reports-service/fonts
+COPY apps/reports-service/assets apps/reports-service/assets
 
 WORKDIR /workspace/apps/reports-service
 

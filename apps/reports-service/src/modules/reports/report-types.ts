@@ -5,6 +5,7 @@ export const reportTypes = [
   'RECEIVABLES',
   'AGED_DEBTS',
   'CUSTOMER_STATEMENT',
+  'CUSTOMER_DIRECTORY',
   'MOVEMENT_HISTORY',
 ] as const
 

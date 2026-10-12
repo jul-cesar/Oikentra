@@ -63,6 +63,8 @@ function logProxy(fields: {
   path: string;
   status: number;
   errorCategory?: string;
+  errorMessage?: string;
+  errorCause?: string;
 }) {
   const level =
     fields.status >= 500 ? "error" : fields.status >= 400 ? "warn" : "info";
@@ -95,6 +97,24 @@ async function validateSession(request: Request, id: string): Promise<string | n
   if (response.status === 401 || response.status === 403) return null;
   if (!response.ok) throw new Error("Authentication service is unavailable");
   return response.headers.get("x-internal-auth")?.trim() || null;
+}
+
+async function fetchUpstream(url: URL, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError")
+    ) {
+      throw error;
+    }
+    // One retry recovers from stale keep-alive sockets that undici may reuse
+    // after the upstream closed them (surfaces as an intermittent
+    // "fetch failed" / ECONNRESET). The request body is already buffered, so
+    // replaying it is safe.
+    return await fetch(url, init);
+  }
 }
 
 async function proxy(request: Request, path: string[]) {
@@ -147,15 +167,16 @@ async function proxy(request: Request, path: string[]) {
   headers.set("x-internal-auth", assertion);
 
   try {
-    const upstream = await fetch(getUpstreamUrl(baseUrl, path, request), {
+    const requestBody =
+      request.method === "GET" ||
+      request.method === "HEAD" ||
+      request.method === "OPTIONS"
+        ? undefined
+        : await request.arrayBuffer();
+    const upstream = await fetchUpstream(getUpstreamUrl(baseUrl, path, request), {
       method: request.method,
       headers,
-      body:
-        request.method === "GET" ||
-        request.method === "HEAD" ||
-        request.method === "OPTIONS"
-          ? undefined
-          : await request.arrayBuffer(),
+      body: requestBody,
       cache: "no-store",
       redirect: "manual",
       signal: AbortSignal.timeout(30_000),
@@ -169,7 +190,23 @@ async function proxy(request: Request, path: string[]) {
         status: upstream.status,
         errorCategory: "UPSTREAM_SERVER_ERROR",
       });
-      return json({ code: "UPSTREAM_ERROR", requestId: id }, upstream.status);
+      const text = await upstream.text().catch(() => "");
+      let body: object = { code: "UPSTREAM_ERROR", requestId: id };
+      if (text) {
+        try {
+          const parsed = JSON.parse(text) as { code?: unknown; message?: unknown };
+          if (parsed && typeof parsed === "object") {
+            body = {
+              code: typeof parsed.code === "string" ? parsed.code : "UPSTREAM_ERROR",
+              message: parsed.message,
+              requestId: id,
+            };
+          }
+        } catch {
+          // Non-JSON upstream error; keep the generic body.
+        }
+      }
+      return json(body, upstream.status);
     }
 
     const responseHeaders = new Headers();
@@ -192,15 +229,26 @@ async function proxy(request: Request, path: string[]) {
       headers: responseHeaders,
     });
   } catch (error) {
+    const name = error instanceof Error ? error.name : "UnknownError";
+    const cause =
+      error && typeof error === "object" && "cause" in error
+        ? (error as { cause?: unknown }).cause
+        : undefined;
+    const causeCode =
+      cause && typeof cause === "object" && "code" in cause
+        ? String((cause as { code?: unknown }).code)
+        : undefined;
     logProxy({
       requestId: id,
       method: request.method,
       path: safePath,
       status: 503,
       errorCategory:
-        error instanceof Error && error.name === "TimeoutError"
+        name === "TimeoutError" || name === "AbortError"
           ? "UPSTREAM_TIMEOUT"
           : "UPSTREAM_FETCH_FAILURE",
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorCause: causeCode,
     });
     return json({ code: "SERVICE_UNAVAILABLE", requestId: id }, 503);
   }
